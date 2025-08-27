@@ -234,11 +234,13 @@
 
         // Main logic to initialize Firebase and handle auth state
         window.onload = async () => {
-            document.getElementById('app-id-display').textContent = `ID Приложения: ${appId}`;
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                
+                // Set the app ID display after initialization
+                document.getElementById('app-id-display').textContent = `ID Приложения: ${appId}`;
                 
                 // Sign in with custom token if available, otherwise sign in anonymously
                 if (initialAuthToken) {
