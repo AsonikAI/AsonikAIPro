@@ -76,10 +76,11 @@
         import {
             getAuth,
             GoogleAuthProvider,
+            EmailAuthProvider,
             signInWithPopup,
             signOut,
             onAuthStateChanged,
-            signInAnonymously
+            signInWithEmailAndPassword
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -96,8 +97,7 @@
             appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
             measurementId: "G-HT5T20YPVE"
         };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
+        
         // Message Box function (for non-working buttons)
         const showMessage = (message) => {
             const messageBox = document.createElement('div');
@@ -112,6 +112,8 @@
         // Render functions
         const renderHeader = (user) => {
             const authInfoDiv = document.getElementById('auth-info');
+            if (!authInfoDiv) return;
+            
             if (user) {
                 // User is signed in
                 const userDisplayName = user.displayName || 'Профиль';
@@ -152,6 +154,8 @@
         const renderMainContent = (user) => {
             const mainContentDiv = document.getElementById('main-content');
             const chatSection = document.getElementById('chat-input-section');
+            if (!mainContentDiv || !chatSection) return;
+
             if (user) {
                 // After sign in, show the AI selection hub
                 mainContentDiv.innerHTML = `
@@ -179,29 +183,26 @@
                         <p class="text-lg mb-6 text-gray-600 dark:text-gray-400">
                             Войдите, чтобы получить доступ к различным AI-моделям.
                         </p>
-                        <div class="flex flex-col space-y-4 w-full">
+                        <div class="flex flex-col space-y-4 w-full" id="auth-buttons-container">
                             <button id="googleSignInButtonFull" class="w-full px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 shadow-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 mr-3" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M12.0001 4.75001C14.0084 4.75001 15.8202 5.4856 17.2003 6.78653L20.0337 3.95319C17.9377 2.01633 15.1107 0.999998 12.0001 0.999998C7.62537 0.999998 3.86146 3.40058 1.93375 7.15197L5.61793 9.99222C6.54922 8.35821 8.16782 7.25001 10.0001 7.25001C10.6698 7.25001 11.3195 7.35628 11.9333 7.56191L12.0001 7.58552V4.75001Z" />
                                     <path d="M22.0001 12.0001C22.0001 11.107 21.8797 10.2526 21.657 9.45899H12.0001V14.5412H18.7845C18.4283 16.3242 17.3093 17.8018 15.756 18.788L19.4633 21.6033C20.6722 19.8973 21.5001 17.8073 21.8906 15.5833H21.9991C22.0001 15.0601 22.0001 12.0001 22.0001 12.0001Z" />
                                     <path d="M10.0001 16.75C8.16782 16.75 6.54922 15.6418 5.61793 14.0078L1.93375 16.8481C3.86146 20.5995 7.62537 23.0001 12.0001 23.0001C15.1107 23.0001 17.9377 21.9837 20.0337 20.0469L17.2003 17.2135C15.8202 18.5144 14.0084 19.25 12.0001 19.25C10.6698 19.25 10.0001 19.25 10.0001 19.25C8.16782 19.25 6.54922 18.1418 5.61793 16.0078L1.93375 18.8481L5.61793 21.6883C6.54922 23.3223 8.16782 24.4305 10.0001 24.4305C10.6698 24.4305 11.3195 24.3242 11.9333 24.1186L12.0001 24.0949C12.0001 24.0949 12.0001 24.0949 12.0001 24.0949Z" />
-                                <path d="M12.0001 16.75V24.0949C12.0001 24.0949 12.0001 24.0949 12.0001 24.0949Z" />
-                                <path d="M12.0001 7.25001C11.3304 7.25001 10.6807 7.14374 10.0669 6.93811L10.0001 6.9145V14.5412H21.657C21.8797 13.7475 22.0001 12.8931 22.0001 12.0001C22.0001 11.107 21.8797 10.2526 21.657 9.45899H12.0001V4.75001H12.0001Z" />
-                            </svg>
-                            Войти с Google
-                        </button>
-                        <button id="phoneSignInButton" class="w-full px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 shadow-lg flex items-center justify-center">
-                            <i class="fas fa-phone fa-lg mr-3"></i>
-                            Войти с помощью телефона
-                        </button>
-                        <button id="gameCenterSignInButton" class="w-full px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 shadow-lg flex items-center justify-center">
-                            <i class="fas fa-gamepad fa-lg mr-3"></i>
-                            Войти через Game Center
-                        </button>
-                        <button id="appleSignInButton" class="w-full px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 shadow-lg flex items-center justify-center">
-                            <i class="fab fa-apple fa-lg mr-3"></i>
-                            Войти с Apple
-                        </button>
+                                    <path d="M12.0001 16.75V24.0949C12.0001 24.0949 12.0001 24.0949 12.0001 24.0949Z" />
+                                    <path d="M12.0001 7.25001C11.3304 7.25001 10.6807 7.14374 10.0669 6.93811L10.0001 6.9145V14.5412H21.657C21.8797 13.7475 22.0001 12.8931 22.0001 12.0001C22.0001 11.107 21.8797 10.2526 21.657 9.45899H12.0001V4.75001H12.0001Z" />
+                                </svg>
+                                Войти с Google
+                            </button>
+                            <button id="emailSignInButton" class="w-full px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 shadow-lg flex items-center justify-center">
+                                <i class="fas fa-envelope fa-lg mr-3"></i>
+                                Войти с помощью почты
+                            </button>
+                            <button id="phoneSignInButton" class="w-full px-6 py-3 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition duration-300 shadow-lg flex items-center justify-center">
+                                <i class="fas fa-phone fa-lg mr-3"></i>
+                                Войти с помощью телефона
+                            </button>
+                        </div>
                     </div>
                 `;
                 chatSection.classList.add('hidden'); // Hide chat input before sign in
@@ -215,21 +216,73 @@
                         console.error("Google Sign-In Error:", error);
                     }
                 });
+                document.getElementById('emailSignInButton').addEventListener('click', () => {
+                    // Render the email/password form
+                    renderEmailForm();
+                });
                 document.getElementById('phoneSignInButton').addEventListener('click', () => {
-                    showMessage("Вход с помощью телефона пока не поддерживается.");
-                });
-                document.getElementById('gameCenterSignInButton').addEventListener('click', () => {
-                    showMessage("Вход через Game Center пока не поддерживается.");
-                });
-                document.getElementById('appleSignInButton').addEventListener('click', () => {
-                    showMessage("Вход через Apple пока не поддерживается.");
+                    // Render the phone sign-in form
+                    renderPhoneForm();
                 });
             }
+        };
+
+        const renderEmailForm = () => {
+             const mainContentDiv = document.getElementById('main-content');
+             mainContentDiv.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-lg">
+                    <p class="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Вход с помощью почты</p>
+                    <input type="email" id="emailInput" placeholder="Введите почту" class="w-full p-3 mb-4 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <input type="password" id="passwordInput" placeholder="Введите пароль" class="w-full p-3 mb-6 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="signInWithEmailButton" class="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition duration-300 shadow-lg">
+                        Войти
+                    </button>
+                    <button id="backToSignInOptions" class="mt-4 w-full px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-full hover:bg-gray-400 transition duration-300">
+                        Назад к вариантам входа
+                    </button>
+                </div>
+            `;
+            document.getElementById('signInWithEmailButton').addEventListener('click', async () => {
+                const email = document.getElementById('emailInput').value;
+                const password = document.getElementById('passwordInput').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    console.error("Email Sign-In Error:", error);
+                    showMessage(error.message);
+                }
+            });
+            document.getElementById('backToSignInOptions').addEventListener('click', () => {
+                onAuthStateChanged(auth, renderUI);
+            });
+        };
+
+        const renderPhoneForm = () => {
+             const mainContentDiv = document.getElementById('main-content');
+             mainContentDiv.innerHTML = `
+                <div class="flex flex-col items-center w-full max-w-lg">
+                    <p class="text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200">Вход с помощью телефона</p>
+                    <input type="tel" id="phoneInput" placeholder="Введите номер телефона" class="w-full p-3 mb-6 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="sendPhoneCodeButton" class="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition duration-300 shadow-lg">
+                        Отправить код
+                    </button>
+                    <button id="backToSignInOptions" class="mt-4 w-full px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-full hover:bg-gray-400 transition duration-300">
+                        Назад к вариантам входа
+                    </button>
+                </div>
+            `;
+            document.getElementById('sendPhoneCodeButton').addEventListener('click', () => {
+                showMessage("Вход с помощью телефона пока в разработке.");
+            });
+            document.getElementById('backToSignInOptions').addEventListener('click', () => {
+                onAuthStateChanged(auth, renderUI);
+            });
         };
 
         const renderChatPage = (user) => {
             const mainContentDiv = document.getElementById('main-content');
             const chatSection = document.getElementById('chat-input-section');
+            if (!mainContentDiv || !chatSection) return;
             mainContentDiv.innerHTML = `
                 <div class="w-full max-w-3xl flex flex-col space-y-4 p-4">
                     <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-xl shadow-md">
@@ -241,6 +294,16 @@
             `;
             chatSection.classList.remove('hidden'); // Show chat input on chat page
         };
+        
+        // This is a new wrapper function to handle the onAuthStateChanged listener
+        const renderUI = (user) => {
+            renderHeader(user);
+            if (user) {
+                renderMainContent(user);
+            } else {
+                renderMainContent(user);
+            }
+        };
 
         // Main logic to initialize Firebase and handle auth state
         window.onload = async () => {
@@ -250,20 +313,8 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                // Sign in anonymously
-                await signInAnonymously(auth);
-
                 // Set up a listener for auth state changes
-                onAuthStateChanged(auth, (user) => {
-                    renderHeader(user);
-                    if (user) {
-                        // If user is signed in, show the main hub
-                        renderMainContent(user);
-                    } else {
-                        // If user is signed out, show the login page
-                        renderMainContent(user);
-                    }
-                });
+                onAuthStateChanged(auth, renderUI);
 
             } catch (error) {
                 console.error("Failed to initialize Firebase:", error);
