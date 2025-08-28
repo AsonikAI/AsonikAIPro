@@ -98,6 +98,14 @@
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
         }
+
+        /* Убираем исчезновение меню при уводе курсора */
+        .group:hover .group-hover\:block {
+            display: block;
+        }
+        .group:hover .group-hover\:rotate-180 {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="bg-gray-900 flex flex-col min-h-screen relative">
@@ -136,11 +144,12 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let app, db, auth;
         let userId;
+        let confirmationResult;
 
         const firebaseConfig = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -201,16 +210,27 @@
         
         const renderPhoneForm = () => {
             const mainContentDiv = document.getElementById('main-content');
+            if (!mainContentDiv) return;
+
             mainContentDiv.innerHTML = `
                 <div class="flex flex-col items-center w-full max-w-sm p-8 bg-gray-900 bg-opacity-75 rounded-3xl shadow-2xl backdrop-filter backdrop-blur-md border border-gray-700">
                     <h2 class="text-3xl font-bold text-white mb-6">Вход с помощью телефона</h2>
-                    <p class="text-gray-400 text-center mb-4">Эта функция в настоящее время находится в разработке.</p>
-                    <button id="backToSignInOptions" class="mt-4 w-full px-6 py-3 bg-purple-600 text-white font-semibold rounded-full hover:bg-purple-700 transition duration-300 shadow-lg">
+                    <input type="tel" id="phoneNumber" placeholder="Введите номер телефона" class="w-full p-3 mb-4 rounded-full border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <button id="sendCodeButton" class="w-full px-6 py-3 bg-purple-600 text-white font-semibold rounded-full hover:bg-purple-700 transition duration-300 shadow-lg">
+                        Отправить код
+                    </button>
+                    <div id="recaptcha-container" class="mt-4"></div>
+                    <div id="verificationCodeSection" class="hidden w-full mt-4">
+                        <input type="text" id="verificationCode" placeholder="Введите код из SMS" class="w-full p-3 mb-4 rounded-full border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button id="verifyCodeButton" class="w-full px-6 py-3 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition duration-300 shadow-lg">
+                            Проверить код
+                        </button>
+                    </div>
+                    <button id="backToSignInOptions" class="mt-4 w-full px-6 py-3 text-white font-semibold rounded-full transition duration-300 hover:text-purple-400">
                         Назад
                     </button>
                 </div>
             `;
-            document.getElementById('backToSignInOptions').addEventListener('click', renderUI);
         };
 
         const renderMainContent = (user) => {
@@ -222,7 +242,7 @@
                 <div class="flex flex-col items-center w-full max-w-lg p-8 bg-gray-900 bg-opacity-75 rounded-3xl shadow-2xl backdrop-filter backdrop-blur-md border border-gray-700">
                     <h2 class="text-3xl font-bold text-white mb-6">Выберите AI-модель</h2>
                     <p class="text-gray-400 text-center mb-8">
-                        Привет, ${user.displayName || user.email || 'Пользователь'}! Выбери, с кем хочешь пообщаться.
+                        Привет, ${user.displayName || 'Пользователь'}! Выбери, с кем хочешь пообщаться.
                     </p>
                     <div class="flex flex-col space-y-4 w-full">
                         <button id="asonikAiButton" class="w-full px-6 py-4 bg-purple-600 text-white font-semibold rounded-2xl hover:bg-purple-700 transition duration-300 shadow-lg text-left">
@@ -241,10 +261,6 @@
                 </div>
             `;
             chatSection.classList.add('hidden');
-
-            document.getElementById('asonikAiButton').addEventListener('click', () => { showMessage("Asonik AI пока в разработке."); });
-            document.getElementById('geminiButton').addEventListener('click', () => { showMessage("Gemini пока в разработке."); });
-            document.getElementById('otherButton').addEventListener('click', () => { showMessage("Другие AI-модели пока в разработке."); });
         };
 
         const renderHeader = (user) => {
@@ -252,30 +268,31 @@
             if (!authInfoDiv) return;
 
             if (user) {
-                const userDisplayName = user.displayName || user.email || 'Пользователь';
+                const userDisplayName = user.displayName || 'Пользователь';
                 const userPhotoURL = user.photoURL || 'https://placehold.co/40x40/9CA3AF/FFFFFF?text=A';
+                const userEmail = user.email || 'Нет Email';
+
                 authInfoDiv.innerHTML = `
                     <div class="flex items-center space-x-2 cursor-pointer group relative">
                         <img src="${userPhotoURL}" alt="Profile" class="w-10 h-10 rounded-full ring-2 ring-purple-500 dark:ring-purple-300">
                         <span class="text-base font-semibold text-white hidden md:block">${userDisplayName}</span>
-                        <div class="absolute right-0 top-full mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
-                            <p class="px-4 py-2 text-sm font-medium text-gray-200">${user.email || 'Нет Email'}</p>
+                        <svg class="w-5 h-5 text-white transition-transform duration-200 transform group-hover:rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        <div class="absolute right-0 top-full mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-2 group-hover:block z-50 hidden">
+                            <p class="px-4 py-2 text-sm font-medium text-gray-200">${userEmail}</p>
                             <button id="signOutButton" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-700 transition duration-200">
                                 Выйти
                             </button>
                         </div>
                     </div>
                 `;
-                document.getElementById('signOutButton').addEventListener('click', () => {
-                    signOut(auth).catch(error => console.error("Sign-Out Error:", error));
-                });
             } else {
                 authInfoDiv.innerHTML = `
                     <button id="signInButtonHeader" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-full hover:bg-purple-700 transition duration-300 shadow-md">
                         Войти
                     </button>
                 `;
-                document.getElementById('signInButtonHeader').addEventListener('click', renderSignInPage);
             }
         };
 
@@ -293,17 +310,67 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
+            // Использование делегирования событий для обработки кликов на динамических элементах
+            document.body.addEventListener('click', async (event) => {
+                if (event.target.id === 'signOutButton') {
+                    try {
+                        await signOut(auth);
+                        showMessage("Вы успешно вышли из системы.");
+                    } catch (error) {
+                        console.error("Sign-Out Error:", error);
+                    }
+                } else if (event.target.id === 'signInButtonHeader' || event.target.id === 'backToSignInOptions') {
+                    renderUI(auth.currentUser);
+                } else if (event.target.id === 'googleSignInButton') {
+                    const provider = new GoogleAuthProvider();
+                    signInWithPopup(auth, provider).catch(error => console.error("Google Sign-In Error:", error));
+                } else if (event.target.id === 'phoneSignInButton') {
+                    renderPhoneForm();
+                    setTimeout(() => {
+                        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                            'size': 'normal',
+                            'callback': (response) => {
+                                // reCAPTCHA solved, allow signInWithPhoneNumber.
+                            },
+                            'expired-callback': () => {
+                                // Response expired. Ask user to solve reCAPTCHA again.
+                                showMessage("reCAPTCHA истекла. Пожалуйста, попробуйте снова.");
+                            }
+                        });
+                        window.recaptchaVerifier.render();
+                    }, 500); // Небольшая задержка, чтобы элемент был в DOM
+                } else if (event.target.id === 'sendCodeButton') {
+                    const phoneNumber = document.getElementById('phoneNumber').value;
+                    try {
+                        confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+                        showMessage("Код отправлен на ваш телефон.");
+                        document.getElementById('verificationCodeSection').classList.remove('hidden');
+                    } catch (error) {
+                        console.error("Phone Auth Error:", error);
+                        showMessage(error.message);
+                    }
+                } else if (event.target.id === 'verifyCodeButton') {
+                    const code = document.getElementById('verificationCode').value;
+                    if (code) {
+                        try {
+                            await confirmationResult.confirm(code);
+                            showMessage("Вы успешно вошли в систему!");
+                        } catch (error) {
+                            console.error("Verification Code Error:", error);
+                            showMessage("Неверный код. Пожалуйста, попробуйте снова.");
+                        }
+                    } else {
+                        showMessage("Пожалуйста, введите код.");
+                    }
+                }
+            });
+
             onAuthStateChanged(auth, async user => {
                 if (user) {
                     userId = user.uid;
                     renderUI(user);
                 } else {
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (e) {
-                        console.log("Anonymous sign-in failed, may be disabled. Rendering sign-in page.", e);
-                        renderUI(null);
-                    }
+                    renderUI(null);
                 }
             });
         };
