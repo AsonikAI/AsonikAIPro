@@ -136,7 +136,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         let app, db, auth;
@@ -150,11 +150,6 @@
             messagingSenderId: "875716508614",
             appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
             measurementId: "G-HT5T20YPVE"
-        };
-        
-        const actionCodeSettings = {
-            url: "https://asonik-ai-pro.vercel.app", 
-            handleCodeInApp: true,
         };
         
         const showMessage = (message) => {
@@ -188,12 +183,6 @@
                             </svg>
                             Войти через Google
                         </button>
-                        <button id="emailSignInButton" class="w-full px-6 py-3 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-200 transition duration-300 shadow-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            Войти через почту
-                        </button>
                         <button id="phoneSignInButton" class="w-full px-6 py-3 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-200 transition duration-300 shadow-lg flex items-center justify-center">
                             <svg class="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -203,45 +192,11 @@
                     </div>
                 </div>
             `;
-            // Add event listeners
             document.getElementById('googleSignInButton').addEventListener('click', () => {
                 const provider = new GoogleAuthProvider();
                 signInWithPopup(auth, provider).catch(error => console.error("Google Sign-In Error:", error));
             });
-            document.getElementById('emailSignInButton').addEventListener('click', renderEmailForm);
             document.getElementById('phoneSignInButton').addEventListener('click', renderPhoneForm);
-        };
-        
-        const renderEmailForm = () => {
-            const mainContentDiv = document.getElementById('main-content');
-            mainContentDiv.innerHTML = `
-                <div class="flex flex-col items-center w-full max-w-sm p-8 bg-gray-900 bg-opacity-75 rounded-3xl shadow-2xl backdrop-filter backdrop-blur-md border border-gray-700">
-                    <h2 class="text-3xl font-bold text-white mb-6">Вход по ссылке</h2>
-                    <input type="email" id="emailInput" placeholder="Введите почту" class="w-full p-3 mb-4 rounded-full border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <button id="sendLinkButton" class="w-full px-6 py-3 bg-purple-600 text-white font-semibold rounded-full hover:bg-purple-700 transition duration-300 shadow-lg">
-                        Отправить ссылку для входа
-                    </button>
-                    <button id="backToSignInOptions" class="mt-4 w-full px-6 py-3 text-white font-semibold rounded-full transition duration-300 hover:text-purple-400">
-                        Назад
-                    </button>
-                </div>
-            `;
-            document.getElementById('sendLinkButton').addEventListener('click', async () => {
-                const email = document.getElementById('emailInput').value;
-                if (email) {
-                    try {
-                        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-                        window.localStorage.setItem('emailForSignIn', email);
-                        showMessage(`Ссылка для входа отправлена на почту ${email}.`);
-                    } catch (error) {
-                        console.error("Email Link Auth Error:", error);
-                        showMessage(error.message);
-                    }
-                } else {
-                    showMessage("Пожалуйста, введите корректный адрес почты.");
-                }
-            });
-            document.getElementById('backToSignInOptions').addEventListener('click', renderUI);
         };
         
         const renderPhoneForm = () => {
@@ -267,7 +222,7 @@
                 <div class="flex flex-col items-center w-full max-w-lg p-8 bg-gray-900 bg-opacity-75 rounded-3xl shadow-2xl backdrop-filter backdrop-blur-md border border-gray-700">
                     <h2 class="text-3xl font-bold text-white mb-6">Выберите AI-модель</h2>
                     <p class="text-gray-400 text-center mb-8">
-                        ${user.displayName ? `Привет, ${user.displayName.split(' ')[0]}!` : 'Привет!'} Выбери, с кем хочешь пообщаться.
+                        Привет, ${user.displayName || user.email || 'Пользователь'}! Выбери, с кем хочешь пообщаться.
                     </p>
                     <div class="flex flex-col space-y-4 w-full">
                         <button id="asonikAiButton" class="w-full px-6 py-4 bg-purple-600 text-white font-semibold rounded-2xl hover:bg-purple-700 transition duration-300 shadow-lg text-left">
@@ -297,7 +252,7 @@
             if (!authInfoDiv) return;
 
             if (user) {
-                const userDisplayName = user.displayName || 'Профиль';
+                const userDisplayName = user.displayName || user.email || 'Пользователь';
                 const userPhotoURL = user.photoURL || 'https://placehold.co/40x40/9CA3AF/FFFFFF?text=A';
                 authInfoDiv.innerHTML = `
                     <div class="flex items-center space-x-2 cursor-pointer group relative">
@@ -338,21 +293,6 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            if (isSignInWithEmailLink(auth, window.location.href)) {
-                let email = localStorage.getItem('emailForSignIn') || prompt('Введите email для завершения входа');
-                if (email) {
-                    try {
-                        await signInWithEmailLink(auth, email, window.location.href);
-                        localStorage.removeItem('emailForSignIn');
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        showMessage("Успешно вошли");
-                    } catch (e) {
-                        console.error("Email Link Auth Error:", e);
-                        showMessage(e.message);
-                    }
-                }
-            }
-
             onAuthStateChanged(auth, async user => {
                 if (user) {
                     userId = user.uid;
@@ -360,7 +300,6 @@
                 } else {
                     try {
                         await signInAnonymously(auth);
-                        // If anonymous sign-in is successful, onAuthStateChanged will be called again with the new user.
                     } catch (e) {
                         console.log("Anonymous sign-in failed, may be disabled. Rendering sign-in page.", e);
                         renderUI(null);
