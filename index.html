@@ -1089,7 +1089,7 @@
                 sortedLessons.forEach((docSnap, index) => {
                     const lesson = docSnap.data();
                     const lessonId = docSnap.id;
-                    const youtubeVideoId = lesson.videoUrl.split('v=')[1].split('&')[0];
+                    const youtubeVideoId = lesson.videoUrl && lesson.videoUrl.split('v=')[1] ? lesson.videoUrl.split('v=')[1].split('&')[0] : null;
                     const previousLessonId = index > 0 ? sortedLessons[index - 1].id : null;
                     const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
                     const isUnlocked = index === 0 || isPreviousLessonPassed;
@@ -1101,9 +1101,9 @@
                             <div class="p-6 relative">
                                 <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
                                 <p class="text-gray-600">${lesson.description}</p>
-                                <div class="relative mt-4 pb-[56.25%] h-0">
+                                ${youtubeVideoId ? `<div class="relative mt-4 pb-[56.25%] h-0">
                                     <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${youtubeVideoId}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                </div>
+                                </div>` : ''}
                                 ${lesson.textBeforeTest ? `<div class="mt-4 text-gray-700">${lesson.textBeforeTest}</div>` : ''}
                                 ${lesson.lessonTest && lesson.lessonTest.length > 0 ? `<div class="test-section mt-4 border-t border-gray-200 pt-4">
                                     <h5 class="font-semibold mb-2">Тест:</h5>
