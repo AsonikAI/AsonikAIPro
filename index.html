@@ -139,7 +139,18 @@
         <div id="adminPanel" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Панель администратора</h2>
             <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                <h3 class="text-xl font-bold mb-4">Добавить новый урок</h3>
+                <h3 class="text-xl font-bold mb-4">Добавить нового администратора</h3>
+                <form id="addAdminForm">
+                    <div class="mb-4">
+                        <label for="adminIdInput" class="block text-gray-700 font-semibold mb-2">ID пользователя</label>
+                        <input type="text" id="adminIdInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ID пользователя">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
+                        Сделать администратором
+                    </button>
+                </form>
+
+                <h3 class="text-xl font-bold mt-8 mb-4">Добавить новый урок</h3>
                 <form id="addLessonForm">
                     <div class="mb-4">
                         <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
@@ -155,29 +166,6 @@
                     </div>
                     <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
                         Добавить урок
-                    </button>
-                </form>
-
-                <h3 class="text-xl font-bold mt-8 mb-4">Добавить нового пользователя</h3>
-                <form id="addUserForm">
-                    <div class="mb-4">
-                        <label for="userName" class="block text-gray-700 font-semibold mb-2">Имя</label>
-                        <input type="text" id="userName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите имя">
-                    </div>
-                    <div class="mb-4">
-                        <label for="userDOB" class="block text-gray-700 font-semibold mb-2">Дата рождения</label>
-                        <input type="date" id="userDOB" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div class="mb-4">
-                        <label for="userEmail" class="block text-gray-700 font-semibold mb-2">E-mail пользователя</label>
-                        <input type="email" id="userEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите e-mail">
-                    </div>
-                    <div class="mb-4">
-                        <label for="userPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
-                        <input type="password" id="userPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите пароль">
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
-                        Создать пользователя
                     </button>
                 </form>
             </div>
@@ -231,9 +219,9 @@
         const addLessonForm = document.getElementById('addLessonForm');
         const lessonList = document.getElementById('lessonList');
         const messageBox = document.getElementById('messageBox');
-        const addUserForm = document.getElementById('addUserForm');
+        const addAdminForm = document.getElementById('addAdminForm');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
-        
+
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
             messageBox.textContent = text;
@@ -288,8 +276,14 @@
             e.preventDefault();
             showSection('coursesSection');
         });
-        showAdminPanelBtn.addEventListener('click', () => showSection('adminPanel'));
-        showDashboardBtn.addEventListener('click', () => showSection('dashboardSection'));
+        showAdminPanelBtn.addEventListener('click', () => {
+            showSection('adminPanel');
+            loadAdminLessons();
+        });
+        showDashboardBtn.addEventListener('click', () => {
+            showSection('dashboardSection');
+            loadLessons();
+        });
         
         // Инициализация Firebase
         window.onload = async () => {
@@ -332,17 +326,6 @@
             }
         };
 
-        // Функции для работы с разделами
-        function showDashboard() {
-            showSection('dashboardSection');
-            loadLessons();
-        }
-
-        function showAdminPanel() {
-            showSection('adminPanel');
-            loadAdminLessons();
-        }
-
         logoutBtn.addEventListener('click', async () => {
             try {
                 await signOut(auth);
@@ -358,18 +341,34 @@
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            const loginBtn = loginForm.querySelector('button[type="submit"]');
+
+            loginBtn.textContent = 'Загрузка...';
+            loginBtn.disabled = true;
 
             try {
-                // Добавляем индикатор загрузки
-                loginForm.querySelector('button[type="submit"]').textContent = 'Загрузка...';
-                
-                await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Вход выполнен успешно!');
+
+                // Ждем 4 секунды, как просил пользователь
+                await new Promise(resolve => setTimeout(resolve, 4000));
+
+                const user = userCredential.user;
+                const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
+                const adminDocSnap = await getDoc(adminDocRef);
+                isUserAdmin = adminDocSnap.exists();
+                
+                if (isUserAdmin) {
+                    showSection('adminPanel');
+                } else {
+                    showSection('dashboardSection');
+                }
             } catch (error) {
                 console.error('Ошибка входа:', error);
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
             } finally {
-                loginForm.querySelector('button[type="submit"]').textContent = 'Войти';
+                loginBtn.textContent = 'Войти';
+                loginBtn.disabled = false;
             }
         });
         
@@ -389,7 +388,6 @@
                 return;
             }
             try {
-                // Добавление данных в коллекцию
                 await addDoc(collection(db, `artifacts/${appId}/public/data/lessons`), {
                     title: title,
                     videoUrl: videoUrl,
@@ -405,33 +403,27 @@
         });
 
         // Добавление нового пользователя
-        addUserForm.addEventListener('submit', async (e) => {
+        addAdminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const name = document.getElementById('userName').value;
-            const dob = document.getElementById('userDOB').value;
+            const adminId = document.getElementById('adminIdInput').value.trim();
 
-            if (!email || !password || !name || !dob) {
-                showMessage('Пожалуйста, заполните все поля.', true);
+            if (!adminId) {
+                showMessage('Пожалуйста, введите ID пользователя.', true);
                 return;
             }
-
+            if (!db) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                
-                // Сохраняем дополнительные данные пользователя в Firestore
-                await setDoc(doc(db, `artifacts/${appId}/users`, userCredential.user.uid), {
-                    name: name,
-                    email: email,
-                    dob: dob,
+                await setDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, adminId), {
+                    isAdmin: true,
                     createdAt: new Date()
                 });
-
-                showMessage(`Пользователь ${userCredential.user.email} успешно создан!`, false);
-                addUserForm.reset();
+                showMessage(`Пользователь с ID ${adminId} успешно добавлен в администраторы!`, false);
+                addAdminForm.reset();
             } catch (error) {
-                console.error('Ошибка при создании пользователя:', error);
+                console.error('Ошибка при добавлении администратора:', error);
                 showMessage(`Ошибка: ${error.message}`, true);
             }
         });
@@ -447,7 +439,7 @@
                     const lessonElement = `
                         <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
                             <div class="relative pb-[56.25%] h-0">
-                                <iframe class="absolute top-0 left-0 w-full h-full" src="${lesson.videoUrl.replace('watch?v=', 'embed/')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                <iframe class="absolute top-0 left-0 w-full h-full" src="${lesson.videoUrl.replace('watch?v=', 'embed/')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-smedia; gyroscope; picture-in-picture" allowfullscreen></iframe>
                             </div>
                             <div class="p-6">
                                 <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
@@ -524,4 +516,3 @@
     </script>
 </body>
 </html>
-
