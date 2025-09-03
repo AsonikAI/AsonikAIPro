@@ -179,6 +179,13 @@
                 </ul>
             </div>
         </div>
+        
+        <!-- Кнопка для временного админ-доступа -->
+        <div id="tempAdminSection" class="hidden text-center mt-8">
+             <p class="text-red-500 mb-4">Вход отклонён. Вы не являетесь администратором.</p>
+             <button id="makeMeAdminBtn" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300">Сделать меня администратором</button>
+        </div>
+
     </div>
 
     <!-- Firebase SDK -->
@@ -226,6 +233,9 @@
         const messageBox = document.getElementById('messageBox');
         const addAdminForm = document.getElementById('addAdminForm');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
+        const tempAdminSection = document.getElementById('tempAdminSection');
+        const makeMeAdminBtn = document.getElementById('makeMeAdminBtn');
+
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -239,7 +249,7 @@
 
         // Функция для переключения секций
         function showSection(sectionId) {
-            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel];
+            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel, tempAdminSection];
             sections.forEach(section => {
                 if (section.id === sectionId) {
                     section.classList.remove('hidden');
@@ -387,11 +397,30 @@
                     // Навигация будет обновлена в onAuthStateChanged
                 } else {
                     showMessage('Вход отклонён. Вы не являетесь администратором.', true);
-                    await signOut(auth);
+                    showSection('tempAdminSection');
                 }
             } catch (error) {
                 console.error('Ошибка входа через Google:', error);
                 showMessage('Ошибка входа через Google.', true);
+            }
+        });
+        
+        // Временная функция для добавления администратора
+        makeMeAdminBtn.addEventListener('click', async () => {
+            if (!auth.currentUser) {
+                showMessage('Пожалуйста, сначала войдите в систему.', true);
+                return;
+            }
+            try {
+                await setDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, auth.currentUser.uid), {
+                    isAdmin: true,
+                    createdAt: new Date()
+                });
+                showMessage('Вы успешно добавлены в администраторы! Пожалуйста, перезагрузите страницу.');
+                // Не перезагружаем автоматически, чтобы пользователь мог прочитать сообщение
+            } catch (error) {
+                console.error('Ошибка при добавлении в администраторы:', error);
+                showMessage('Ошибка. Пожалуйста, попробуйте снова.', true);
             }
         });
 
