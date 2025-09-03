@@ -121,6 +121,9 @@
                     <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full hover:bg-indigo-700 transition duration-300">
                         Войти
                     </button>
+                    <button type="button" id="resetPasswordBtn" class="w-full mt-4 bg-gray-400 text-white font-semibold py-2 rounded-full hover:bg-gray-500 transition duration-300">
+                        Забыли пароль?
+                    </button>
                 </form>
                 
                 <h3 class="text-xl font-bold mt-8 mb-4 text-center">Или создайте новый аккаунт</h3>
@@ -357,27 +360,15 @@
         });
         
         // Сброс пароля
-        loginForm.addEventListener('submit', async (e) => {
+        resetPasswordBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
-            if (e.submitter.id === 'resetPasswordBtn') {
-                try {
-                    await sendPasswordResetEmail(auth, email);
-                    showMessage('Письмо для сброса пароля отправлено на ваш e-mail.');
-                } catch (error) {
-                    console.error('Ошибка сброса пароля:', error);
-                    showMessage('Ошибка. Проверьте правильность e-mail.', true);
-                }
-            } else {
-                // Логика входа
-                const password = document.getElementById('loginPassword').value;
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    showMessage('Вход выполнен успешно!');
-                } catch (error) {
-                    console.error('Ошибка входа:', error);
-                    showMessage('Ошибка входа. Проверьте почту и пароль.', true);
-                }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showMessage('Письмо для сброса пароля отправлено на ваш e-mail.');
+            } catch (error) {
+                console.error('Ошибка сброса пароля:', error);
+                showMessage('Ошибка. Проверьте правильность e-mail.', true);
             }
         });
 
