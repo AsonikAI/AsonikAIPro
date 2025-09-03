@@ -35,6 +35,9 @@
         <nav class="flex justify-between items-center mb-10">
             <h1 class="text-3xl font-bold text-indigo-700">Ya_Buxgalter</h1>
             <div class="space-x-4">
+                <button id="showHomeBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
+                    Главная
+                </button>
                 <button id="showCoursesBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300">
                     Записаться на курс
                 </button>
@@ -213,6 +216,7 @@
         const loginSection = document.getElementById('loginSection');
         const dashboardSection = document.getElementById('dashboardSection');
         const adminPanel = document.getElementById('adminPanel');
+        const showHomeBtn = document.getElementById('showHomeBtn');
         const showCoursesBtn = document.getElementById('showCoursesBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -250,6 +254,7 @@
         }
 
         // Обработчики кнопок
+        showHomeBtn.addEventListener('click', () => showSection('welcomeSection'));
         showCoursesBtn.addEventListener('click', () => showSection('coursesSection'));
         showLoginBtn.addEventListener('click', () => showSection('loginSection'));
         welcomeCoursesBtn.addEventListener('click', (e) => {
@@ -268,7 +273,7 @@
 
                     // Основной слушатель изменений состояния авторизации
                     onAuthStateChanged(auth, async (user) => {
-                        if (user) {
+                        if (user && user.isAnonymous === false) {
                             userId = user.uid;
                             userIdDisplay.textContent = userId;
                             userInfo.classList.remove('hidden');
@@ -284,7 +289,6 @@
                             } else {
                                 showDashboard();
                             }
-
                         } else {
                             userId = null;
                             userInfo.classList.add('hidden');
@@ -295,8 +299,16 @@
                     });
 
                     // Изначальная попытка анонимного входа, если токена нет.
-                    if (!initialAuthToken && !auth.currentUser) {
-                        signInAnonymously(auth);
+                    if (!auth.currentUser) {
+                        try {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        } catch (error) {
+                            console.error('Ошибка анонимной авторизации:', error);
+                        }
                     }
 
                 } catch (error) {
