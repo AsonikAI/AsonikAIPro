@@ -243,7 +243,22 @@
                     auth = getAuth(app);
                     console.log('Firebase успешно инициализирован.');
 
-                    // Авторизация
+                    // Изначальная проверка авторизации.
+                    // Этот код выполнится только один раз при загрузке страницы.
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        // Если пользователь не аутентифицирован, входим анонимно.
+                        const unsubscribe = onAuthStateChanged(auth, (user) => {
+                            if (!user) {
+                                signInAnonymously(auth);
+                            }
+                            // Отписываемся, чтобы предотвратить повторный вход после выхода.
+                            unsubscribe();
+                        });
+                    }
+                    
+                    // Основной слушатель изменений состояния авторизации
                     onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             userId = user.uid;
@@ -268,15 +283,6 @@
                             showLoginBtn.classList.remove('hidden');
                             logoutBtn.classList.add('hidden');
                             showSection('welcomeSection');
-                            try {
-                                if (initialAuthToken) {
-                                    await signInWithCustomToken(auth, initialAuthToken);
-                                } else {
-                                    await signInAnonymously(auth);
-                                }
-                            } catch (error) {
-                                console.error('Ошибка анонимной авторизации:', error);
-                            }
                         }
                     });
 
