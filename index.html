@@ -190,7 +190,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Глобальные переменные из среды Canvas
@@ -209,7 +209,6 @@
         let db;
         let auth;
         let userId;
-        let authStateInitialized = false;
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -231,6 +230,7 @@
         const addUserForm = document.getElementById('addUserForm');
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
+        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -355,21 +355,29 @@
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
             }
         });
-
-        // Смена пароля
-        changePasswordBtn.addEventListener('click', async () => {
-            const newPassword = prompt('Введите новый пароль:');
-            if (newPassword && newPassword.length >= 6) {
-                const user = auth.currentUser;
+        
+        // Сброс пароля
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            if (e.submitter.id === 'resetPasswordBtn') {
                 try {
-                    await updatePassword(user, newPassword);
-                    showMessage('Пароль успешно изменен!');
+                    await sendPasswordResetEmail(auth, email);
+                    showMessage('Письмо для сброса пароля отправлено на ваш e-mail.');
                 } catch (error) {
-                    console.error('Ошибка смены пароля:', error);
-                    showMessage('Ошибка смены пароля. Попробуйте войти заново.', true);
+                    console.error('Ошибка сброса пароля:', error);
+                    showMessage('Ошибка. Проверьте правильность e-mail.', true);
                 }
-            } else if (newPassword) {
-                showMessage('Пароль должен быть не менее 6 символов.', true);
+            } else {
+                // Логика входа
+                const password = document.getElementById('loginPassword').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showMessage('Вход выполнен успешно!');
+                } catch (error) {
+                    console.error('Ошибка входа:', error);
+                    showMessage('Ошибка входа. Проверьте почту и пароль.', true);
+                }
             }
         });
 
