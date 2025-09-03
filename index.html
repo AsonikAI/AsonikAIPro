@@ -44,6 +44,9 @@
                 <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Вход
                 </button>
+                <button id="showAdminPanelBtn" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-orange-600 transition duration-300 hidden">
+                    Админ-панель
+                </button>
                 <button id="logoutBtn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-red-600 transition duration-300 hidden">
                     Выйти
                 </button>
@@ -123,9 +126,6 @@
                     </button>
                     <button type="button" id="resetPasswordEmailBtn" class="w-full mt-4 bg-gray-400 text-white font-semibold py-2 rounded-full hover:bg-gray-500 transition duration-300">
                         Забыли пароль?
-                    </button>
-                    <button type="button" id="resetPasswordManualBtn" class="w-full mt-2 bg-gray-400 text-white font-semibold py-2 rounded-full hover:bg-gray-500 transition duration-300">
-                        Сбросить пароль вручную
                     </button>
                 </form>
                 
@@ -225,6 +225,7 @@
         const showHomeBtn = document.getElementById('showHomeBtn');
         const showCoursesBtn = document.getElementById('showCoursesBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
+        const showAdminPanelBtn = document.getElementById('showAdminPanelBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const loginForm = document.getElementById('loginForm');
         const lessonsContainer = document.getElementById('lessonsContainer');
@@ -237,7 +238,6 @@
         const changePasswordBtn = document.getElementById('changePasswordBtn');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
         const resetPasswordEmailBtn = document.getElementById('resetPasswordEmailBtn');
-        const resetPasswordManualBtn = document.getElementById('resetPasswordManualBtn');
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -269,6 +269,7 @@
             e.preventDefault();
             showSection('coursesSection');
         });
+        showAdminPanelBtn.addEventListener('click', () => showSection('adminPanel'));
 
         // Инициализация Firebase
         window.onload = async () => {
@@ -293,15 +294,18 @@
                             const adminDocSnap = await getDoc(adminDocRef);
 
                             if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
-                                showAdminPanel();
+                                showAdminPanelBtn.classList.remove('hidden');
+                                showSection('adminPanel'); // Сразу перенаправляем на админ-панель
                             } else {
-                                showDashboard();
+                                showAdminPanelBtn.classList.add('hidden');
+                                showSection('dashboardSection'); // Обычный пользователь идет на дашборд
                             }
                         } else {
                             userId = null;
                             userInfo.classList.add('hidden');
                             showLoginBtn.classList.remove('hidden');
                             logoutBtn.classList.add('hidden');
+                            showAdminPanelBtn.classList.add('hidden');
                             showSection('welcomeSection');
                         }
                     });
@@ -373,42 +377,6 @@
             } catch (error) {
                 console.error('Ошибка сброса пароля:', error);
                 showMessage('Ошибка. Проверьте правильность e-mail.', true);
-            }
-        });
-
-        // Ручной сброс пароля
-        resetPasswordManualBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            if (!email) {
-                showMessage('Пожалуйста, введите e-mail для сброса.', true);
-                return;
-            }
-            const newPassword = prompt('Введите новый пароль:');
-            if (newPassword && newPassword.length >= 6) {
-                try {
-                    // Используем функцию createUserWithEmailAndPassword, чтобы обновить пароль.
-                    // Примечание: Это работает только если пользователь уже существует.
-                    await createUserWithEmailAndPassword(auth, email, newPassword);
-                    showMessage('Пароль успешно сброшен!');
-                } catch (error) {
-                    console.error('Ошибка ручного сброса:', error);
-                    // Если пользователь не существует, создадим его
-                    if (error.code === 'auth/email-already-in-use') {
-                        try {
-                            const user = auth.currentUser;
-                            await updatePassword(user, newPassword);
-                            showMessage('Пароль успешно сброшен!');
-                        } catch (e) {
-                            console.error('Ошибка обновления пароля:', e);
-                            showMessage('Ошибка: невозможно обновить пароль. Попробуйте войти заново.', true);
-                        }
-                    } else {
-                        showMessage(`Ошибка: ${error.message}`, true);
-                    }
-                }
-            } else if (newPassword) {
-                showMessage('Пароль должен быть не менее 6 символов.', true);
             }
         });
 
