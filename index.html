@@ -392,8 +392,9 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc, setDoc, getDocs, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
         // Глобальные переменные из среды Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -1321,7 +1322,14 @@
 
             if (target.classList.contains('delete-student-btn')) {
                 try {
+                    // Удаление документа из Firestore
                     await deleteDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId));
+                    
+                    // Удаление пользователя из Firebase Auth
+                    const functions = getFunctions(app);
+                    const deleteUserFromAuth = httpsCallable(functions, 'deleteUserFromAuth');
+                    await deleteUserFromAuth({ uid: studentId });
+
                     showMessage('Студент успешно удален!');
                 } catch (e) {
                     console.error("Ошибка при удалении студента: ", e);
@@ -1339,12 +1347,19 @@
                 const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
                 const q = query(studentsRef);
                 const querySnapshot = await getDocs(q);
-                const deletePromises = [];
-                querySnapshot.forEach((doc) => {
-                    deletePromises.push(deleteDoc(doc.ref));
-                });
+                
                 try {
-                    await Promise.all(deletePromises);
+                    for (const docSnap of querySnapshot.docs) {
+                        const studentId = docSnap.id;
+                        
+                        // Удаление документа из Firestore
+                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId));
+                        
+                        // Удаление пользователя из Firebase Auth
+                        const functions = getFunctions(app);
+                        const deleteUserFromAuth = httpsCallable(functions, 'deleteUserFromAuth');
+                        await deleteUserFromAuth({ uid: studentId });
+                    }
                     showMessage('Все студенты успешно удалены!');
                 } catch (e) {
                     console.error("Ошибка при удалении всех студентов: ", e);
