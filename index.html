@@ -47,6 +47,9 @@
                 <button id="showAdminPanelBtn" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-orange-600 transition duration-300 hidden">
                     Админ-панель
                 </button>
+                <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
+                    Мои уроки
+                </button>
                 <button id="logoutBtn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-red-600 transition duration-300 hidden">
                     Выйти
                 </button>
@@ -55,11 +58,6 @@
 
         <!-- Раздел для отображения сообщений -->
         <div id="messageBox" class="hidden fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg"></div>
-
-        <!-- Информация о пользователе -->
-        <div id="userInfo" class="bg-gray-100 p-4 rounded-lg mb-6 hidden">
-            <p><strong>Ваш ID пользователя:</strong> <span id="userIdDisplay"></span></p>
-        </div>
 
         <!-- Главный раздел - Добро пожаловать -->
         <div id="welcomeSection" class="text-center p-8 rounded-lg bg-welcome text-white shadow-lg">
@@ -219,6 +217,7 @@
         let db;
         let auth;
         let userId;
+        let isUserAdmin = false;
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -230,18 +229,15 @@
         const showCoursesBtn = document.getElementById('showCoursesBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
         const showAdminPanelBtn = document.getElementById('showAdminPanelBtn');
+        const showDashboardBtn = document.getElementById('showDashboardBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const loginForm = document.getElementById('loginForm');
         const lessonsContainer = document.getElementById('lessonsContainer');
-        const userIdDisplay = document.getElementById('userIdDisplay');
-        const userInfo = document.getElementById('userInfo');
         const addLessonForm = document.getElementById('addLessonForm');
         const lessonList = document.getElementById('lessonList');
         const messageBox = document.getElementById('messageBox');
         const addUserForm = document.getElementById('addUserForm');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
-        const resetPasswordEmailBtn = document.getElementById('resetPasswordEmailBtn');
-        const showMyLessonsBtn = document.getElementById('showMyLessonsBtn');
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -264,7 +260,30 @@
                 }
             });
         }
+        
+        // Функция для обновления навигации
+        function updateNavigation(isAuthenticated) {
+            showLoginBtn.classList.add('hidden');
+            showCoursesBtn.classList.add('hidden');
+            showHomeBtn.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            showAdminPanelBtn.classList.add('hidden');
+            showDashboardBtn.classList.add('hidden');
 
+            if (isAuthenticated) {
+                logoutBtn.classList.remove('hidden');
+                if (isUserAdmin) {
+                    showAdminPanelBtn.classList.remove('hidden');
+                } else {
+                    showDashboardBtn.classList.remove('hidden');
+                }
+            } else {
+                showLoginBtn.classList.remove('hidden');
+                showCoursesBtn.classList.remove('hidden');
+                showDashboardBtn.classList.add('hidden');
+            }
+        }
+        
         // Обработчики кнопок
         showHomeBtn.addEventListener('click', () => showSection('welcomeSection'));
         showCoursesBtn.addEventListener('click', () => showSection('coursesSection'));
@@ -274,6 +293,7 @@
             showSection('coursesSection');
         });
         showAdminPanelBtn.addEventListener('click', () => showSection('adminPanel'));
+        showDashboardBtn.addEventListener('click', () => showSection('dashboardSection'));
         
         // Инициализация Firebase
         window.onload = async () => {
@@ -288,28 +308,22 @@
                     onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             userId = user.uid;
-                            userIdDisplay.textContent = userId;
-                            userInfo.classList.remove('hidden');
-                            showLoginBtn.classList.add('hidden');
-                            logoutBtn.classList.remove('hidden');
                             
-                            // Проверка на админа
                             const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
                             const adminDocSnap = await getDoc(adminDocRef);
 
-                            if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
-                                showAdminPanelBtn.classList.remove('hidden');
-                                showSection('adminPanel'); // Сразу перенаправляем на админ-панель
+                            isUserAdmin = (adminDocSnap.exists() && adminDocSnap.data().isAdmin);
+                            
+                            updateNavigation(true);
+                            if (isUserAdmin) {
+                                showSection('adminPanel'); 
                             } else {
-                                showAdminPanelBtn.classList.add('hidden');
-                                showSection('dashboardSection'); // Обычный пользователь идет на дашборд
+                                showSection('dashboardSection');
                             }
                         } else {
                             userId = null;
-                            userInfo.classList.add('hidden');
-                            showLoginBtn.classList.remove('hidden');
-                            logoutBtn.classList.add('hidden');
-                            showAdminPanelBtn.classList.add('hidden');
+                            isUserAdmin = false;
+                            updateNavigation(false);
                             showSection('welcomeSection');
                         }
                     });
