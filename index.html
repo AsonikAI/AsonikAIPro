@@ -29,7 +29,7 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="app" class="bg-white rounded-lg shadow-xl p-8 max-w-4xl w-full">
+    <div id="app" class="bg-white rounded-none shadow-none p-8 max-w-full w-full h-full min-h-screen">
 
         <!-- Основная навигация -->
         <nav class="flex justify-between items-center mb-10">
@@ -124,31 +124,13 @@
                     <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full hover:bg-indigo-700 transition duration-300">
                         Войти
                     </button>
-                    <button type="button" id="resetPasswordEmailBtn" class="w-full mt-4 bg-gray-400 text-white font-semibold py-2 rounded-full hover:bg-gray-500 transition duration-300">
-                        Забыли пароль?
-                    </button>
-                </form>
-                
-                <h3 class="text-xl font-bold mt-8 mb-4 text-center">Или создайте новый аккаунт</h3>
-                <form id="addUserForm">
-                    <div class="mb-4">
-                        <label for="userEmail" class="block text-gray-700 font-semibold mb-2">E-mail пользователя</label>
-                        <input type="email" id="userEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите e-mail">
-                    </div>
-                    <div class="mb-4">
-                        <label for="userPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
-                        <input type="password" id="userPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите пароль">
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
-                        Создать пользователя
-                    </button>
                 </form>
             </div>
         </div>
 
         <!-- Панель управления (для авторизованных пользователей) -->
         <div id="dashboardSection" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Ваши уроки</h2>
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мои уроки</h2>
             <p class="text-gray-600 text-center mb-6">Здесь вы найдете все видеоуроки и материалы, доступные по вашему курсу.</p>
             <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Уроки будут загружаться сюда из Firestore -->
@@ -183,6 +165,28 @@
                     </button>
                 </form>
 
+                <h3 class="text-xl font-bold mt-8 mb-4">Добавить нового пользователя</h3>
+                <form id="addUserForm">
+                    <div class="mb-4">
+                        <label for="userName" class="block text-gray-700 font-semibold mb-2">Имя</label>
+                        <input type="text" id="userName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите имя">
+                    </div>
+                    <div class="mb-4">
+                        <label for="userDOB" class="block text-gray-700 font-semibold mb-2">Дата рождения</label>
+                        <input type="date" id="userDOB" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="userEmail" class="block text-gray-700 font-semibold mb-2">E-mail пользователя</label>
+                        <input type="email" id="userEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите e-mail">
+                    </div>
+                    <div class="mb-4">
+                        <label for="userPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
+                        <input type="password" id="userPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите пароль">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
+                        Создать пользователя
+                    </button>
+                </form>
             </div>
             <div class="mt-8">
                 <h3 class="text-xl font-bold mb-4">Список всех уроков</h3>
@@ -235,9 +239,9 @@
         const lessonList = document.getElementById('lessonList');
         const messageBox = document.getElementById('messageBox');
         const addUserForm = document.getElementById('addUserForm');
-        const changePasswordBtn = document.getElementById('changePasswordBtn');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
         const resetPasswordEmailBtn = document.getElementById('resetPasswordEmailBtn');
+        const showMyLessonsBtn = document.getElementById('showMyLessonsBtn');
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -270,7 +274,7 @@
             showSection('coursesSection');
         });
         showAdminPanelBtn.addEventListener('click', () => showSection('adminPanel'));
-
+        
         // Инициализация Firebase
         window.onload = async () => {
             if (Object.keys(firebaseConfig).length > 0) {
@@ -282,7 +286,7 @@
 
                     // Основной слушатель изменений состояния авторизации
                     onAuthStateChanged(auth, async (user) => {
-                        if (user && user.isAnonymous === false) {
+                        if (user) {
                             userId = user.uid;
                             userIdDisplay.textContent = userId;
                             userInfo.classList.remove('hidden');
@@ -309,19 +313,6 @@
                             showSection('welcomeSection');
                         }
                     });
-
-                    // Изначальная попытка анонимного входа, если токена нет.
-                    if (!auth.currentUser) {
-                        try {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        } catch (error) {
-                            console.error('Ошибка анонимной авторизации:', error);
-                        }
-                    }
 
                 } catch (error) {
                     console.error('Ошибка инициализации Firebase:', error);
@@ -367,19 +358,6 @@
             }
         });
         
-        // Сброс пароля через email
-        resetPasswordEmailBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            try {
-                await sendPasswordResetEmail(auth, email);
-                showMessage('Письмо для сброса пароля отправлено на ваш e-mail.');
-            } catch (error) {
-                console.error('Ошибка сброса пароля:', error);
-                showMessage('Ошибка. Проверьте правильность e-mail.', true);
-            }
-        });
-
         // CRUD операции для админ-панели
         addLessonForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -416,14 +394,25 @@
             e.preventDefault();
             const email = document.getElementById('userEmail').value;
             const password = document.getElementById('userPassword').value;
+            const name = document.getElementById('userName').value;
+            const dob = document.getElementById('userDOB').value;
 
-            if (!email || !password) {
-                showMessage('Пожалуйста, заполните e-mail и пароль.', true);
+            if (!email || !password || !name || !dob) {
+                showMessage('Пожалуйста, заполните все поля.', true);
                 return;
             }
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Сохраняем дополнительные данные пользователя в Firestore
+                await setDoc(doc(db, `artifacts/${appId}/users`, userCredential.user.uid), {
+                    name: name,
+                    email: email,
+                    dob: dob,
+                    createdAt: new Date()
+                });
+
                 showMessage(`Пользователь ${userCredential.user.email} успешно создан!`, false);
                 addUserForm.reset();
             } catch (error) {
