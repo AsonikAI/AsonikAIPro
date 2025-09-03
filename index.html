@@ -138,6 +138,13 @@
         <!-- Панель управления (для авторизованных пользователей) -->
         <div id="dashboardSection" class="hidden">
             <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мои уроки</h2>
+            <div id="studentInfo" class="bg-gray-100 p-6 rounded-lg mb-6 shadow-sm">
+                <h3 class="text-xl font-semibold mb-2">Информация о студенте:</h3>
+                <p><strong>Имя:</strong> <span id="studentNameDisplay"></span></p>
+                <p><strong>Фамилия:</strong> <span id="studentLastNameDisplay"></span></p>
+                <p><strong>Год рождения:</strong> <span id="studentBirthYearDisplay"></span></p>
+                <p><strong>Группа:</strong> <span id="studentGroupDisplay"></span></p>
+            </div>
             <p class="text-gray-600 text-center mb-6">Здесь вы найдете все видеоуроки и материалы, доступные по вашему курсу.</p>
             <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Уроки будут загружаться сюда из Firestore -->
@@ -243,10 +250,20 @@
                             <label for="studentBirthYear" class="block text-gray-700 font-semibold mb-2">Год рождения</label>
                             <input type="text" id="studentBirthYear" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Год рождения">
                         </div>
+                        <div>
+                            <label for="studentGroup" class="block text-gray-700 font-semibold mb-2">Группа</label>
+                            <input type="text" id="studentGroup" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Группа">
+                        </div>
                         <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
                             Создать студента
                         </button>
                     </form>
+                </div>
+                <div class="max-w-2xl mx-auto mt-8">
+                    <h4 class="text-xl font-bold mb-4">Список всех студентов</h4>
+                    <ul id="studentList" class="space-y-4">
+                        <!-- Список студентов для редактирования -->
+                    </ul>
                 </div>
             </div>
 
@@ -304,6 +321,11 @@
         const messageBox = document.getElementById('messageBox');
         const addAdminForm = document.getElementById('addAdminForm');
         const addStudentForm = document.getElementById('addStudentForm');
+        const studentList = document.getElementById('studentList');
+        const studentNameDisplay = document.getElementById('studentNameDisplay');
+        const studentLastNameDisplay = document.getElementById('studentLastNameDisplay');
+        const studentBirthYearDisplay = document.getElementById('studentBirthYearDisplay');
+        const studentGroupDisplay = document.getElementById('studentGroupDisplay');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const loadingIndicator = document.getElementById('loadingIndicator');
@@ -384,9 +406,10 @@
             showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
             showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
         });
-        showDashboardBtn.addEventListener('click', () => {
+        showDashboardBtn.addEventListener('click', async () => {
             showSection('dashboardSection');
             loadLessons();
+            await loadStudentInfo();
         });
         
         // Инициализация Firebase
@@ -414,9 +437,11 @@
                                 adminLessonsSection.classList.add('hidden');
                                 showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
                                 showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+                                loadStudents();
                             } else {
                                 showSection('dashboardSection');
                                 loadLessons();
+                                await loadStudentInfo();
                             }
                         } else {
                             userId = null;
@@ -518,7 +543,10 @@
             loadAdminLessons();
         });
         showAdminSettingsBtn.addEventListener('click', () => handleAdminNav(showAdminSettingsBtn, adminSettingsSection));
-        showAddStudentsBtn.addEventListener('click', () => handleAdminNav(showAddStudentsBtn, addStudentsSection));
+        showAddStudentsBtn.addEventListener('click', () => {
+            handleAdminNav(showAddStudentsBtn, addStudentsSection);
+            loadStudents();
+        });
         showCustomizationBtn.addEventListener('click', () => handleAdminNav(showCustomizationBtn, customizationSection));
 
         // Функция для загрузки изображения на ImgBB
@@ -632,8 +660,9 @@
             const email = document.getElementById('studentEmail').value;
             const password = document.getElementById('studentPassword').value;
             const birthYear = document.getElementById('studentBirthYear').value;
+            const group = document.getElementById('studentGroup').value;
 
-            if (!name || !lastName || !email || !password || !birthYear) {
+            if (!name || !lastName || !email || !password || !birthYear || !group) {
                 showMessage('Пожалуйста, заполните все поля.', true);
                 return;
             }
@@ -652,6 +681,7 @@
                     lastName: lastName,
                     email: email,
                     birthYear: birthYear,
+                    group: group,
                     createdAt: new Date()
                 });
                 showMessage(`Студент ${name} ${lastName} успешно добавлен!`, false);
@@ -662,6 +692,28 @@
             }
         });
 
+        // Загрузка информации о студенте
+        async function loadStudentInfo() {
+            if (!db || !userId) {
+                return;
+            }
+            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
+            const studentSnap = await getDoc(studentRef);
+
+            if (studentSnap.exists()) {
+                const studentData = studentSnap.data();
+                studentNameDisplay.textContent = studentData.name || '';
+                studentLastNameDisplay.textContent = studentData.lastName || '';
+                studentBirthYearDisplay.textContent = studentData.birthYear || '';
+                studentGroupDisplay.textContent = studentData.group || '';
+            } else {
+                studentNameDisplay.textContent = 'Неизвестно';
+                studentLastNameDisplay.textContent = 'Неизвестно';
+                studentBirthYearDisplay.textContent = 'Неизвестно';
+                studentGroupDisplay.textContent = 'Неизвестно';
+            }
+        }
+        
         // Загрузка уроков для студентов
         function loadLessons() {
             if (!db) return;
@@ -723,6 +775,33 @@
             });
         }
 
+        // Загрузка списка студентов для админ-панели
+        function loadStudents() {
+            if (!db) return;
+            const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
+            onSnapshot(studentsRef, (snapshot) => {
+                studentList.innerHTML = ''; // Очищаем список
+                snapshot.forEach(docSnap => {
+                    const student = docSnap.data();
+                    const li = document.createElement('li');
+                    li.className = 'flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-lg shadow-sm';
+                    li.innerHTML = `
+                        <div class="mb-2 md:mb-0">
+                            <span class="font-semibold">${student.name} ${student.lastName}</span>
+                            <span class="text-sm text-gray-500 block md:inline-block md:ml-4">Группа: ${student.group}</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button data-id="${docSnap.id}" class="delete-student-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm hover:bg-red-600 transition duration-300">Удалить</button>
+                            <button data-id="${docSnap.id}" class="reset-password-btn bg-blue-500 text-white py-1 px-3 rounded-full text-sm hover:bg-blue-600 transition duration-300">Сбросить пароль</button>
+                        </div>
+                    `;
+                    studentList.appendChild(li);
+                });
+            }, (error) => {
+                console.error("Ошибка при загрузке списка студентов: ", error);
+            });
+        }
+
         // Обработчики для админ-панели
         lessonList.addEventListener('click', async (e) => {
             const target = e.target;
@@ -755,6 +834,34 @@
                         console.error("Ошибка при обновлении документа: ", e);
                         showMessage('Ошибка при обновлении.', true);
                     }
+                }
+            }
+        });
+        
+        studentList.addEventListener('click', async (e) => {
+            const target = e.target;
+            const studentId = target.getAttribute('data-id');
+
+            if (!db || !studentId) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
+
+            if (target.classList.contains('delete-student-btn')) {
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId));
+                    showMessage('Студент успешно удален!');
+                } catch (e) {
+                    console.error("Ошибка при удалении студента: ", e);
+                    showMessage('Ошибка при удалении.', true);
+                }
+            } else if (target.classList.contains('reset-password-btn')) {
+                const newPassword = prompt('Введите новый пароль для студента:');
+                if (newPassword) {
+                    // Firebase Authentication не позволяет менять пароль через Firestore.
+                    // Для этого нужна серверная логика или Cloud Functions.
+                    // В данном случае, это просто заглушка.
+                    showMessage('Сброс пароля не реализован в текущей архитектуре. Обратитесь к разработчику.', true);
                 }
             }
         });
