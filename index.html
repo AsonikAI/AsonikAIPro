@@ -44,9 +44,6 @@
                 <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Вход
                 </button>
-                <button id="showAdminLoginBtn" class="bg-purple-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-purple-700 transition duration-300">
-                    Вход для администратора
-                </button>
                 <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
                     Мои уроки
                 </button>
@@ -111,14 +108,22 @@
 
         <!-- Раздел "Вход" -->
         <div id="loginSection" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Вход для студентов</h2>
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Вход</h2>
             <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                <form id="loginForm">
-                    <div class="mb-4">
+                <form id="loginForm" class="space-y-4">
+                    <button type="button" id="googleLoginBtn" class="w-full bg-purple-600 text-white font-semibold py-2 rounded-full hover:bg-purple-700 transition duration-300">
+                        Вход для администратора через Google
+                    </button>
+                    <div class="flex items-center justify-between my-4">
+                        <hr class="w-full border-gray-300">
+                        <span class="px-2 text-gray-500">или</span>
+                        <hr class="w-full border-gray-300">
+                    </div>
+                    <div>
                         <label for="loginEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
                         <input type="email" id="loginEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ваш e-mail">
                     </div>
-                    <div class="mb-6">
+                    <div>
                         <label for="loginPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
                         <input type="password" id="loginPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ваш пароль">
                     </div>
@@ -126,6 +131,7 @@
                         Войти
                     </button>
                 </form>
+                <p id="loadingIndicator" class="text-center text-gray-500 mt-4 hidden">Загрузка...</p>
             </div>
         </div>
 
@@ -235,6 +241,7 @@
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
         const tempAdminSection = document.getElementById('tempAdminSection');
         const makeMeAdminBtn = document.getElementById('makeMeAdminBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
 
 
         // Функция для отображения сообщения
@@ -267,7 +274,6 @@
             logoutBtn.classList.add('hidden');
             showAdminPanelBtn.classList.add('hidden');
             showDashboardBtn.classList.add('hidden');
-            showAdminLoginBtn.classList.add('hidden');
 
             if (isAuthenticated) {
                 logoutBtn.classList.remove('hidden');
@@ -281,7 +287,6 @@
                 showLoginBtn.classList.remove('hidden');
                 showCoursesBtn.classList.remove('hidden');
                 showDashboardBtn.classList.add('hidden');
-                showAdminLoginBtn.classList.remove('hidden');
             }
         }
         
@@ -361,29 +366,26 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const loginBtn = loginForm.querySelector('button[type="submit"]');
+            const loadingIndicator = document.getElementById('loadingIndicator');
 
-            loginBtn.textContent = 'Загрузка...';
-            loginBtn.disabled = true;
+            loadingIndicator.classList.remove('hidden');
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Вход выполнен успешно!');
-                
-                showSection('welcomeSection'); // Сначала возвращаемся на главную страницу, чтобы избежать бага
-                
-                await new Promise(resolve => setTimeout(resolve, 500));
+                showSection('welcomeSection');
                 
             } catch (error) {
                 console.error('Ошибка входа:', error);
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
             } finally {
-                loginBtn.textContent = 'Войти';
-                loginBtn.disabled = false;
+                loadingIndicator.classList.add('hidden');
             }
         });
 
         // Вход для администратора через Google
-        showAdminLoginBtn.addEventListener('click', async () => {
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        googleLoginBtn.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
                 const result = await signInWithPopup(auth, provider);
@@ -397,30 +399,10 @@
                     // Навигация будет обновлена в onAuthStateChanged
                 } else {
                     showMessage('Вход отклонён. Вы не являетесь администратором.', true);
-                    showSection('tempAdminSection');
                 }
             } catch (error) {
                 console.error('Ошибка входа через Google:', error);
                 showMessage('Ошибка входа через Google.', true);
-            }
-        });
-        
-        // Временная функция для добавления администратора
-        makeMeAdminBtn.addEventListener('click', async () => {
-            if (!auth.currentUser) {
-                showMessage('Пожалуйста, сначала войдите в систему.', true);
-                return;
-            }
-            try {
-                await setDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, auth.currentUser.uid), {
-                    isAdmin: true,
-                    createdAt: new Date()
-                });
-                showMessage('Вы успешно добавлены в администраторы! Пожалуйста, перезагрузите страницу.');
-                // Не перезагружаем автоматически, чтобы пользователь мог прочитать сообщение
-            } catch (error) {
-                console.error('Ошибка при добавлении в администраторы:', error);
-                showMessage('Ошибка. Пожалуйста, попробуйте снова.', true);
             }
         });
 
