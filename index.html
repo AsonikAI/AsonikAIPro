@@ -201,6 +201,7 @@
         let auth;
         let userId;
         let isUserAdmin = false;
+        let isLoading = true;
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -257,7 +258,7 @@
                 logoutBtn.classList.remove('hidden');
                 if (isUserAdmin) {
                     showAdminPanelBtn.classList.remove('hidden');
-                    showDashboardBtn.classList.remove('hidden'); // показываем обе кнопки для админа
+                    showDashboardBtn.classList.remove('hidden'); 
                 } else {
                     showDashboardBtn.classList.remove('hidden');
                 }
@@ -301,14 +302,15 @@
                             
                             const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
                             const adminDocSnap = await getDoc(adminDocRef);
-
                             isUserAdmin = (adminDocSnap.exists() && adminDocSnap.data().isAdmin);
                             
                             updateNavigation(true);
                             if (isUserAdmin) {
                                 showSection('adminPanel'); 
+                                loadAdminLessons();
                             } else {
                                 showSection('dashboardSection');
+                                loadLessons();
                             }
                         } else {
                             userId = null;
@@ -316,6 +318,7 @@
                             updateNavigation(false);
                             showSection('welcomeSection');
                         }
+                        isLoading = false;
                     });
 
                 } catch (error) {
@@ -349,20 +352,11 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Вход выполнен успешно!');
-
-                // Ждем 4 секунды, как просил пользователь
-                await new Promise(resolve => setTimeout(resolve, 4000));
-
-                const user = userCredential.user;
-                const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
-                const adminDocSnap = await getDoc(adminDocRef);
-                isUserAdmin = adminDocSnap.exists();
                 
-                if (isUserAdmin) {
-                    showSection('adminPanel');
-                } else {
-                    showSection('dashboardSection');
-                }
+                showSection('welcomeSection'); // Сначала возвращаемся на главную страницу, чтобы избежать бага
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
             } catch (error) {
                 console.error('Ошибка входа:', error);
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
@@ -402,7 +396,7 @@
             }
         });
 
-        // Добавление нового пользователя
+        // Добавление нового администратора
         addAdminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const adminId = document.getElementById('adminIdInput').value.trim();
