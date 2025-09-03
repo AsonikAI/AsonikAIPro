@@ -32,7 +32,7 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="app" class="bg-white rounded-none shadow-none p-8 max-w-full w-full h-full min-h-screen">
+    <div id="app" class="bg-white rounded-none shadow-none p-8 max-w-full w-full min-h-screen">
 
         <!-- Основная навигация -->
         <nav class="flex justify-between items-center mb-10">
@@ -79,6 +79,28 @@
                 </div>
                 <div class="md:w-1/2 mt-8 md:mt-0 md:ml-8 flex justify-center">
                     <img src="https://placehold.co/400x300/4c51bf/ffffff?text=Ya_Buxgalter" alt="Modern office with charts and graphs" class="rounded-lg shadow-xl">
+                </div>
+            </div>
+            
+            <div class="mt-16 text-left max-w-4xl mx-auto">
+                <h3 class="text-3xl font-bold mb-4">Наши преимущества</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="text-xl font-semibold mb-2">Актуальные знания</h4>
+                        <p class="text-gray-200">Мы постоянно обновляем наши курсы, чтобы они соответствовали последним изменениям в законодательстве и бизнес-среде.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold mb-2">Практический опыт</h4>
+                        <p class="text-gray-200">Обучение основано на реальных кейсах и практических задачах, что позволяет вам сразу применять полученные знания на практике.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold mb-2">Поддержка экспертов</h4>
+                        <p class="text-gray-200">Наши преподаватели — опытные бухгалтеры и финансисты, готовые ответить на все ваши вопросы и помочь с решением сложных задач.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-semibold mb-2">Гибкий график</h4>
+                        <p class="text-gray-200">Вы можете учиться в удобное для вас время и в любом месте. Все материалы доступны 24/7.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -142,17 +164,47 @@
 
         <!-- Панель управления (для авторизованных пользователей) -->
         <div id="dashboardSection" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мои уроки</h2>
-            <div id="studentInfo" class="bg-gray-100 p-6 rounded-lg mb-6 shadow-sm">
-                <h3 class="text-xl font-semibold mb-2">Информация о студенте:</h3>
-                <p><strong>Имя:</strong> <span id="studentNameDisplay"></span></p>
-                <p><strong>Фамилия:</strong> <span id="studentLastNameDisplay"></span></p>
-                <p><strong>Год рождения:</strong> <span id="studentBirthYearDisplay"></span></p>
-                <p><strong>Группа:</strong> <span id="studentGroupDisplay"></span></p>
+            <nav class="flex justify-center space-x-4 mb-8">
+                <button id="showDashboardLessonsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Мои уроки</button>
+                <button id="showMyGroupBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Моя группа</button>
+            </nav>
+
+            <!-- Секция "Мои уроки" -->
+            <div id="dashboardLessonsSection" class="hidden">
+                <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мои уроки</h2>
+                <div id="studentInfo" class="bg-gray-100 p-6 rounded-lg mb-6 shadow-sm">
+                    <h3 class="text-xl font-semibold mb-2">Информация о студенте:</h3>
+                    <p><strong>Имя:</strong> <span id="studentNameDisplay"></span></p>
+                    <p><strong>Фамилия:</strong> <span id="studentLastNameDisplay"></span></p>
+                    <p><strong>Год рождения:</strong> <span id="studentBirthYearDisplay"></span></p>
+                    <p><strong>Группа:</strong> <span id="studentGroupDisplay"></span></p>
+                </div>
+                <p class="text-gray-600 text-center mb-6">Здесь вы найдете все видеоуроки и материалы, доступные по вашему курсу.</p>
+                <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Уроки будут загружаться сюда из Firestore -->
+                </div>
             </div>
-            <p class="text-gray-600 text-center mb-6">Здесь вы найдете все видеоуроки и материалы, доступные по вашему курсу.</p>
-            <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Уроки будут загружаться сюда из Firestore -->
+
+            <!-- Секция "Моя группа" -->
+            <div id="myGroupSection" class="hidden">
+                <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Моя группа</h2>
+                <div class="max-w-4xl mx-auto">
+                    <div id="myGroupInfo" class="bg-gray-100 p-6 rounded-lg mb-6 shadow-sm">
+                        <h3 class="text-xl font-semibold mb-2">Участники группы и их результаты</h3>
+                    </div>
+                    <table class="min-w-full bg-white rounded-lg shadow-md">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="py-2 px-4 text-left">Имя</th>
+                                <th class="py-2 px-4 text-left">Фамилия</th>
+                                <th class="py-2 px-4 text-left">Результаты тестов</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupMembersList">
+                            <!-- Список участников группы -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
@@ -260,8 +312,9 @@
 
             <!-- Секция Добавление студента -->
             <div id="addStudentsSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Добавить нового студента</h3>
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление студентами</h3>
                 <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold mb-4">Добавить нового студента</h4>
                     <form id="addStudentForm" class="space-y-4">
                         <div>
                             <label for="studentName" class="block text-gray-700 font-semibold mb-2">Имя</label>
@@ -296,6 +349,7 @@
                 </div>
                 <div class="max-w-2xl mx-auto mt-8">
                     <h4 class="text-xl font-bold mb-4">Список всех студентов</h4>
+                    <button id="deleteAllStudentsBtn" class="bg-red-500 text-white py-2 px-4 rounded-full mb-4 hover:bg-red-600 transition duration-300">Удалить всех студентов</button>
                     <ul id="studentList" class="space-y-4">
                         <!-- Список студентов для редактирования -->
                     </ul>
@@ -325,6 +379,12 @@
                         </button>
                     </form>
                 </div>
+                <div class="max-w-2xl mx-auto mt-8">
+                    <h4 class="text-xl font-bold mb-4">Список администраторов</h4>
+                    <ul id="adminList" class="space-y-4">
+                        <!-- Список администраторов -->
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -353,6 +413,7 @@
         let userId;
         let isUserAdmin = false;
         const IMG_BB_API_KEY = '5aea1039aaacb36eecb697e6fa9fae7d';
+        let lessonTestQuestions = 1;
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -388,6 +449,9 @@
         const studentGroupSelect = document.getElementById('studentGroup');
         const addQuestionBtn = document.getElementById('addQuestionBtn');
         const testQuestionsContainer = document.getElementById('testQuestionsContainer');
+        const groupMembersList = document.getElementById('groupMembersList');
+        const deleteAllStudentsBtn = document.getElementById('deleteAllStudentsBtn');
+        const adminList = document.getElementById('adminList');
 
         // Admin Panel Navigation Buttons
         const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
@@ -396,6 +460,8 @@
         const showCustomizationBtn = document.getElementById('showCustomizationBtn');
         const showAdminLeadsBtn = document.getElementById('showAdminLeadsBtn');
         const showAdminGroupsBtn = document.getElementById('showAdminGroupsBtn');
+        const showDashboardLessonsBtn = document.getElementById('showDashboardLessonsBtn');
+        const showMyGroupBtn = document.getElementById('showMyGroupBtn');
 
         // Admin Panel Sections
         const adminLessonsSection = document.getElementById('adminLessonsSection');
@@ -404,6 +470,8 @@
         const customizationSection = document.getElementById('customizationSection');
         const adminLeadsSection = document.getElementById('adminLeadsSection');
         const adminGroupsSection = document.getElementById('adminGroupsSection');
+        const dashboardLessonsSection = document.getElementById('dashboardLessonsSection');
+        const myGroupSection = document.getElementById('myGroupSection');
         
         // Переменная для хранения пройденных тестов
         let studentTestResults = {};
@@ -479,10 +547,39 @@
         });
         showDashboardBtn.addEventListener('click', async () => {
             showSection('dashboardSection');
+            // Показываем раздел уроков по умолчанию
+            dashboardLessonsSection.classList.remove('hidden');
+            myGroupSection.classList.add('hidden');
+            showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
+            showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
+
             loadLessons();
             await loadStudentInfo();
         });
         
+        // Внутренняя навигация панели студента
+        showDashboardLessonsBtn.addEventListener('click', () => {
+            dashboardLessonsSection.classList.remove('hidden');
+            myGroupSection.classList.add('hidden');
+            showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
+            showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
+            loadLessons();
+        });
+
+        showMyGroupBtn.addEventListener('click', () => {
+            dashboardLessonsSection.classList.add('hidden');
+            myGroupSection.classList.remove('hidden');
+            showDashboardLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showDashboardLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showMyGroupBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showMyGroupBtn.classList.replace('text-gray-800', 'text-white');
+            loadMyGroup();
+        });
+
         // Инициализация Firebase
         window.onload = async () => {
             if (Object.keys(firebaseConfig).length > 0) {
@@ -509,8 +606,12 @@
                                 showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
                                 showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
                                 loadStudents();
+                                loadAdmins();
                             } else {
                                 showSection('dashboardSection');
+                                dashboardLessonsSection.classList.remove('hidden');
+                                showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+                                showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
                                 loadLessons();
                                 await loadStudentInfo();
                             }
@@ -613,7 +714,10 @@
             handleAdminNav(showAdminLessonsBtn, adminLessonsSection);
             loadAdminLessons();
         });
-        showAdminSettingsBtn.addEventListener('click', () => handleAdminNav(showAdminSettingsBtn, adminSettingsSection));
+        showAdminSettingsBtn.addEventListener('click', () => {
+            handleAdminNav(showAdminSettingsBtn, adminSettingsSection);
+            loadAdmins();
+        });
         showAddStudentsBtn.addEventListener('click', () => {
             handleAdminNav(showAddStudentsBtn, addStudentsSection);
             loadGroupsToSelect();
@@ -810,9 +914,13 @@
             let imageUrl = '';
             if (imageFile) {
                 showMessage('Идет загрузка изображения...', false);
-                imageUrl = await uploadImageToImgbb(imageFile);
-                if (!imageUrl) {
-                    return; // Прекращаем выполнение, если загрузка не удалась
+                try {
+                    imageUrl = await uploadImageToImgbb(imageFile);
+                    if (!imageUrl) {
+                        return;
+                    }
+                } catch (e) {
+                    return;
                 }
                 showMessage('Изображение успешно загружено!');
             }
@@ -840,6 +948,7 @@
                         <input type="text" class="w-full px-3 py-2 border rounded-lg correct-answer-text" placeholder="Правильный ответ">
                     </div>
                 `;
+                lessonTestQuestions = 1;
             } catch (e) {
                 console.error('Ошибка при добавлении документа: ', e);
                 showMessage('Ошибка при добавлении урока.', true);
@@ -848,10 +957,10 @@
         
         // Добавление поля для нового вопроса в форме урока
         addQuestionBtn.addEventListener('click', () => {
-            const questionCount = testQuestionsContainer.querySelectorAll('.test-question-item').length + 1;
+            lessonTestQuestions++;
             const newQuestionHtml = `
-                <div class="test-question-item space-y-2">
-                    <label class="block text-gray-700">Вопрос ${questionCount}:</label>
+                <div class="test-question-item space-y-2 mt-4">
+                    <label class="block text-gray-700">Вопрос ${lessonTestQuestions}:</label>
                     <input type="text" class="w-full px-3 py-2 border rounded-lg question-text" placeholder="Текст вопроса">
                     <label class="block text-gray-700">Варианты ответов (через запятую):</label>
                     <input type="text" class="w-full px-3 py-2 border rounded-lg options-text" placeholder="Вариант 1, Вариант 2, Вариант 3">
@@ -887,6 +996,26 @@
                 showMessage(`Ошибка: ${error.message}`, true);
             }
         });
+
+        // Загрузка списка админов
+        function loadAdmins() {
+            if (!db) return;
+            const adminsRef = collection(db, `artifacts/${appId}/public/data/admin_users`);
+            onSnapshot(adminsRef, (snapshot) => {
+                adminList.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const admin = docSnap.data();
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between bg-white p-4 rounded-lg shadow-sm';
+                    li.innerHTML = `
+                        <span class="font-semibold">${docSnap.id}</span>
+                    `;
+                    adminList.appendChild(li);
+                });
+            }, (error) => {
+                console.error("Ошибка при загрузке списка админов: ", error);
+            });
+        }
 
         // Добавление нового студента (в Настройках)
         addStudentForm.addEventListener('submit', async (e) => {
@@ -953,15 +1082,16 @@
             const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
             onSnapshot(lessonsRef, (snapshot) => {
                 lessonsContainer.innerHTML = ''; // Очищаем контейнер
-                let lessonCount = 0;
-                snapshot.forEach(docSnap => {
-                    lessonCount++;
+                const sortedLessons = snapshot.docs.sort((a, b) => a.data().createdAt.toDate() - b.data().createdAt.toDate());
+                let unlockedLessonsCount = 0;
+                
+                sortedLessons.forEach((docSnap, index) => {
                     const lesson = docSnap.data();
                     const lessonId = docSnap.id;
                     const youtubeVideoId = lesson.videoUrl.split('v=')[1].split('&')[0];
-                    const isPassed = studentTestResults[lessonId] >= 80;
-                    const isUnlocked = lessonCount === 1 || Object.values(studentTestResults).some(result => result >= 80);
-                    const isNextLessonLocked = lessonCount > 1 && !Object.values(studentTestResults).some(result => result >= 80);
+                    const previousLessonId = index > 0 ? sortedLessons[index - 1].id : null;
+                    const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
+                    const isUnlocked = index === 0 || isPreviousLessonPassed;
                     
                     const lessonElement = `
                         <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 ${!isUnlocked ? 'opacity-50 cursor-not-allowed' : ''}">
@@ -983,7 +1113,7 @@
                                                 <div class="options space-y-1">
                                                     ${q.options.map((option, optIndex) => `
                                                         <label class="block">
-                                                            <input type="radio" name="question-${qIndex}" value="${option}" class="mr-2">
+                                                            <input type="radio" name="question-${lessonId}-${qIndex}" value="${option}" class="mr-2">
                                                             <span>${option}</span>
                                                         </label>
                                                     `).join('')}
@@ -1016,7 +1146,7 @@
                 
                 const testContent = e.target.closest('.test-section').querySelector('.test-content');
                 testQuestions.forEach((q, qIndex) => {
-                    const selectedOption = testContent.querySelector(`input[name="question-${qIndex}"]:checked`);
+                    const selectedOption = testContent.querySelector(`input[name="question-${lessonId}-${qIndex}"]:checked`);
                     if (selectedOption && selectedOption.value === q.answer) {
                         correctAnswers++;
                     }
@@ -1094,6 +1224,56 @@
             });
         }
 
+        // Загрузка участников группы студента
+        async function loadMyGroup() {
+            if (!db || !userId) return;
+
+            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
+            const studentSnap = await getDoc(studentRef);
+            if (!studentSnap.exists()) {
+                groupMembersList.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
+                return;
+            }
+
+            const studentGroup = studentSnap.data().group;
+            if (!studentGroup) {
+                groupMembersList.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
+                return;
+            }
+
+            const q = query(collection(db, `artifacts/${appId}/public/data/students`), where("group", "==", studentGroup));
+            onSnapshot(q, async (snapshot) => {
+                const lessonDocs = await getDocs(collection(db, `artifacts/${appId}/public/data/lessons`));
+                const lessons = lessonDocs.docs.reduce((acc, doc) => {
+                    acc[doc.id] = doc.data().title;
+                    return acc;
+                }, {});
+
+                groupMembersList.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const member = docSnap.data();
+                    const testResults = member.testResults || {};
+                    let resultsHtml = '';
+                    
+                    for (const lessonId in lessons) {
+                        const score = testResults[lessonId] !== undefined ? `${testResults[lessonId].toFixed(0)}%` : 'Не пройден';
+                        resultsHtml += `<p><strong>${lessons[lessonId]}:</strong> ${score}</p>`;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-t border-gray-200';
+                    row.innerHTML = `
+                        <td class="py-2 px-4">${member.name}</td>
+                        <td class="py-2 px-4">${member.lastName}</td>
+                        <td class="py-2 px-4">${resultsHtml || 'Нет данных'}</td>
+                    `;
+                    groupMembersList.appendChild(row);
+                });
+            }, (error) => {
+                console.error("Ошибка при загрузке списка группы: ", error);
+            });
+        }
+
         // Обработчики для админ-панели
         lessonList.addEventListener('click', async (e) => {
             const target = e.target;
@@ -1146,6 +1326,29 @@
                 } catch (e) {
                     console.error("Ошибка при удалении студента: ", e);
                     showMessage('Ошибка при удалении.', true);
+                }
+            }
+        });
+
+        deleteAllStudentsBtn.addEventListener('click', async () => {
+            if (confirm('Вы уверены, что хотите удалить всех студентов? Это действие необратимо.')) {
+                if (!db) {
+                    showMessage('База данных недоступна.', true);
+                    return;
+                }
+                const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
+                const q = query(studentsRef);
+                const querySnapshot = await getDocs(q);
+                const deletePromises = [];
+                querySnapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
+                try {
+                    await Promise.all(deletePromises);
+                    showMessage('Все студенты успешно удалены!');
+                } catch (e) {
+                    console.error("Ошибка при удалении всех студентов: ", e);
+                    showMessage('Ошибка при удалении всех студентов.', true);
                 }
             }
         });
