@@ -14,6 +14,17 @@
             background-color: #f3f4f6;
             color: #1f2937;
         }
+        .bg-welcome {
+            background: linear-gradient(135deg, #4c51bf 0%, #7c3aed 100%);
+        }
+        .glow-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .glow-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -45,10 +56,19 @@
         </div>
 
         <!-- Главный раздел - Добро пожаловать -->
-        <div id="welcomeSection" class="text-center">
-            <h2 class="text-4xl font-extrabold text-gray-800 mb-4">Добро пожаловать в Ya_Buxgalter!</h2>
-            <p class="text-lg text-gray-600 mb-8">Ваш надежный партнер в мире бухгалтерии. Обучайтесь, развивайтесь и достигайте новых высот с нашими курсами.</p>
-            
+        <div id="welcomeSection" class="text-center p-8 rounded-lg bg-welcome text-white shadow-lg">
+            <div class="flex flex-col md:flex-row items-center justify-center">
+                <div class="md:w-1/2">
+                    <h2 class="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in">Добро пожаловать в Ya_Buxgalter!</h2>
+                    <p class="text-lg md:text-xl font-light mb-8 animate-fade-in-delay">Ваш надежный партнер в мире бухгалтерии. Обучайтесь, развивайтесь и достигайте новых высот с нашими курсами.</p>
+                    <a href="#coursesSection" id="welcomeCoursesBtn" class="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-full shadow-lg glow-button text-lg">
+                        Записаться на курс
+                    </a>
+                </div>
+                <div class="md:w-1/2 mt-8 md:mt-0 md:ml-8 flex justify-center">
+                    <img src="https://placehold.co/400x300/4c51bf/ffffff?text=Ya_Buxgalter" alt="Modern office with charts and graphs" class="rounded-lg shadow-xl">
+                </div>
+            </div>
         </div>
 
         <!-- Раздел "Записаться на курс" -->
@@ -185,6 +205,7 @@
         let db;
         let auth;
         let userId;
+        let authStateInitialized = false;
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -204,6 +225,7 @@
         const messageBox = document.getElementById('messageBox');
         const addUserForm = document.getElementById('addUserForm');
         const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -227,12 +249,13 @@
             });
         }
 
-        // Отображение главной страницы по умолчанию
-        showSection('welcomeSection');
-
         // Обработчики кнопок
         showCoursesBtn.addEventListener('click', () => showSection('coursesSection'));
         showLoginBtn.addEventListener('click', () => showSection('loginSection'));
+        welcomeCoursesBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('coursesSection');
+        });
 
         // Инициализация Firebase
         window.onload = async () => {
@@ -243,21 +266,6 @@
                     auth = getAuth(app);
                     console.log('Firebase успешно инициализирован.');
 
-                    // Изначальная проверка авторизации.
-                    // Этот код выполнится только один раз при загрузке страницы.
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        // Если пользователь не аутентифицирован, входим анонимно.
-                        const unsubscribe = onAuthStateChanged(auth, (user) => {
-                            if (!user) {
-                                signInAnonymously(auth);
-                            }
-                            // Отписываемся, чтобы предотвратить повторный вход после выхода.
-                            unsubscribe();
-                        });
-                    }
-                    
                     // Основной слушатель изменений состояния авторизации
                     onAuthStateChanged(auth, async (user) => {
                         if (user) {
@@ -285,6 +293,11 @@
                             showSection('welcomeSection');
                         }
                     });
+
+                    // Изначальная попытка анонимного входа, если токена нет.
+                    if (!initialAuthToken && !auth.currentUser) {
+                        signInAnonymously(auth);
+                    }
 
                 } catch (error) {
                     console.error('Ошибка инициализации Firebase:', error);
