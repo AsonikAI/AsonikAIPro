@@ -25,40 +25,30 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .loader {
-            border-top-color: #3498db;
-            -webkit-animation: spinner 1.5s linear infinite;
-            animation: spinner 1.5s linear infinite;
-        }
-        @-webkit-keyframes spinner {
-            0% { -webkit-transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); }
-        }
-        @keyframes spinner {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="app" class="bg-white rounded-lg shadow-xl p-8 max-w-4xl w-full">
+    <div id="app" class="bg-white rounded-none shadow-none p-8 max-w-full w-full h-full min-h-screen">
 
         <!-- Основная навигация -->
         <nav class="flex justify-between items-center mb-10">
             <h1 class="text-3xl font-bold text-indigo-700">Ya_Buxgalter</h1>
             <div class="space-x-4">
-                <button id="homeBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
+                <button id="showHomeBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Главная
                 </button>
-                <button id="myLessonsBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
+                <button id="showCoursesBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300">
+                    Записаться на курс
+                </button>
+                <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
+                    Вход
+                </button>
+                <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
                     Мои уроки
                 </button>
-                <button id="adminPanelBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
+                <button id="showAdminPanelBtn" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-orange-600 transition duration-300 hidden">
                     Админ-панель
-                </button>
-                <button id="loginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
-                    Вход
                 </button>
                 <button id="logoutBtn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-red-600 transition duration-300 hidden">
                     Выйти
@@ -67,24 +57,73 @@
         </nav>
 
         <!-- Раздел для отображения сообщений -->
-        <div id="messageBox" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg hidden"></div>
+        <div id="messageBox" class="hidden fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg"></div>
 
         <!-- Главный раздел - Добро пожаловать -->
         <div id="welcomeSection" class="text-center p-8 rounded-lg bg-welcome text-white shadow-lg">
-            <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Добро пожаловать в Ya_Buxgalter!</h2>
-            <p class="text-lg md:text-xl font-light mb-8">Ваш надежный партнер в мире бухгалтерии. Обучайтесь, развивайтесь и достигайте новых высот с нашими курсами.</p>
+            <div class="flex flex-col md:flex-row items-center justify-center">
+                <div class="md:w-1/2">
+                    <h2 class="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in">Добро пожаловать в Ya_Buxgalter!</h2>
+                    <p class="text-lg md:text-xl font-light mb-8 animate-fade-in-delay">Ваш надежный партнер в мире бухгалтерии. Обучайтесь, развивайтесь и достигайте новых высот с нашими курсами.</p>
+                    <a href="#coursesSection" id="welcomeCoursesBtn" class="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-full shadow-lg glow-button text-lg">
+                        Записаться на курс
+                    </a>
+                </div>
+                <div class="md:w-1/2 mt-8 md:mt-0 md:ml-8 flex justify-center">
+                    <img src="https://placehold.co/400x300/4c51bf/ffffff?text=Ya_Buxgalter" alt="Modern office with charts and graphs" class="rounded-lg shadow-xl">
+                </div>
+            </div>
+        </div>
+
+        <!-- Раздел "Записаться на курс" -->
+        <div id="coursesSection" class="hidden">
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Наши курсы</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Карточка курса: Онлайн -->
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md border border-gray-200">
+                    <h3 class="text-xl font-bold mb-2">1. Онлайн курс</h3>
+                    <p class="text-gray-600 mb-4">Гибкое обучение в удобном для вас темпе. Доступ к видеоурокам, материалам и тестам 24/7. Идеально подходит для тех, кто ценит свое время и хочет учиться из любой точки мира.</p>
+                    <button class="w-full bg-indigo-500 text-white font-semibold py-2 rounded-full hover:bg-indigo-600 transition duration-300">
+                        Записаться
+                    </button>
+                </div>
+                <!-- Карточка курса: Индивидуальный -->
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md border border-gray-200">
+                    <h3 class="text-xl font-bold mb-2">2. Индивидуальный</h3>
+                    <p class="text-gray-600 mb-4">Персональная программа, адаптированная под ваши цели и уровень знаний. Занятия с опытным преподавателем один на один для максимальной эффективности.</p>
+                    <button class="w-full bg-indigo-500 text-white font-semibold py-2 rounded-full hover:bg-indigo-600 transition duration-300">
+                        Записаться
+                    </button>
+                </div>
+                <!-- Карточка курса: Группа -->
+                <div class="bg-gray-50 rounded-lg p-6 shadow-md border border-gray-200">
+                    <h3 class="text-xl font-bold mb-2">3. Группа</h3>
+                    <p class="text-gray-600 mb-4">Динамичное обучение в небольшой группе. Обмен опытом, коллективное решение задач и поддержка со стороны единомышленников.</p>
+                    <button class="w-full bg-indigo-500 text-white font-semibold py-2 rounded-full hover:bg-indigo-600 transition duration-300">
+                        Записаться
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Раздел "Вход" -->
         <div id="loginSection" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Вход для студентов</h2>
+            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Вход</h2>
             <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                <form id="loginForm">
-                    <div class="mb-4">
+                <form id="loginForm" class="space-y-4">
+                    <button type="button" id="googleLoginBtn" class="w-full bg-purple-600 text-white font-semibold py-2 rounded-full hover:bg-purple-700 transition duration-300">
+                        Вход для администратора через Google
+                    </button>
+                    <div class="flex items-center justify-between my-4">
+                        <hr class="w-full border-gray-300">
+                        <span class="px-2 text-gray-500">или</span>
+                        <hr class="w-full border-gray-300">
+                    </div>
+                    <div>
                         <label for="loginEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
                         <input type="email" id="loginEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ваш e-mail">
                     </div>
-                    <div class="mb-6">
+                    <div>
                         <label for="loginPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
                         <input type="password" id="loginPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ваш пароль">
                     </div>
@@ -92,11 +131,7 @@
                         Войти
                     </button>
                 </form>
-            </div>
-            <div class="mt-4 text-center">
-                <button id="googleLoginBtn" class="w-full max-w-md mx-auto bg-red-500 text-white font-semibold py-2 rounded-full hover:bg-red-600 transition duration-300">
-                    Войти через Google
-                </button>
+                <p id="loadingIndicator" class="text-center text-gray-500 mt-4 hidden">Загрузка...</p>
             </div>
         </div>
 
@@ -111,421 +146,571 @@
         
         <!-- Админ панель (только для администратора) -->
         <div id="adminPanel" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Админ-панель</h2>
-            <div id="adminPanelContent" class="max-w-4xl mx-auto p-6 rounded-lg shadow-md border border-gray-200">
-                <!-- Содержимое админ-панели будет загружаться сюда -->
+            <nav class="flex justify-center space-x-4 mb-8">
+                <button id="showAdminLessonsBtn" class="bg-indigo-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-indigo-600 transition duration-300">Уроки</button>
+                <button id="showAdminSettingsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Настройки</button>
+                <button id="showAddStudentsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Добавить студента</button>
+                <button id="showCustomizationBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Кастомизация</button>
+            </nav>
+
+            <!-- Секция Уроки -->
+            <div id="adminLessonsSection">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление уроками</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 mb-8">
+                    <h4 class="text-xl font-bold mb-4">Добавить новый урок</h4>
+                    <form id="addLessonForm">
+                        <div class="mb-4">
+                            <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
+                            <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Название">
+                        </div>
+                        <div class="mb-4">
+                            <label for="lessonVideo" class="block text-gray-700 font-semibold mb-2">URL видео</label>
+                            <input type="text" id="lessonVideo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ссылка на YouTube, Vimeo и т.д.">
+                        </div>
+                        <div class="mb-4">
+                            <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
+                            <textarea id="lessonDescription" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Описание урока"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
+                            Добавить урок
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Список всех уроков</h4>
+                    <ul id="lessonList" class="space-y-4">
+                        <!-- Список уроков для редактирования -->
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Секция Настройки -->
+            <div id="adminSettingsSection" class="hidden">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Настройки</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold mb-4">Добавить нового администратора</h4>
+                    <form id="addAdminForm">
+                        <div class="mb-4">
+                            <label for="adminIdInput" class="block text-gray-700 font-semibold mb-2">ID пользователя</label>
+                            <input type="text" id="adminIdInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ID пользователя">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
+                            Сделать администратором
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Секция Добавление студента -->
+            <div id="addStudentsSection" class="hidden">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Добавить нового студента</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <form id="addStudentForm" class="space-y-4">
+                        <div>
+                            <label for="studentName" class="block text-gray-700 font-semibold mb-2">Имя</label>
+                            <input type="text" id="studentName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Имя">
+                        </div>
+                        <div>
+                            <label for="studentLastName" class="block text-gray-700 font-semibold mb-2">Фамилия</label>
+                            <input type="text" id="studentLastName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Фамилия">
+                        </div>
+                        <div>
+                            <label for="studentEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
+                            <input type="email" id="studentEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="E-mail">
+                        </div>
+                        <div>
+                            <label for="studentPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
+                            <input type="password" id="studentPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Пароль">
+                        </div>
+                        <div>
+                            <label for="studentBirthYear" class="block text-gray-700 font-semibold mb-2">Год рождения</label>
+                            <input type="text" id="studentBirthYear" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Год рождения">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
+                            Создать студента
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Секция Кастомизация -->
+            <div id="customizationSection" class="hidden">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Кастомизация</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <p class="text-gray-600 text-center">Здесь будут настройки внешнего вида сайта, такие как смена темы и фонового изображения.</p>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, onSnapshot, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Установка уровня логирования для отладки
-    // import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    // setLogLevel('debug');
+        // Глобальные переменные из среды Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
+            authDomain: "asonik-ai.firebaseapp.com",
+            projectId: "asonik-ai",
+            storageBucket: "asonik-ai.firebasestorage.app",
+            messagingSenderId: "875716508614",
+            appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
+            measurementId: "G-HT5T20YPVE"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    // Определение глобальных переменных Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
-      authDomain: "asonik-ai.firebaseapp.com",
-      projectId: "asonik-ai",
-      storageBucket: "asonik-ai.firebasestorage.app",
-      messagingSenderId: "875716508614",
-      appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
-      measurementId: "G-HT5T20YPVE"
-    };
+        let db;
+        let auth;
+        let userId;
+        let isUserAdmin = false;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+        // Элементы DOM
+        const welcomeSection = document.getElementById('welcomeSection');
+        const coursesSection = document.getElementById('coursesSection');
+        const loginSection = document.getElementById('loginSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const adminPanel = document.getElementById('adminPanel');
+        const showHomeBtn = document.getElementById('showHomeBtn');
+        const showCoursesBtn = document.getElementById('showCoursesBtn');
+        const showLoginBtn = document.getElementById('showLoginBtn');
+        const showDashboardBtn = document.getElementById('showDashboardBtn');
+        const showAdminPanelBtn = document.getElementById('showAdminPanelBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginForm = document.getElementById('loginForm');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const addLessonForm = document.getElementById('addLessonForm');
+        const lessonList = document.getElementById('lessonList');
+        const messageBox = document.getElementById('messageBox');
+        const addAdminForm = document.getElementById('addAdminForm');
+        const addStudentForm = document.getElementById('addStudentForm');
+        const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
 
-    const appId = firebaseConfig.projectId;
+        // Admin Panel Navigation Buttons
+        const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
+        const showAdminSettingsBtn = document.getElementById('showAdminSettingsBtn');
+        const showAddStudentsBtn = document.getElementById('showAddStudentsBtn');
+        const showCustomizationBtn = document.getElementById('showCustomizationBtn');
 
-    // Ссылки на элементы DOM
-    const welcomeSection = document.getElementById('welcomeSection');
-    const loginSection = document.getElementById('loginSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const adminPanel = document.getElementById('adminPanel');
-    const messageBox = document.getElementById('messageBox');
-    const loginForm = document.getElementById('loginForm');
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const homeBtn = document.getElementById('homeBtn');
-    const myLessonsBtn = document.getElementById('myLessonsBtn');
-    const adminPanelBtn = document.getElementById('adminPanelBtn');
+        // Admin Panel Sections
+        const adminLessonsSection = document.getElementById('adminLessonsSection');
+        const adminSettingsSection = document.getElementById('adminSettingsSection');
+        const addStudentsSection = document.getElementById('addStudentsSection');
+        const customizationSection = document.getElementById('customizationSection');
 
-    // Функция для показа сообщений
-    const showMessage = (message, isError = false) => {
-        messageBox.textContent = message;
-        messageBox.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
-        if (isError) {
-            messageBox.classList.add('bg-red-500');
-        } else {
-            messageBox.classList.add('bg-green-500');
+        // Функция для отображения сообщения
+        function showMessage(text, isError = false) {
+            messageBox.textContent = text;
+            messageBox.style.backgroundColor = isError ? '#ef4444' : '#22c55e';
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000);
         }
-        messageBox.classList.add('animate-fadeIn');
-        setTimeout(() => {
-            messageBox.classList.add('hidden');
-        }, 5000);
-    };
 
-    // Функция для отображения страниц
-    const showPage = (pageId) => {
-        welcomeSection.classList.add('hidden');
-        loginSection.classList.add('hidden');
-        dashboardSection.classList.add('hidden');
-        adminPanel.classList.add('hidden');
-        document.getElementById(pageId).classList.remove('hidden');
-    };
-
-    // Слушатель состояния авторизации
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userIsAdmin = await checkAdminStatus(user.uid);
-            updateUI(user, userIsAdmin);
-        } else {
-            updateUI(null, false);
+        // Функция для переключения секций
+        function showSection(sectionId) {
+            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel];
+            sections.forEach(section => {
+                if (section.id === sectionId) {
+                    section.classList.remove('hidden');
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
         }
-    });
-
-    // Функция для проверки прав администратора
-    const checkAdminStatus = async (uid) => {
-        try {
-            const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users/${uid}`);
-            const adminDoc = await getDoc(adminDocRef);
-            return adminDoc.exists() && adminDoc.data().isAdmin === true;
-        } catch (error) {
-            console.error("Ошибка при проверке прав администратора:", error);
-            return false;
-        }
-    };
-
-    // Функция для обновления интерфейса
-    const updateUI = (user, isAdmin) => {
-        if (user) {
-            loginBtn.classList.add('hidden');
-            logoutBtn.classList.remove('hidden');
-            myLessonsBtn.classList.remove('hidden');
-            
-            if (isAdmin) {
-                adminPanelBtn.classList.remove('hidden');
-                showAdminPanel();
-            } else {
-                adminPanelBtn.classList.add('hidden');
-                showPage('dashboardSection');
-                loadStudentLessons();
-            }
-        } else {
-            loginBtn.classList.remove('hidden');
+        
+        // Функция для обновления навигации
+        function updateNavigation(isAuthenticated) {
+            showLoginBtn.classList.add('hidden');
+            showCoursesBtn.classList.add('hidden');
+            showHomeBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
-            myLessonsBtn.classList.add('hidden');
-            adminPanelBtn.classList.add('hidden');
-            showPage('welcomeSection');
+            showAdminPanelBtn.classList.add('hidden');
+            showDashboardBtn.classList.add('hidden');
+
+            if (isAuthenticated) {
+                logoutBtn.classList.remove('hidden');
+                if (isUserAdmin) {
+                    showAdminPanelBtn.classList.remove('hidden');
+                    showDashboardBtn.classList.remove('hidden'); 
+                } else {
+                    showDashboardBtn.classList.remove('hidden');
+                }
+            } else {
+                showLoginBtn.classList.remove('hidden');
+                showCoursesBtn.classList.remove('hidden');
+                showDashboardBtn.classList.add('hidden');
+            }
         }
-    };
-
-    // Обработчик входа по email/password
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = loginForm.loginEmail.value;
-        const password = loginForm.loginPassword.value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            showMessage("Вход выполнен успешно!");
-        } catch (error) {
-            showMessage("Ошибка входа: проверьте почту и пароль.", true);
-        }
-    });
-
-    // Обработчик входа через Google
-    googleLoginBtn.addEventListener('click', async () => {
-        try {
-            await signInWithPopup(auth, provider);
-            showMessage("Вход через Google выполнен успешно!");
-        } catch (error) {
-            showMessage("Ошибка входа через Google: " + error.message, true);
-        }
-    });
-
-    // Обработчик выхода
-    logoutBtn.addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-            showMessage("Выход выполнен успешно!");
-        } catch (error) {
-            showMessage("Ошибка выхода: " + error.message, true);
-        }
-    });
-
-    // Навигационные кнопки
-    homeBtn.addEventListener('click', () => showPage('welcomeSection'));
-    loginBtn.addEventListener('click', () => showPage('loginSection'));
-    myLessonsBtn.addEventListener('click', () => {
-        showPage('dashboardSection');
-        loadStudentLessons();
-    });
-    adminPanelBtn.addEventListener('click', () => showAdminPanel());
-
-    // --- Функционал админ-панели ---
-    const showAdminPanel = async () => {
-        showPage('adminPanel');
-        const adminContent = document.getElementById('adminPanelContent');
-        adminContent.innerHTML = `
-            <div class="flex flex-col md:flex-row mb-6">
-                <button id="showManageLessonsBtn" class="w-full md:w-1/3 py-2 px-4 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition duration-300">Уроки</button>
-                <button id="showManageStudentsBtn" class="w-full md:w-1/3 py-2 px-4 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition duration-300">Студенты</button>
-                <button id="showSettingsBtn" class="w-full md:w-1/3 py-2 px-4 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition duration-300">Настройки</button>
-            </div>
-            <div id="adminTabContent"></div>
-        `;
-        document.getElementById('showManageLessonsBtn').addEventListener('click', () => {
-            showAdminTab('manageLessons');
-            document.querySelectorAll('#adminPanelContent button').forEach(btn => btn.classList.replace('bg-indigo-500', 'bg-gray-200'));
-            document.getElementById('showManageLessonsBtn').classList.replace('bg-gray-200', 'bg-indigo-500');
+        
+        // Обработчики кнопок
+        showHomeBtn.addEventListener('click', () => showSection('welcomeSection'));
+        showCoursesBtn.addEventListener('click', () => showSection('coursesSection'));
+        showLoginBtn.addEventListener('click', () => showSection('loginSection'));
+        welcomeCoursesBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('coursesSection');
         });
-        document.getElementById('showManageStudentsBtn').addEventListener('click', () => {
-            showAdminTab('manageStudents');
-            document.querySelectorAll('#adminPanelContent button').forEach(btn => btn.classList.replace('bg-indigo-500', 'bg-gray-200'));
-            document.getElementById('showManageStudentsBtn').classList.replace('bg-gray-200', 'bg-indigo-500');
+        showAdminPanelBtn.addEventListener('click', () => {
+            showSection('adminPanel');
+            loadAdminLessons();
         });
-        document.getElementById('showSettingsBtn').addEventListener('click', () => {
-            showAdminTab('settings');
-            document.querySelectorAll('#adminPanelContent button').forEach(btn => btn.classList.replace('bg-indigo-500', 'bg-gray-200'));
-            document.getElementById('showSettingsBtn').classList.replace('bg-gray-200', 'bg-indigo-500');
-        });
-
-        // По умолчанию показываем уроки
-        showAdminTab('manageLessons');
-        document.getElementById('showManageLessonsBtn').classList.replace('bg-gray-200', 'bg-indigo-500');
-    };
-
-    const showAdminTab = (tab) => {
-        const adminTabContent = document.getElementById('adminTabContent');
-        adminTabContent.innerHTML = ''; // Очищаем содержимое
-        if (tab === 'manageLessons') {
-            adminTabContent.innerHTML = `
-                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-xl font-bold mb-4">Добавить новый урок</h3>
-                    <form id="addLessonForm">
-                        <div class="mb-4">
-                            <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
-                            <input type="text" id="lessonTitle" class="w-full px-4 py-2 border rounded-lg" placeholder="Название">
-                        </div>
-                        <div class="mb-4">
-                            <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
-                            <textarea id="lessonDescription" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Описание урока"></textarea>
-                        </div>
-                        <div class="mb-4">
-                            <label for="lessonVideoUrl" class="block text-gray-700 font-semibold mb-2">URL видео</label>
-                            <input type="text" id="lessonVideoUrl" class="w-full px-4 py-2 border rounded-lg" placeholder="Ссылка на YouTube, Vimeo и т.д.">
-                        </div>
-                        <div class="mb-6">
-                            <label for="lessonThumbnailUrl" class="block text-gray-700 font-semibold mb-2">URL превью-картинки</label>
-                            <input type="text" id="lessonThumbnailUrl" class="w-full px-4 py-2 border rounded-lg" placeholder="Ссылка на imgbb, Imgur и т.д.">
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full">Добавить урок</button>
-                    </form>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4">Список всех уроков</h3>
-                    <ul id="lessonsList" class="space-y-4"></ul>
-                </div>
-            `;
+        showDashboardBtn.addEventListener('click', () => {
+            showSection('dashboardSection');
             loadLessons();
-            document.getElementById('addLessonForm').addEventListener('submit', handleAddLesson);
-        } else if (tab === 'manageStudents') {
-            adminTabContent.innerHTML = `
-                <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-                    <h3 class="text-xl font-bold mb-4">Добавить нового студента</h3>
-                    <form id="addStudentForm">
-                        <div class="mb-4">
-                            <label for="studentName" class="block text-gray-700 font-semibold mb-2">Имя</label>
-                            <input type="text" id="studentName" class="w-full px-4 py-2 border rounded-lg" placeholder="Имя">
-                        </div>
-                        <div class="mb-4">
-                            <label for="studentSurname" class="block text-gray-700 font-semibold mb-2">Фамилия</label>
-                            <input type="text" id="studentSurname" class="w-full px-4 py-2 border rounded-lg" placeholder="Фамилия">
-                        </div>
-                        <div class="mb-4">
-                            <label for="studentEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
-                            <input type="email" id="studentEmail" class="w-full px-4 py-2 border rounded-lg" placeholder="Email">
-                        </div>
-                        <div class="mb-4">
-                            <label for="studentPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
-                            <input type="password" id="studentPassword" class="w-full px-4 py-2 border rounded-lg" placeholder="Пароль">
-                        </div>
-                        <div class="mb-6">
-                            <label for="studentBirthYear" class="block text-gray-700 font-semibold mb-2">Год рождения</label>
-                            <input type="number" id="studentBirthYear" class="w-full px-4 py-2 border rounded-lg" placeholder="Год рождения">
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full">Добавить студента</button>
-                    </form>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4">Список студентов</h3>
-                    <ul id="studentsList" class="space-y-4"></ul>
-                </div>
-            `;
-            loadStudents();
-            document.getElementById('addStudentForm').addEventListener('submit', handleAddStudent);
-        } else if (tab === 'settings') {
-            adminTabContent.innerHTML = `
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h3 class="text-xl font-bold mb-4">Добавить нового администратора</h3>
-                    <form id="addAdminForm">
-                        <div class="mb-4">
-                            <label for="adminUid" class="block text-gray-700 font-semibold mb-2">UID пользователя</label>
-                            <input type="text" id="adminUid" class="w-full px-4 py-2 border rounded-lg" placeholder="Введите UID">
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full">Сделать администратором</button>
-                    </form>
-                </div>
-            `;
-            document.getElementById('addAdminForm').addEventListener('submit', handleAddAdmin);
-        }
-    };
-
-    // --- Функции загрузки данных из Firestore ---
-    const loadLessons = () => {
-        const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
-        onSnapshot(lessonsRef, (snapshot) => {
-            const lessonsList = document.getElementById('lessonsList');
-            lessonsList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const lesson = doc.data();
-                const li = document.createElement('li');
-                li.className = 'p-4 bg-gray-100 rounded-lg shadow-sm';
-                li.innerHTML = `
-                    <div class="flex items-center space-x-4">
-                        <img src="${lesson.thumbnailUrl || 'https://placehold.co/120x80'}" alt="Превью урока" class="w-24 h-auto rounded-lg">
-                        <div>
-                            <h4 class="font-bold">${lesson.title}</h4>
-                            <p class="text-gray-600 text-sm">${lesson.description}</p>
-                        </div>
-                    </div>
-                `;
-                lessonsList.appendChild(li);
-            });
         });
-    };
+        
+        // Инициализация Firebase
+        window.onload = async () => {
+            if (Object.keys(firebaseConfig).length > 0) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    console.log('Firebase успешно инициализирован.');
 
-    const loadStudents = () => {
-        const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
-        onSnapshot(studentsRef, (snapshot) => {
-            const studentsList = document.getElementById('studentsList');
-            studentsList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const student = doc.data();
-                const li = document.createElement('li');
-                li.className = 'p-4 bg-gray-100 rounded-lg shadow-sm';
-                li.innerHTML = `
-                    <h4 class="font-bold">${student.name} ${student.surname}</h4>
-                    <p class="text-gray-600 text-sm">${student.email} (${student.birthYear})</p>
-                `;
-                studentsList.appendChild(li);
-            });
+                    // Основной слушатель изменений состояния авторизации
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                            
+                            const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
+                            const adminDocSnap = await getDoc(adminDocRef);
+                            isUserAdmin = (adminDocSnap.exists() && adminDocSnap.data().isAdmin);
+                            
+                            updateNavigation(true);
+                            if (isUserAdmin) {
+                                showSection('adminPanel'); 
+                                loadAdminLessons();
+                            } else {
+                                showSection('dashboardSection');
+                                loadLessons();
+                            }
+                        } else {
+                            userId = null;
+                            isUserAdmin = false;
+                            updateNavigation(false);
+                            showSection('welcomeSection');
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Ошибка инициализации Firebase:', error);
+                }
+            } else {
+                console.warn('Firebase config не найден. Функции базы данных недоступны.');
+            }
+        };
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showMessage('Вы успешно вышли из системы.');
+            } catch (error) {
+                console.error('Ошибка выхода из системы:', error);
+                showMessage('Ошибка выхода.', true);
+            }
         });
-    };
-    
-    const loadStudentLessons = () => {
-        const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
-        onSnapshot(lessonsRef, (snapshot) => {
-            const lessonsContainer = document.getElementById('lessonsContainer');
-            lessonsContainer.innerHTML = '';
-            snapshot.forEach(doc => {
-                const lesson = doc.data();
-                const lessonCard = document.createElement('div');
-                lessonCard.className = 'bg-gray-100 p-6 rounded-lg shadow-md';
-                lessonCard.innerHTML = `
-                    <h4 class="font-bold text-lg mb-2">${lesson.title}</h4>
-                    <p class="text-gray-600 text-sm mb-4">${lesson.description}</p>
-                    <div class="w-full aspect-video mb-4">
-                        <iframe class="w-full h-full rounded-lg" src="${lesson.videoUrl}" frameborder="0" allowfullscreen></iframe>
-                    </div>
-                    <button class="w-full bg-indigo-500 text-white font-semibold py-2 rounded-full hover:bg-indigo-600 transition duration-300">Пройти тест</button>
-                `;
-                lessonsContainer.appendChild(lessonCard);
-            });
+
+        // Логика входа
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (email === "" || password === "") {
+                showMessage("Пожалуйста, заполните все поля.", true);
+                return;
+            }
+
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                showMessage('Вход выполнен успешно!');
+                // onAuthStateChanged позаботится о навигации
+            } catch (error) {
+                console.error('Ошибка входа:', error);
+                showMessage('Ошибка входа. Проверьте почту и пароль.', true);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
         });
-    };
 
-    // --- Обработчики форм ---
-    const handleAddLesson = async (e) => {
-        e.preventDefault();
-        const title = document.getElementById('lessonTitle').value;
-        const description = document.getElementById('lessonDescription').value;
-        const videoUrl = document.getElementById('lessonVideoUrl').value;
-        const thumbnailUrl = document.getElementById('lessonThumbnailUrl').value;
+        // Вход для администратора через Google
+        googleLoginBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
 
-        if (!title || !videoUrl) {
-            showMessage("Пожалуйста, заполните все поля.", true);
-            return;
-        }
+            loadingIndicator.classList.remove('hidden');
 
-        try {
-            await addDoc(collection(db, `artifacts/${appId}/public/data/lessons`), {
-                title,
-                description,
-                videoUrl,
-                thumbnailUrl
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
+                const adminDocSnap = await getDoc(adminDocRef);
+                
+                if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
+                    showMessage('Вход для администратора выполнен успешно!');
+                    // onAuthStateChanged позаботится о навигации
+                } else {
+                    showMessage('Вход отклонён. Вы не являетесь администратором.', true);
+                    signOut(auth);
+                }
+            } catch (error) {
+                console.error('Ошибка входа через Google:', error);
+                showMessage('Ошибка входа через Google.', true);
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        });
+
+        // Внутренняя навигация админ-панели
+        showAdminLessonsBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.remove('hidden');
+            adminSettingsSection.classList.add('hidden');
+            addStudentsSection.classList.add('hidden');
+            customizationSection.classList.add('hidden');
+            showAdminLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showAdminLessonsBtn.classList.replace('text-gray-800', 'text-white');
+            showAdminSettingsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminSettingsBtn.classList.replace('text-white', 'text-gray-800');
+            showAddStudentsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAddStudentsBtn.classList.replace('text-white', 'text-gray-800');
+            showCustomizationBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showCustomizationBtn.classList.replace('text-white', 'text-gray-800');
+            loadAdminLessons();
+        });
+
+        showAdminSettingsBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.add('hidden');
+            adminSettingsSection.classList.remove('hidden');
+            addStudentsSection.classList.add('hidden');
+            customizationSection.classList.add('hidden');
+            showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showAdminSettingsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showAdminSettingsBtn.classList.replace('text-gray-800', 'text-white');
+            showAddStudentsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAddStudentsBtn.classList.replace('text-white', 'text-gray-800');
+            showCustomizationBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showCustomizationBtn.classList.replace('text-white', 'text-gray-800');
+        });
+
+        showAddStudentsBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.add('hidden');
+            adminSettingsSection.classList.add('hidden');
+            addStudentsSection.classList.remove('hidden');
+            customizationSection.classList.add('hidden');
+            showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showAdminSettingsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminSettingsBtn.classList.replace('text-white', 'text-gray-800');
+            showAddStudentsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showAddStudentsBtn.classList.replace('text-gray-800', 'text-white');
+            showCustomizationBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showCustomizationBtn.classList.replace('text-white', 'text-gray-800');
+        });
+
+        showCustomizationBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.add('hidden');
+            adminSettingsSection.classList.add('hidden');
+            addStudentsSection.classList.add('hidden');
+            customizationSection.classList.remove('hidden');
+            showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showAdminSettingsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminSettingsBtn.classList.replace('text-white', 'text-gray-800');
+            showAddStudentsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAddStudentsBtn.classList.replace('text-white', 'text-gray-800');
+            showCustomizationBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showCustomizationBtn.classList.replace('text-gray-800', 'text-white');
+        });
+
+        // CRUD операции для админ-панели (Уроки)
+        addLessonForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('lessonTitle').value;
+            const videoUrl = document.getElementById('lessonVideo').value;
+            const description = document.getElementById('lessonDescription').value;
+
+            if (!title || !videoUrl || !description) {
+                showMessage('Пожалуйста, заполните все поля.', true);
+                return;
+            }
+            if (!db) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/lessons`), {
+                    title: title,
+                    videoUrl: videoUrl,
+                    description: description,
+                    createdAt: new Date()
+                });
+                showMessage('Урок успешно добавлен!');
+                addLessonForm.reset();
+            } catch (e) {
+                console.error('Ошибка при добавлении документа: ', e);
+                showMessage('Ошибка при добавлении урока.', true);
+            }
+        });
+
+        // Добавление нового администратора (в Настройках)
+        addAdminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const adminId = document.getElementById('adminIdInput').value.trim();
+
+            if (!adminId) {
+                showMessage('Пожалуйста, введите ID пользователя.', true);
+                return;
+            }
+            if (!db) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
+            try {
+                await setDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, adminId), {
+                    isAdmin: true,
+                    createdAt: new Date()
+                });
+                showMessage(`Пользователь с ID ${adminId} успешно добавлен в администраторы!`, false);
+                addAdminForm.reset();
+            } catch (error) {
+                console.error('Ошибка при добавлении администратора:', error);
+                showMessage(`Ошибка: ${error.message}`, true);
+            }
+        });
+
+        // Добавление нового студента (в Настройках)
+        addStudentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('studentName').value;
+            const lastName = document.getElementById('studentLastName').value;
+            const email = document.getElementById('studentEmail').value;
+            const password = document.getElementById('studentPassword').value;
+            const birthYear = document.getElementById('studentBirthYear').value;
+
+            if (!name || !lastName || !email || !password || !birthYear) {
+                showMessage('Пожалуйста, заполните все поля.', true);
+                return;
+            }
+            if (!db) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
+            try {
+                // Создаем пользователя в Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Добавляем данные студента в Firestore
+                await setDoc(doc(db, `artifacts/${appId}/public/data/students`, user.uid), {
+                    name: name,
+                    lastName: lastName,
+                    email: email,
+                    birthYear: birthYear,
+                    createdAt: new Date()
+                });
+                showMessage(`Студент ${name} ${lastName} успешно добавлен!`, false);
+                addStudentForm.reset();
+            } catch (error) {
+                console.error('Ошибка при добавлении студента:', error);
+                showMessage(`Ошибка: ${error.message}`, true);
+            }
+        });
+
+        // Загрузка уроков для студентов
+        function loadLessons() {
+            if (!db) return;
+            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
+            onSnapshot(lessonsRef, (snapshot) => {
+                lessonsContainer.innerHTML = ''; // Очищаем контейнер
+                snapshot.forEach(doc => {
+                    const lesson = doc.data();
+                    const lessonElement = `
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
+                            <div class="relative pb-[56.25%] h-0">
+                                <iframe class="absolute top-0 left-0 w-full h-full" src="${lesson.videoUrl.replace('watch?v=', 'embed/')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-smedia; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
+                                <p class="text-gray-600">${lesson.description}</p>
+                            </div>
+                        </div>
+                    `;
+                    lessonsContainer.innerHTML += lessonElement;
+                });
+            }, (error) => {
+                console.error("Ошибка при получении уроков: ", error);
             });
-            showMessage("Урок успешно добавлен!");
-            document.getElementById('addLessonForm').reset();
-        } catch (error) {
-            showMessage("Ошибка при добавлении урока: " + error.message, true);
-        }
-    };
-    
-    const handleAddStudent = async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('studentName').value;
-        const surname = document.getElementById('studentSurname').value;
-        const email = document.getElementById('studentEmail').value;
-        const password = document.getElementById('studentPassword').value;
-        const birthYear = document.getElementById('studentBirthYear').value;
-
-        if (!name || !surname || !email || !password) {
-            showMessage("Пожалуйста, заполните все обязательные поля.", true);
-            return;
         }
 
-        try {
-            // Здесь должна быть логика для создания пользователя в Firebase Auth
-            // Но мы будем просто добавлять в Firestore для демонстрации
-            await addDoc(collection(db, `artifacts/${appId}/public/data/students`), {
-                name,
-                surname,
-                email,
-                birthYear,
-                password // В реальном приложении пароль так хранить нельзя!
+        // Загрузка уроков для админ-панели
+        function loadAdminLessons() {
+            if (!db) return;
+            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
+            onSnapshot(lessonsRef, (snapshot) => {
+                lessonList.innerHTML = ''; // Очищаем список
+                snapshot.forEach(docSnap => {
+                    const lesson = docSnap.data();
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between bg-white p-4 rounded-lg shadow-sm';
+                    li.innerHTML = `
+                        <span class="font-semibold">${lesson.title}</span>
+                        <div class="space-x-2">
+                            <button data-id="${docSnap.id}" class="edit-btn bg-yellow-500 text-white py-1 px-3 rounded-full text-sm hover:bg-yellow-600 transition duration-300">Редактировать</button>
+                            <button data-id="${docSnap.id}" class="delete-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm hover:bg-red-600 transition duration-300">Удалить</button>
+                        </div>
+                    `;
+                    lessonList.appendChild(li);
+                });
+            }, (error) => {
+                console.error("Ошибка при загрузке уроков для админки: ", error);
             });
-            showMessage("Студент успешно добавлен!");
-            document.getElementById('addStudentForm').reset();
-        } catch (error) {
-            showMessage("Ошибка при добавлении студента: " + error.message, true);
         }
-    };
 
-    const handleAddAdmin = async (e) => {
-        e.preventDefault();
-        const uid = document.getElementById('adminUid').value;
-        if (!uid) {
-            showMessage("Пожалуйста, введите UID.", true);
-            return;
-        }
-        try {
-            await setDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, uid), { isAdmin: true });
-            showMessage("Пользователь успешно добавлен в администраторы!");
-            document.getElementById('addAdminForm').reset();
-        } catch (error) {
-            showMessage("Ошибка: " + error.message, true);
-        }
-    };
+        // Обработчики для админ-панели
+        lessonList.addEventListener('click', async (e) => {
+            const target = e.target;
+            const lessonId = target.getAttribute('data-id');
+
+            if (!db || !lessonId) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
+            
+            if (target.classList.contains('delete-btn')) {
+                // Удаление урока
+                try {
+                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/lessons`, lessonId));
+                    showMessage('Урок успешно удален!');
+                } catch (e) {
+                    console.error("Ошибка при удалении документа: ", e);
+                    showMessage('Ошибка при удалении.', true);
+                }
+            } else if (target.classList.contains('edit-btn')) {
+                // Редактирование урока (простая логика, можно расширить)
+                const newTitle = prompt('Введите новое название урока:');
+                if (newTitle) {
+                    try {
+                        await updateDoc(doc(db, `artifacts/${appId}/public/data/lessons`, lessonId), {
+                            title: newTitle
+                        });
+                        showMessage('Урок успешно обновлен!');
+                    } catch (e) {
+                        console.error("Ошибка при обновлении документа: ", e);
+                        showMessage('Ошибка при обновлении.', true);
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
-
