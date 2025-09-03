@@ -146,52 +146,101 @@
         
         <!-- Админ панель (только для администратора) -->
         <div id="adminPanel" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Панель администратора</h2>
-            <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                <h3 class="text-xl font-bold mb-4">Добавить нового администратора</h3>
-                <form id="addAdminForm">
-                    <div class="mb-4">
-                        <label for="adminIdInput" class="block text-gray-700 font-semibold mb-2">ID пользователя</label>
-                        <input type="text" id="adminIdInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ID пользователя">
-                    </div>
-                    <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
-                        Сделать администратором
-                    </button>
-                </form>
+            <nav class="flex justify-center space-x-4 mb-8">
+                <button id="showAdminLessonsBtn" class="bg-indigo-500 text-white py-2 px-6 rounded-full font-semibold hover:bg-indigo-600 transition duration-300">Уроки</button>
+                <button id="showAdminSettingsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Настройки</button>
+                <button id="showAddStudentsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Добавить студента</button>
+                <button id="showCustomizationBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Кастомизация</button>
+            </nav>
 
-                <h3 class="text-xl font-bold mt-8 mb-4">Добавить новый урок</h3>
-                <form id="addLessonForm">
-                    <div class="mb-4">
-                        <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
-                        <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Название">
-                    </div>
-                    <div class="mb-4">
-                        <label for="lessonVideo" class="block text-gray-700 font-semibold mb-2">URL видео</label>
-                        <input type="text" id="lessonVideo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ссылка на YouTube, Vimeo и т.д.">
-                    </div>
-                    <div class="mb-4">
-                        <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
-                        <textarea id="lessonDescription" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Описание урока"></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
-                        Добавить урок
-                    </button>
-                </form>
+            <!-- Секция Уроки -->
+            <div id="adminLessonsSection">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление уроками</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 mb-8">
+                    <h4 class="text-xl font-bold mb-4">Добавить новый урок</h4>
+                    <form id="addLessonForm">
+                        <div class="mb-4">
+                            <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
+                            <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Название">
+                        </div>
+                        <div class="mb-4">
+                            <label for="lessonVideo" class="block text-gray-700 font-semibold mb-2">URL видео</label>
+                            <input type="text" id="lessonVideo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ссылка на YouTube, Vimeo и т.д.">
+                        </div>
+                        <div class="mb-4">
+                            <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
+                            <textarea id="lessonDescription" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Описание урока"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
+                            Добавить урок
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-4">Список всех уроков</h4>
+                    <ul id="lessonList" class="space-y-4">
+                        <!-- Список уроков для редактирования -->
+                    </ul>
+                </div>
             </div>
-            <div class="mt-8">
-                <h3 class="text-xl font-bold mb-4">Список всех уроков</h3>
-                <ul id="lessonList" class="space-y-4">
-                    <!-- Список уроков для редактирования -->
-                </ul>
+            
+            <!-- Секция Настройки -->
+            <div id="adminSettingsSection" class="hidden">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Настройки</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <h4 class="text-xl font-bold mb-4">Добавить нового администратора</h4>
+                    <form id="addAdminForm">
+                        <div class="mb-4">
+                            <label for="adminIdInput" class="block text-gray-700 font-semibold mb-2">ID пользователя</label>
+                            <input type="text" id="adminIdInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ID пользователя">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
+                            Сделать администратором
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Секция Добавление студента -->
+            <div id="addStudentsSection" class="hidden">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Добавить нового студента</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <form id="addStudentForm" class="space-y-4">
+                        <div>
+                            <label for="studentName" class="block text-gray-700 font-semibold mb-2">Имя</label>
+                            <input type="text" id="studentName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Имя">
+                        </div>
+                        <div>
+                            <label for="studentLastName" class="block text-gray-700 font-semibold mb-2">Фамилия</label>
+                            <input type="text" id="studentLastName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Фамилия">
+                        </div>
+                        <div>
+                            <label for="studentEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
+                            <input type="email" id="studentEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="E-mail">
+                        </div>
+                        <div>
+                            <label for="studentPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
+                            <input type="password" id="studentPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Пароль">
+                        </div>
+                        <div>
+                            <label for="studentBirthYear" class="block text-gray-700 font-semibold mb-2">Год рождения</label>
+                            <input type="text" id="studentBirthYear" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Год рождения">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
+                            Создать студента
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Секция Кастомизация -->
+            <div id="customizationSection" class="hidden">
+                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Кастомизация</h3>
+                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <p class="text-gray-600 text-center">Здесь будут настройки внешнего вида сайта, такие как смена темы и фонового изображения.</p>
+                </div>
             </div>
         </div>
-        
-        <!-- Кнопка для временного админ-доступа -->
-        <div id="tempAdminSection" class="hidden text-center mt-8">
-             <p class="text-red-500 mb-4">Вход отклонён. Вы не являетесь администратором.</p>
-             <button id="makeMeAdminBtn" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-green-700 transition duration-300">Сделать меня администратором</button>
-        </div>
-
     </div>
 
     <!-- Firebase SDK -->
@@ -217,7 +266,6 @@
         let auth;
         let userId;
         let isUserAdmin = false;
-        let isLoading = true;
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -228,7 +276,6 @@
         const showHomeBtn = document.getElementById('showHomeBtn');
         const showCoursesBtn = document.getElementById('showCoursesBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
-        const showAdminLoginBtn = document.getElementById('showAdminLoginBtn');
         const showDashboardBtn = document.getElementById('showDashboardBtn');
         const showAdminPanelBtn = document.getElementById('showAdminPanelBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -238,11 +285,22 @@
         const lessonList = document.getElementById('lessonList');
         const messageBox = document.getElementById('messageBox');
         const addAdminForm = document.getElementById('addAdminForm');
+        const addStudentForm = document.getElementById('addStudentForm');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
-        const tempAdminSection = document.getElementById('tempAdminSection');
-        const makeMeAdminBtn = document.getElementById('makeMeAdminBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
         const loadingIndicator = document.getElementById('loadingIndicator');
 
+        // Admin Panel Navigation Buttons
+        const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
+        const showAdminSettingsBtn = document.getElementById('showAdminSettingsBtn');
+        const showAddStudentsBtn = document.getElementById('showAddStudentsBtn');
+        const showCustomizationBtn = document.getElementById('showCustomizationBtn');
+
+        // Admin Panel Sections
+        const adminLessonsSection = document.getElementById('adminLessonsSection');
+        const adminSettingsSection = document.getElementById('adminSettingsSection');
+        const addStudentsSection = document.getElementById('addStudentsSection');
+        const customizationSection = document.getElementById('customizationSection');
 
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
@@ -256,7 +314,7 @@
 
         // Функция для переключения секций
         function showSection(sectionId) {
-            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel, tempAdminSection];
+            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel];
             sections.forEach(section => {
                 if (section.id === sectionId) {
                     section.classList.remove('hidden');
@@ -339,7 +397,6 @@
                             updateNavigation(false);
                             showSection('welcomeSection');
                         }
-                        isLoading = false;
                     });
 
                 } catch (error) {
@@ -365,16 +422,18 @@
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            const loginBtn = loginForm.querySelector('button[type="submit"]');
-            const loadingIndicator = document.getElementById('loadingIndicator');
+            
+            if (email === "" || password === "") {
+                showMessage("Пожалуйста, заполните все поля.", true);
+                return;
+            }
 
             loadingIndicator.classList.remove('hidden');
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Вход выполнен успешно!');
-                showSection('welcomeSection');
-                
+                // onAuthStateChanged позаботится о навигации
             } catch (error) {
                 console.error('Ошибка входа:', error);
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
@@ -384,9 +443,11 @@
         });
 
         // Вход для администратора через Google
-        const googleLoginBtn = document.getElementById('googleLoginBtn');
         googleLoginBtn.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
+
+            loadingIndicator.classList.remove('hidden');
+
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
@@ -396,17 +457,82 @@
                 
                 if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
                     showMessage('Вход для администратора выполнен успешно!');
-                    // Навигация будет обновлена в onAuthStateChanged
+                    // onAuthStateChanged позаботится о навигации
                 } else {
                     showMessage('Вход отклонён. Вы не являетесь администратором.', true);
+                    signOut(auth);
                 }
             } catch (error) {
                 console.error('Ошибка входа через Google:', error);
                 showMessage('Ошибка входа через Google.', true);
+            } finally {
+                loadingIndicator.classList.add('hidden');
             }
         });
 
-        // CRUD операции для админ-панели
+        // Внутренняя навигация админ-панели
+        showAdminLessonsBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.remove('hidden');
+            adminSettingsSection.classList.add('hidden');
+            addStudentsSection.classList.add('hidden');
+            customizationSection.classList.add('hidden');
+            showAdminLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showAdminLessonsBtn.classList.replace('text-gray-800', 'text-white');
+            showAdminSettingsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminSettingsBtn.classList.replace('text-white', 'text-gray-800');
+            showAddStudentsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAddStudentsBtn.classList.replace('text-white', 'text-gray-800');
+            showCustomizationBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showCustomizationBtn.classList.replace('text-white', 'text-gray-800');
+            loadAdminLessons();
+        });
+
+        showAdminSettingsBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.add('hidden');
+            adminSettingsSection.classList.remove('hidden');
+            addStudentsSection.classList.add('hidden');
+            customizationSection.classList.add('hidden');
+            showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showAdminSettingsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showAdminSettingsBtn.classList.replace('text-gray-800', 'text-white');
+            showAddStudentsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAddStudentsBtn.classList.replace('text-white', 'text-gray-800');
+            showCustomizationBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showCustomizationBtn.classList.replace('text-white', 'text-gray-800');
+        });
+
+        showAddStudentsBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.add('hidden');
+            adminSettingsSection.classList.add('hidden');
+            addStudentsSection.classList.remove('hidden');
+            customizationSection.classList.add('hidden');
+            showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showAdminSettingsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminSettingsBtn.classList.replace('text-white', 'text-gray-800');
+            showAddStudentsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showAddStudentsBtn.classList.replace('text-gray-800', 'text-white');
+            showCustomizationBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showCustomizationBtn.classList.replace('text-white', 'text-gray-800');
+        });
+
+        showCustomizationBtn.addEventListener('click', () => {
+            adminLessonsSection.classList.add('hidden');
+            adminSettingsSection.classList.add('hidden');
+            addStudentsSection.classList.add('hidden');
+            customizationSection.classList.remove('hidden');
+            showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showAdminSettingsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAdminSettingsBtn.classList.replace('text-white', 'text-gray-800');
+            showAddStudentsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showAddStudentsBtn.classList.replace('text-white', 'text-gray-800');
+            showCustomizationBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showCustomizationBtn.classList.replace('text-gray-800', 'text-white');
+        });
+
+        // CRUD операции для админ-панели (Уроки)
         addLessonForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = document.getElementById('lessonTitle').value;
@@ -436,7 +562,7 @@
             }
         });
 
-        // Добавление нового администратора
+        // Добавление нового администратора (в Настройках)
         addAdminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const adminId = document.getElementById('adminIdInput').value.trim();
@@ -458,6 +584,44 @@
                 addAdminForm.reset();
             } catch (error) {
                 console.error('Ошибка при добавлении администратора:', error);
+                showMessage(`Ошибка: ${error.message}`, true);
+            }
+        });
+
+        // Добавление нового студента (в Настройках)
+        addStudentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('studentName').value;
+            const lastName = document.getElementById('studentLastName').value;
+            const email = document.getElementById('studentEmail').value;
+            const password = document.getElementById('studentPassword').value;
+            const birthYear = document.getElementById('studentBirthYear').value;
+
+            if (!name || !lastName || !email || !password || !birthYear) {
+                showMessage('Пожалуйста, заполните все поля.', true);
+                return;
+            }
+            if (!db) {
+                showMessage('База данных недоступна.', true);
+                return;
+            }
+            try {
+                // Создаем пользователя в Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Добавляем данные студента в Firestore
+                await setDoc(doc(db, `artifacts/${appId}/public/data/students`, user.uid), {
+                    name: name,
+                    lastName: lastName,
+                    email: email,
+                    birthYear: birthYear,
+                    createdAt: new Date()
+                });
+                showMessage(`Студент ${name} ${lastName} успешно добавлен!`, false);
+                addStudentForm.reset();
+            } catch (error) {
+                console.error('Ошибка при добавлении студента:', error);
                 showMessage(`Ошибка: ${error.message}`, true);
             }
         });
