@@ -44,6 +44,9 @@
                 <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Вход
                 </button>
+                <button id="showAdminLoginBtn" class="bg-purple-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-purple-700 transition duration-300">
+                    Вход для администратора
+                </button>
                 <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
                     Мои уроки
                 </button>
@@ -181,7 +184,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Глобальные переменные из среды Canvas
@@ -212,6 +215,7 @@
         const showHomeBtn = document.getElementById('showHomeBtn');
         const showCoursesBtn = document.getElementById('showCoursesBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
+        const showAdminLoginBtn = document.getElementById('showAdminLoginBtn');
         const showDashboardBtn = document.getElementById('showDashboardBtn');
         const showAdminPanelBtn = document.getElementById('showAdminPanelBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -253,6 +257,7 @@
             logoutBtn.classList.add('hidden');
             showAdminPanelBtn.classList.add('hidden');
             showDashboardBtn.classList.add('hidden');
+            showAdminLoginBtn.classList.add('hidden');
 
             if (isAuthenticated) {
                 logoutBtn.classList.remove('hidden');
@@ -266,6 +271,7 @@
                 showLoginBtn.classList.remove('hidden');
                 showCoursesBtn.classList.remove('hidden');
                 showDashboardBtn.classList.add('hidden');
+                showAdminLoginBtn.classList.remove('hidden');
             }
         }
         
@@ -365,7 +371,30 @@
                 loginBtn.disabled = false;
             }
         });
-        
+
+        // Вход для администратора через Google
+        showAdminLoginBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
+                const adminDocSnap = await getDoc(adminDocRef);
+                
+                if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
+                    showMessage('Вход для администратора выполнен успешно!');
+                    // Навигация будет обновлена в onAuthStateChanged
+                } else {
+                    showMessage('Вход отклонён. Вы не являетесь администратором.', true);
+                    await signOut(auth);
+                }
+            } catch (error) {
+                console.error('Ошибка входа через Google:', error);
+                showMessage('Ошибка входа через Google.', true);
+            }
+        });
+
         // CRUD операции для админ-панели
         addLessonForm.addEventListener('submit', async (e) => {
             e.preventDefault();
