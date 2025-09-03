@@ -133,11 +133,6 @@
             <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Уроки будут загружаться сюда из Firestore -->
             </div>
-            <div class="mt-8 text-center">
-                <button id="changePasswordBtn" class="bg-gray-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-gray-600 transition duration-300">
-                    Изменить пароль
-                </button>
-            </div>
         </div>
         
         <!-- Админ панель (только для администратора) -->
@@ -238,7 +233,7 @@
         const messageBox = document.getElementById('messageBox');
         const addUserForm = document.getElementById('addUserForm');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
-
+        
         // Функция для отображения сообщения
         function showMessage(text, isError = false) {
             messageBox.textContent = text;
@@ -364,11 +359,16 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
+                // Добавляем индикатор загрузки
+                loginForm.querySelector('button[type="submit"]').textContent = 'Загрузка...';
+                
                 await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Вход выполнен успешно!');
             } catch (error) {
                 console.error('Ошибка входа:', error);
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
+            } finally {
+                loginForm.querySelector('button[type="submit"]').textContent = 'Войти';
             }
         });
         
