@@ -273,8 +273,7 @@
                         <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
                     </div>
                     <div class="text-center">
-                        <p><strong>Имя:</strong> <span id="profileNameDisplay"></span></p>
-                        <p><strong>Фамилия:</strong> <span id="profileLastNameDisplay"></span></p>
+                        <p><strong>ФИО:</strong> <span id="profileFIO"></span></p>
                         <p><strong>E-mail:</strong> <span id="profileEmailDisplay"></span></p>
                         <p><strong>Год рождения:</strong> <span id="profileBirthYearDisplay"></span></p>
                         <p><strong>Группа:</strong> <span id="profileGroupDisplay"></span></p>
@@ -297,62 +296,64 @@
             <!-- Секция Уроки -->
             <div id="adminLessonsSection" class="hidden">
                 <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление уроками</h3>
-                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 mb-8">
-                    <h4 class="text-xl font-bold mb-4">Добавить новый урок</h4>
-                    <form id="addLessonForm" class="space-y-4">
-                        <div>
-                            <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
-                            <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Название">
-                        </div>
-                        <div>
-                            <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
-                            <textarea id="lessonDescription" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Описание урока"></textarea>
-                        </div>
-                        <div>
-                            <label for="lessonImageFile" class="block text-gray-700 font-semibold mb-2">Превью-картинка (файл)</label>
-                            <input type="file" id="lessonImageFile" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <p class="mt-2 text-sm text-gray-500">Используется сервис imgbb.com</p>
-                        </div>
-                        <div>
-                            <label for="lessonVideo" class="block text-gray-700 font-semibold mb-2">URL видео (YouTube)</label>
-                            <input type="text" id="lessonVideo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Например, https://www.youtube.com/watch?v=...">
-                        </div>
-                        <div>
-                            <label for="textBeforeTest" class="block text-gray-700 font-semibold mb-2">Текст перед тестом</label>
-                            <textarea id="textBeforeTest" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться перед тестом."></textarea>
-                        </div>
-                        <h5 class="text-lg font-bold mt-6 mb-2">Добавить тест</h5>
-                        <div id="testQuestionsContainer" class="space-y-4 border border-gray-300 p-4 rounded-lg">
-                            <div class="test-question-item space-y-2">
-                                <label class="block text-gray-700">Вопрос 1:</label>
-                                <input type="text" class="w-full px-3 py-2 border rounded-lg question-text" placeholder="Текст вопроса">
-                                <label class="block text-gray-700">Варианты ответов (через запятую):</label>
-                                <input type="text" class="w-full px-3 py-2 border rounded-lg options-text" placeholder="Вариант 1, Вариант 2, Вариант 3">
-                                <label class="block text-gray-700">Правильный ответ:</label>
-                                <input type="text" class="w-full px-3 py-2 border rounded-lg correct-answer-text" placeholder="Правильный ответ">
+                <div class="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
+                    <div class="md:w-1/2">
+                        <h4 class="text-xl font-bold mb-4">Добавить новый урок</h4>
+                        <form id="addLessonForm" class="space-y-4">
+                            <div>
+                                <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
+                                <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Название">
                             </div>
-                        </div>
-                        <button type="button" id="addQuestionBtn" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm hover:bg-gray-300 transition duration-300">
-                            Добавить вопрос
-                        </button>
-                        <div>
-                            <label for="testResultText" class="block text-gray-700 font-semibold mb-2">Текст с результатом теста</label>
-                            <textarea id="testResultText" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться после теста с результатами."></textarea>
-                        </div>
-                        <div>
-                            <label for="testCooldown" class="block text-gray-700 font-semibold mb-2">Интервал между тестами (в минутах)</label>
-                            <input type="number" id="testCooldown" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" value="5" min="0">
-                        </div>
-                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
-                            Добавить урок
-                        </button>
-                    </form>
-                </div>
-                <div>
-                    <h4 class="text-xl font-bold mb-4">Список всех уроков</h4>
-                    <ul id="lessonList" class="space-y-4">
-                        <!-- Список уроков для редактирования -->
-                    </ul>
+                            <div>
+                                <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
+                                <textarea id="lessonDescription" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Описание урока"></textarea>
+                            </div>
+                            <div>
+                                <label for="lessonImageFile" class="block text-gray-700 font-semibold mb-2">Превью-картинка (файл)</label>
+                                <input type="file" id="lessonImageFile" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <p class="mt-2 text-sm text-gray-500">Используется сервис imgbb.com</p>
+                            </div>
+                            <div>
+                                <label for="lessonVideo" class="block text-gray-700 font-semibold mb-2">URL видео (YouTube)</label>
+                                <input type="text" id="lessonVideo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Например, https://www.youtube.com/watch?v=...">
+                            </div>
+                            <div>
+                                <label for="textBeforeTest" class="block text-gray-700 font-semibold mb-2">Текст перед тестом</label>
+                                <textarea id="textBeforeTest" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться перед тестом."></textarea>
+                            </div>
+                            <h5 class="text-lg font-bold mt-6 mb-2">Добавить тест</h5>
+                            <div id="testQuestionsContainer" class="space-y-4 border border-gray-300 p-4 rounded-lg">
+                                <div class="test-question-item space-y-2">
+                                    <label class="block text-gray-700">Вопрос 1:</label>
+                                    <input type="text" class="w-full px-3 py-2 border rounded-lg question-text" placeholder="Текст вопроса">
+                                    <label class="block text-gray-700">Варианты ответов (через запятую):</label>
+                                    <input type="text" class="w-full px-3 py-2 border rounded-lg options-text" placeholder="Вариант 1, Вариант 2, Вариант 3">
+                                    <label class="block text-gray-700">Правильный ответ:</label>
+                                    <input type="text" class="w-full px-3 py-2 border rounded-lg correct-answer-text" placeholder="Правильный ответ">
+                                </div>
+                            </div>
+                            <button type="button" id="addQuestionBtn" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm hover:bg-gray-300 transition duration-300">
+                                Добавить вопрос
+                            </button>
+                            <div>
+                                <label for="testResultText" class="block text-gray-700 font-semibold mb-2">Текст с результатом теста</label>
+                                <textarea id="testResultText" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться после теста с результатами."></textarea>
+                            </div>
+                            <div>
+                                <label for="testCooldown" class="block text-gray-700 font-semibold mb-2">Интервал между тестами (в минутах)</label>
+                                <input type="number" id="testCooldown" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" value="5" min="0">
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
+                                Добавить урок
+                            </button>
+                        </form>
+                    </div>
+                    <div class="md:w-1/2">
+                        <h4 class="text-xl font-bold mb-4">Список всех уроков</h4>
+                        <ul id="lessonList" class="space-y-4">
+                            <!-- Список уроков для редактирования -->
+                        </ul>
+                    </div>
                 </div>
             </div>
             
@@ -500,6 +501,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc, setDoc, getDocs, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // Глобальные переменные из среды Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -516,6 +518,7 @@
 
         let db;
         let auth;
+        let storage;
         let userId;
         let isUserAdmin = false;
         let userAvatarUrl = '';
@@ -523,7 +526,8 @@
         let lessonTestQuestions = 1;
         let allLessons = {};
         let isVideoWatched = false;
-
+        let userVideoProgress = {};
+        
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
         const coursesSection = document.getElementById('coursesSection');
@@ -565,8 +569,7 @@
         const profileAvatar = document.getElementById('profileAvatar');
         const changeAvatarBtn = document.getElementById('changeAvatarBtn');
         const avatarFileInput = document.getElementById('avatarFileInput');
-        const profileNameDisplay = document.getElementById('profileNameDisplay');
-        const profileLastNameDisplay = document.getElementById('profileLastNameDisplay');
+        const profileFIO = document.getElementById('profileFIO');
         const profileEmailDisplay = document.getElementById('profileEmailDisplay');
         const profileBirthYearDisplay = document.getElementById('profileBirthYearDisplay');
         const profileGroupDisplay = document.getElementById('profileGroupDisplay');
@@ -590,7 +593,7 @@
         const siteLogoFile = document.getElementById('siteLogoFile');
         const welcomeImage = document.getElementById('welcomeImage');
         const welcomeContactBtn = document.getElementById('welcomeContactBtn');
-
+        
         // Admin Panel Navigation Buttons
         const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
         const showAdminSettingsBtn = document.getElementById('showAdminSettingsBtn');
@@ -761,6 +764,7 @@
                 try {
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
+                    storage = getStorage(app);
                     auth = getAuth(app);
                     console.log('Firebase успешно инициализирован.');
 
@@ -960,10 +964,9 @@
             
             if(siteLogoFile) {
                 showMessage('Загрузка логотипа...', false);
-                siteLogoUrlValue = await uploadImageToImgbb(siteLogoFile);
-                if (!siteLogoUrlValue) {
-                    return;
-                }
+                const logoRef = ref(storage, `logos/${appId}`);
+                await uploadBytes(logoRef, siteLogoFile);
+                siteLogoUrlValue = await getDownloadURL(logoRef);
                 showMessage('Логотип успешно загружен!');
             }
 
@@ -1167,32 +1170,11 @@
             });
         }
         
-        // Функция для загрузки изображения на ImgBB
-        async function uploadImageToImgbb(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            
-            try {
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMG_BB_API_KEY}`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Ошибка загрузки изображения на ImgBB');
-                }
-
-                const data = await response.json();
-                if (data.success) {
-                    return data.data.url;
-                } else {
-                    throw new Error(data.error.message);
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage(`Ошибка загрузки изображения: ${error.message}`, true);
-                return null;
-            }
+        // Функция для загрузки изображения в Firebase Storage
+        async function uploadImageToFirebase(file, path) {
+            const fileRef = ref(storage, path);
+            await uploadBytes(fileRef, file);
+            return await getDownloadURL(fileRef);
         }
 
         // CRUD операции для админ-панели (Уроки)
@@ -1234,11 +1216,10 @@
             if (imageFile) {
                 showMessage('Идет загрузка изображения...', false);
                 try {
-                    imageUrl = await uploadImageToImgbb(imageFile);
-                    if (!imageUrl) {
-                        return;
-                    }
+                    imageUrl = await uploadImageToFirebase(imageFile, `lesson_previews/${appId}/${imageFile.name}`);
                 } catch (e) {
+                    console.error("Ошибка при загрузке превью:", e);
+                    showMessage('Ошибка при загрузке превью.', true);
                     return;
                 }
                 showMessage('Изображение успешно загружено!');
@@ -1386,8 +1367,7 @@
             onSnapshot(studentRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const studentData = docSnap.data();
-                    profileNameDisplay.textContent = studentData.name || 'Неизвестно';
-                    profileLastNameDisplay.textContent = studentData.lastName || 'Неизвестно';
+                    profileFIO.textContent = `${studentData.name} ${studentData.lastName}`;
                     profileEmailDisplay.textContent = studentData.email || 'Неизвестно';
                     profileBirthYearDisplay.textContent = studentData.birthYear || 'Неизвестно';
                     profileGroupDisplay.textContent = studentData.group || 'Неизвестно';
@@ -1395,6 +1375,7 @@
                     profileAvatar.src = userAvatarUrl;
                     userAvatar.src = userAvatarUrl;
                     studentTestResults = studentData.testResults || {};
+                    userVideoProgress = studentData.videoProgress || {};
                 }
             }, (error) => {
                 console.error('Ошибка при загрузке данных студента: ', error);
@@ -1414,16 +1395,17 @@
                     const lesson = docSnap.data();
                     const lessonId = docSnap.id;
                     allLessons[lessonId] = lesson;
-                    const previousLessonId = index > 0 ? sortedLessons[index - 1].id : null;
-                    const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
-                    const isUnlocked = index === 0 || isPreviousLessonPassed;
+                    
                     const userScore = studentTestResults[lessonId];
                     const progressColor = userScore >= 80 ? '#22c55e' : '#ef4444';
-                    const progressDashoffset = 2 * Math.PI * 22 * (1 - (userScore / 100));
+                    const progressDashoffset = 2 * Math.PI * 22 * (1 - (userScore / 100 || 0));
                     const scoreText = userScore !== undefined ? `${userScore.toFixed(0)}%` : '0%';
-                    
+
+                    const previousLessonPassed = index === 0 || studentTestResults[sortedLessons[index - 1].id] >= 80;
+                    const isUnlocked = previousLessonPassed;
+
                     const lessonElement = `
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
+                        <div class="bg-card-bg-color rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
                             ${!isUnlocked ? '<div class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center text-white text-xl font-bold z-10">Урок заблокирован</div>' : ''}
                             <div class="cursor-pointer" data-lesson-id="${lessonId}">
                                 ${lesson.imageUrl ? `<img src="${lesson.imageUrl}" alt="${lesson.title}" class="w-full h-48 object-cover">` : ''}
@@ -1437,7 +1419,7 @@
                                         </svg>
                                         <span class="absolute text-sm font-bold text-gray-800">${scoreText}</span>
                                     </div>
-                                    ${isUnlocked ? '' : '<p class="mt-4 text-sm text-red-500">Минимум 80% для перехода к следующему уроку</p>'}
+                                    ${!isUnlocked ? '<p class="mt-4 text-sm text-red-500">Пройдите предыдущий урок на 80%</p>' : ''}
                                 </div>
                             </div>
                         </div>
@@ -1465,7 +1447,7 @@
             const previousLessonId = lessonIndex > 0 ? sortedLessons[lessonIndex - 1].id : null;
             const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
             const isUnlocked = lessonIndex === 0 || isPreviousLessonPassed;
-
+            
             if (!isUnlocked) {
                 showMessage('Этот урок заблокирован. Пожалуйста, пройдите предыдущий тест.', true);
                 return;
@@ -1513,6 +1495,10 @@
                     </div>
                 </div>` : ''}
             `;
+            const videoFrame = document.getElementById('lessonVideoFrame');
+            videoFrame.onload = () => {
+                userVideoProgress[lessonId] = true;
+            };
         });
         
         // Обработчик кнопки "Назад к урокам"
@@ -1525,9 +1511,14 @@
         // Обработчик кнопки "Пройти тест"
         lessonViewSection.addEventListener('click', (e) => {
             if (e.target.id === 'showTestBtn') {
-                const testSection = document.getElementById('testSection');
-                testSection.classList.remove('hidden');
-                e.target.classList.add('hidden');
+                const lessonId = e.target.closest('[data-lesson-id]').dataset.lessonId;
+                if (userVideoProgress[lessonId]) {
+                    const testSection = document.getElementById('testSection');
+                    testSection.classList.remove('hidden');
+                    e.target.classList.add('hidden');
+                } else {
+                    showMessage('Пожалуйста, сначала посмотрите видео.', true);
+                }
             }
         });
 
@@ -1623,8 +1614,7 @@
                 }, {});
                 const lessonIds = Object.keys(lessons);
 
-                groupTableHead.innerHTML = `<th class="py-2 px-4 text-left">Имя</th>
-                                       <th class="py-2 px-4 text-left">Фамилия</th>
+                groupTableHead.innerHTML = `<th class="py-2 px-4 text-left">ФИО</th>
                                        <th class="py-2 px-4 text-left">Аватар</th>`;
                 lessonIds.forEach(id => {
                     groupTableHead.innerHTML += `<th class="py-2 px-4 text-left">${lessons[id]}</th>`;
@@ -1637,8 +1627,7 @@
                     
                     const row = document.createElement('tr');
                     row.className = 'border-t border-gray-200';
-                    let cellsHtml = `<td class="py-2 px-4">${member.name}</td>
-                                     <td class="py-2 px-4">${member.lastName}</td>
+                    let cellsHtml = `<td class="py-2 px-4">${member.name} ${member.lastName}</td>
                                      <td class="py-2 px-4"><img src="${member.avatarUrl || 'https://placehold.co/32x32'}" alt="Аватар" class="rounded-full w-8 h-8"></td>`;
                     
                     lessonIds.forEach(id => {
@@ -1664,20 +1653,17 @@
             if (!file) return;
 
             showMessage('Загрузка аватара...', false);
-            const imageUrl = await uploadImageToImgbb(file);
-            if (imageUrl) {
-                try {
-                    await updateDoc(doc(db, `artifacts/${appId}/public/data/students`, userId), {
-                        avatarUrl: imageUrl
-                    });
-                    showMessage('Аватар успешно обновлен!');
-                } catch (error) {
-                    console.error('Ошибка при обновлении аватара:', error);
-                    showMessage('Ошибка при обновлении аватара.', true);
-                }
+            try {
+                const imageUrl = await uploadImageToFirebase(file, `avatars/${userId}`);
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/students`, userId), {
+                    avatarUrl: imageUrl
+                });
+                showMessage('Аватар успешно обновлен!');
+            } catch (error) {
+                console.error('Ошибка при обновлении аватара:', error);
+                showMessage('Ошибка при обновлении аватара.', true);
             }
         });
-
 
         // Загрузка уроков для админ-панели
         function loadAdminLessons() {
