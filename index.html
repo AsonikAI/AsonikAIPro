@@ -518,15 +518,7 @@
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = {
-            apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
-            authDomain: "asonik-ai.firebaseapp.com",
-            projectId: "asonik-ai",
-            storageBucket: "asonik-ai.appspot.com",
-            messagingSenderId: "875716508614",
-            appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
-            measurementId: "G-HT5T20YPVE"
-        };
+        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
         let db, auth, storage, functions, userId, isUserAdmin = false, firebaseApp;
@@ -599,7 +591,7 @@
             }
         }
         
-        async function loadStudentInfo() {
+        function loadStudentInfo() {
             if (!db || !userId) return;
             const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
             onSnapshot(studentRef, (docSnap) => {
@@ -633,10 +625,18 @@
         // --- Initialization ---
         window.onload = async () => {
             applyTheme(localStorage.getItem('theme') === 'dark');
+            let firebaseConfig = {};
             try {
-                 if (!firebaseConfig || !firebaseConfig.apiKey) {
-                    throw new Error("Firebase configuration is missing.");
+                if (firebaseConfigStr && firebaseConfigStr !== '{}') {
+                    firebaseConfig = JSON.parse(firebaseConfigStr);
+                } else {
+                     throw new Error("Firebase configuration string is missing or empty.");
                 }
+
+                 if (!firebaseConfig || !firebaseConfig.apiKey) {
+                    throw new Error("Firebase configuration is invalid.");
+                }
+                
                 firebaseApp = initializeApp(firebaseConfig);
                 db = getFirestore(firebaseApp);
                 auth = getAuth(firebaseApp);
@@ -644,35 +644,54 @@
                 functions = getFunctions(firebaseApp);
 
                 onAuthStateChanged(auth, async (user) => {
-                    authReady = true;
-                    loadMainInfo(); 
+                    
                     if (user) {
                         userId = user.uid;
-                        const adminDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid));
-                        isUserAdmin = adminDoc.exists() && adminDoc.data().isAdmin;
-                        
-                        if (isUserAdmin) {
-                            updateNavigation(true);
-                            showSection('adminPanel');
-                            document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
+                        if(!authReady) {
+                           await loadMainInfo(); 
+                           authReady = true;
+                        }
+
+                        if (user.isAnonymous) {
+                            isUserAdmin = false;
+                            updateNavigation(false); 
+                            showSection('welcome');
                         } else {
-                            // It's a student
-                            const studentDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/students`, user.uid));
-                            if (studentDoc.exists()){
+                            const adminDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid));
+                            isUserAdmin = adminDoc.exists() && adminDoc.data().isAdmin;
+                            
+                            if (isUserAdmin) {
                                 updateNavigation(true);
-                                loadStudentInfo();
-                                showSection('dashboard');
-                                document.getElementById('showDashboardLessonsBtn').click();
+                                showSection('adminPanel');
+                                document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
                             } else {
-                                // User exists in Auth but not in students DB, treat as logged out
-                                signOut(auth); 
+                                const studentDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/students`, user.uid));
+                                if (studentDoc.exists()){
+                                    updateNavigation(true);
+                                    loadStudentInfo();
+                                    showSection('dashboard');
+                                    document.getElementById('showDashboardLessonsBtn').click();
+                                } else {
+                                    await signOut(auth); 
+                                }
                             }
                         }
-                    } else {
+                    } else { 
                         userId = null;
                         isUserAdmin = false;
                         updateNavigation(false);
                         showSection('welcome');
+                        
+                        if (initialAuthToken) {
+                            try {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                            } catch (tokenError) {
+                                console.error("Custom token sign-in failed:", tokenError);
+                                if (!auth.currentUser) await signInAnonymously(auth);
+                            }
+                        } else if (!auth.currentUser) {
+                            await signInAnonymously(auth);
+                        }
                     }
                 });
             } catch (error) {
@@ -693,7 +712,7 @@
                 if(key === 'login') showSection('login');
                 if(key === 'adminPanel') {
                     showSection('adminPanel');
-                    document.querySelector('.admin-nav-btn.active')?.click();
+                    document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
                 }
                 if(key === 'dashboard') {
                     showSection('dashboard');
@@ -1046,6 +1065,80 @@
             } catch (error) {
                 console.error('Ошибка отправки заявки:', error);
                 showMessage('Ошибка при отправке заявки.', true);
+            }
+        });
+        
+        // --- Functions with actual implementation ---
+        function loadAdminLessons() { 
+            if (!db) return;
+            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
+            onSnapshot(lessonsRef, (snapshot) => {
+                const lessonListEl = document.getElementById('lessonList');
+                lessonListEl.innerHTML = ''; 
+                snapshot.forEach(docSnap => {
+                    const lesson = docSnap.data();
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between bg-white p-4 rounded-lg shadow-sm';
+                    li.innerHTML = `
+                        <span class="font-semibold">${lesson.title}</span>
+                        <div class="space-x-2">
+                            <button data-id="${docSnap.id}" class="edit-btn bg-yellow-500 text-white py-1 px-3 rounded-full text-sm">Редактировать</button>
+                            <button data-id="${docSnap.id}" class="delete-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm">Удалить</button>
+                        </div>
+                    `;
+                    lessonListEl.appendChild(li);
+                });
+            });
+        }
+        function loadStudents() { 
+            if (!db) return;
+            const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
+            onSnapshot(studentsRef, (snapshot) => {
+                const studentListEl = document.getElementById('studentList');
+                studentListEl.innerHTML = ''; 
+                snapshot.forEach(docSnap => {
+                    const student = docSnap.data();
+                    const li = document.createElement('li');
+                    li.className = 'flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-lg shadow-sm';
+                    li.innerHTML = `
+                        <div class="mb-2 md:mb-0">
+                            <span class="font-semibold">${student.name} ${student.lastName}</span>
+                            <span class="text-sm text-gray-500 block md:inline-block md:ml-4">Группа: ${student.group}</span>
+                        </div>
+                        <div class="space-x-2">
+                            <button data-id="${docSnap.id}" class="delete-student-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm">Удалить</button>
+                        </div>
+                    `;
+                    studentListEl.appendChild(li);
+                });
+            });
+        }
+        function loadAdmins() { 
+             if (!db) return;
+            const adminsRef = collection(db, `artifacts/${appId}/public/data/admin_users`);
+            onSnapshot(adminsRef, (snapshot) => {
+                const adminListEl = document.getElementById('adminList');
+                adminListEl.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between bg-white p-2 rounded-lg';
+                    li.innerHTML = `
+                        <span class="font-semibold text-sm">${docSnap.id}</span>
+                    `;
+                    adminListEl.appendChild(li);
+                });
+            });
+        }
+        document.getElementById('addGroupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const groupName = document.getElementById('groupName').value.trim();
+            if(!groupName) return showMessage('Введите название группы', true);
+            try {
+                await addDoc(collection(db, `artifacts/${appId}/public/data/groups`), { name: groupName });
+                showMessage('Группа создана');
+                e.target.reset();
+            } catch (error) {
+                showMessage('Ошибка создания группы', true);
             }
         });
 
