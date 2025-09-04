@@ -28,6 +28,12 @@
         .hidden-test {
             display: none;
         }
+        .profile-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 50;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -37,7 +43,7 @@
         <!-- Основная навигация -->
         <nav class="flex justify-between items-center mb-10">
             <h1 class="text-3xl font-bold text-indigo-700">Ya_Buxgalter</h1>
-            <div class="space-x-4">
+            <div class="space-x-4 flex items-center relative">
                 <button id="showHomeBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Главная
                 </button>
@@ -47,14 +53,26 @@
                 <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Вход
                 </button>
+                <div class="relative inline-block text-left hidden" id="userProfileDropdown">
+                    <button id="profileMenuButton" class="flex items-center space-x-2 bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300">
+                        <img id="userAvatar" src="https://placehold.co/32x32" alt="Аватар" class="rounded-full w-8 h-8">
+                        <span>Профиль</span>
+                        <svg class="-mr-1 h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div id="profileMenu" class="profile-menu hidden origin-top-right mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div class="py-1" role="none">
+                            <a href="#" id="showMyProfileBtn" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Мой профиль</a>
+                            <a href="#" id="logoutBtn" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Выйти</a>
+                        </div>
+                    </div>
+                </div>
                 <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
                     Мои уроки
                 </button>
                 <button id="showAdminPanelBtn" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-orange-600 transition duration-300 hidden">
                     Админ-панель
-                </button>
-                <button id="logoutBtn" class="bg-red-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-red-600 transition duration-300 hidden">
-                    Выйти
                 </button>
             </div>
         </nav>
@@ -167,21 +185,24 @@
             <nav class="flex justify-center space-x-4 mb-8">
                 <button id="showDashboardLessonsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Мои уроки</button>
                 <button id="showMyGroupBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Моя группа</button>
+                <button id="showMyProfileBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Мой профиль</button>
             </nav>
 
             <!-- Секция "Мои уроки" -->
             <div id="dashboardLessonsSection" class="hidden">
                 <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мои уроки</h2>
-                <div id="studentInfo" class="bg-gray-100 p-6 rounded-lg mb-6 shadow-sm">
-                    <h3 class="text-xl font-semibold mb-2">Информация о студенте:</h3>
-                    <p><strong>Имя:</strong> <span id="studentNameDisplay"></span></p>
-                    <p><strong>Фамилия:</strong> <span id="studentLastNameDisplay"></span></p>
-                    <p><strong>Год рождения:</strong> <span id="studentBirthYearDisplay"></span></p>
-                    <p><strong>Группа:</strong> <span id="studentGroupDisplay"></span></p>
-                </div>
-                <p class="text-gray-600 text-center mb-6">Здесь вы найдете все видеоуроки и материалы, доступные по вашему курсу.</p>
                 <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Уроки будут загружаться сюда из Firestore -->
+                </div>
+            </div>
+
+            <!-- Секция "Просмотр урока" -->
+            <div id="lessonViewSection" class="hidden">
+                <button id="backToLessonsBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300 mb-6">
+                    &larr; Назад к урокам
+                </button>
+                <div id="lessonDetailsContainer">
+                    <!-- Детали урока будут загружаться сюда -->
                 </div>
             </div>
 
@@ -197,6 +218,7 @@
                             <tr>
                                 <th class="py-2 px-4 text-left">Имя</th>
                                 <th class="py-2 px-4 text-left">Фамилия</th>
+                                <th class="py-2 px-4 text-left">Аватар</th>
                                 <th class="py-2 px-4 text-left">Результаты тестов</th>
                             </tr>
                         </thead>
@@ -204,6 +226,27 @@
                             <!-- Список участников группы -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Секция "Мой профиль" -->
+            <div id="myProfileSection" class="hidden">
+                <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мой профиль</h2>
+                <div id="profileInfoContainer" class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <div class="flex flex-col items-center mb-4">
+                        <img id="profileAvatar" src="https://placehold.co/128x128" alt="Аватар профиля" class="rounded-full w-32 h-32 mb-4">
+                        <button id="changeAvatarBtn" class="bg-blue-500 text-white py-2 px-4 rounded-full text-sm hover:bg-blue-600 transition duration-300">
+                            Изменить аватар
+                        </button>
+                        <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
+                    </div>
+                    <div class="text-center">
+                        <p><strong>Имя:</strong> <span id="profileNameDisplay"></span></p>
+                        <p><strong>Фамилия:</strong> <span id="profileLastNameDisplay"></span></p>
+                        <p><strong>E-mail:</strong> <span id="profileEmailDisplay"></span></p>
+                        <p><strong>Год рождения:</strong> <span id="profileBirthYearDisplay"></span></p>
+                        <p><strong>Группа:</strong> <span id="profileGroupDisplay"></span></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -263,6 +306,10 @@
                         <div>
                             <label for="testResultText" class="block text-gray-700 font-semibold mb-2">Текст с результатом теста</label>
                             <textarea id="testResultText" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться после теста с результатами."></textarea>
+                        </div>
+                        <div>
+                            <label for="testCooldown" class="block text-gray-700 font-semibold mb-2">Интервал между тестами (в минутах)</label>
+                            <input type="number" id="testCooldown" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" value="5" min="0">
                         </div>
                         <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
                             Добавить урок
@@ -413,8 +460,10 @@
         let auth;
         let userId;
         let isUserAdmin = false;
+        let userAvatarUrl = '';
         const IMG_BB_API_KEY = '5aea1039aaacb36eecb697e6fa9fae7d';
         let lessonTestQuestions = 1;
+        let allLessons = {};
 
         // Элементы DOM
         const welcomeSection = document.getElementById('welcomeSection');
@@ -436,10 +485,6 @@
         const addAdminForm = document.getElementById('addAdminForm');
         const addStudentForm = document.getElementById('addStudentForm');
         const studentList = document.getElementById('studentList');
-        const studentNameDisplay = document.getElementById('studentNameDisplay');
-        const studentLastNameDisplay = document.getElementById('studentLastNameDisplay');
-        const studentBirthYearDisplay = document.getElementById('studentBirthYearDisplay');
-        const studentGroupDisplay = document.getElementById('studentGroupDisplay');
         const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
         const googleLoginBtn = document.getElementById('googleLoginBtn');
         const loadingIndicator = document.getElementById('loadingIndicator');
@@ -453,6 +498,23 @@
         const groupMembersList = document.getElementById('groupMembersList');
         const deleteAllStudentsBtn = document.getElementById('deleteAllStudentsBtn');
         const adminList = document.getElementById('adminList');
+        const lessonViewSection = document.getElementById('lessonViewSection');
+        const lessonDetailsContainer = document.getElementById('lessonDetailsContainer');
+        const backToLessonsBtn = document.getElementById('backToLessonsBtn');
+        const showMyProfileBtn = document.getElementById('showMyProfileBtn');
+        const myProfileSection = document.getElementById('myProfileSection');
+        const profileAvatar = document.getElementById('profileAvatar');
+        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+        const avatarFileInput = document.getElementById('avatarFileInput');
+        const profileNameDisplay = document.getElementById('profileNameDisplay');
+        const profileLastNameDisplay = document.getElementById('profileLastNameDisplay');
+        const profileEmailDisplay = document.getElementById('profileEmailDisplay');
+        const profileBirthYearDisplay = document.getElementById('profileBirthYearDisplay');
+        const profileGroupDisplay = document.getElementById('profileGroupDisplay');
+        const profileMenuButton = document.getElementById('profileMenuButton');
+        const userProfileDropdown = document.getElementById('userProfileDropdown');
+        const profileMenu = document.getElementById('profileMenu');
+        const userAvatar = document.getElementById('userAvatar');
 
         // Admin Panel Navigation Buttons
         const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
@@ -504,12 +566,12 @@
             showLoginBtn.classList.add('hidden');
             showCoursesBtn.classList.add('hidden');
             showHomeBtn.classList.remove('hidden');
-            logoutBtn.classList.add('hidden');
-            showAdminPanelBtn.classList.add('hidden');
             showDashboardBtn.classList.add('hidden');
+            showAdminPanelBtn.classList.add('hidden');
+            userProfileDropdown.classList.add('hidden');
 
             if (isAuthenticated) {
-                logoutBtn.classList.remove('hidden');
+                userProfileDropdown.classList.remove('hidden');
                 if (isUserAdmin) {
                     showAdminPanelBtn.classList.remove('hidden');
                     showDashboardBtn.classList.remove('hidden'); 
@@ -519,7 +581,6 @@
             } else {
                 showLoginBtn.classList.remove('hidden');
                 showCoursesBtn.classList.remove('hidden');
-                showDashboardBtn.classList.add('hidden');
             }
         }
         
@@ -551,34 +612,67 @@
             // Показываем раздел уроков по умолчанию
             dashboardLessonsSection.classList.remove('hidden');
             myGroupSection.classList.add('hidden');
+            myProfileSection.classList.add('hidden');
             showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
             showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
             showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
             showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
-
+            showMyProfileBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showMyProfileBtn.classList.replace('text-white', 'text-gray-800');
             loadLessons();
-            await loadStudentInfo();
         });
-        
+
         // Внутренняя навигация панели студента
         showDashboardLessonsBtn.addEventListener('click', () => {
             dashboardLessonsSection.classList.remove('hidden');
             myGroupSection.classList.add('hidden');
+            myProfileSection.classList.add('hidden');
             showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
             showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
             showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
             showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
+            showMyProfileBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showMyProfileBtn.classList.replace('text-white', 'text-gray-800');
             loadLessons();
         });
 
         showMyGroupBtn.addEventListener('click', () => {
             dashboardLessonsSection.classList.add('hidden');
             myGroupSection.classList.remove('hidden');
+            myProfileSection.classList.add('hidden');
             showDashboardLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
             showDashboardLessonsBtn.classList.replace('text-white', 'text-gray-800');
             showMyGroupBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
             showMyGroupBtn.classList.replace('text-gray-800', 'text-white');
+            showMyProfileBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showMyProfileBtn.classList.replace('text-white', 'text-gray-800');
             loadMyGroup();
+        });
+
+        showMyProfileBtn.addEventListener('click', async () => {
+            dashboardLessonsSection.classList.add('hidden');
+            myGroupSection.classList.add('hidden');
+            myProfileSection.classList.remove('hidden');
+            showDashboardLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showDashboardLessonsBtn.classList.replace('text-white', 'text-gray-800');
+            showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
+            showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
+            showMyProfileBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
+            showMyProfileBtn.classList.replace('text-gray-800', 'text-white');
+            await loadStudentInfo();
+        });
+        
+        // Переключение меню профиля
+        profileMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileMenu.classList.toggle('hidden');
+        });
+
+        // Скрыть меню профиля при клике вне его
+        window.addEventListener('click', (e) => {
+            if (!userProfileDropdown.contains(e.target)) {
+                profileMenu.classList.add('hidden');
+            }
         });
 
         // Инициализация Firebase
@@ -590,11 +684,19 @@
                     auth = getAuth(app);
                     console.log('Firebase успешно инициализирован.');
 
-                    // Основной слушатель изменений состояния авторизации
                     onAuthStateChanged(auth, async (user) => {
                         if (user) {
                             userId = user.uid;
-                            
+                            const userDocRef = doc(db, `artifacts/${appId}/public/data/students`, user.uid);
+                            const userDocSnap = await getDoc(userDocRef);
+                            if (userDocSnap.exists()) {
+                                userAvatarUrl = userDocSnap.data().avatarUrl || 'https://placehold.co/32x32';
+                                userAvatar.src = userAvatarUrl;
+                            } else {
+                                userAvatarUrl = 'https://placehold.co/32x32';
+                                userAvatar.src = userAvatarUrl;
+                            }
+
                             const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
                             const adminDocSnap = await getDoc(adminDocRef);
                             isUserAdmin = (adminDocSnap.exists() && adminDocSnap.data().isAdmin);
@@ -602,7 +704,6 @@
                             updateNavigation(true);
                             if (isUserAdmin) {
                                 showSection('adminPanel'); 
-                                // Убираем активную вкладку по умолчанию
                                 adminLessonsSection.classList.add('hidden');
                                 showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
                                 showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
@@ -636,6 +737,7 @@
             try {
                 await signOut(auth);
                 showMessage('Вы успешно вышли из системы.');
+                showSection('loginSection');
             } catch (error) {
                 console.error('Ошибка выхода из системы:', error);
                 showMessage('Ошибка выхода.', true);
@@ -656,9 +758,9 @@
             loadingIndicator.classList.remove('hidden');
 
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                await signInWithEmailAndPassword(auth, email, password);
                 showMessage('Вход выполнен успешно!');
-                // onAuthStateChanged позаботится о навигации
+                showSection('dashboardSection'); // Перенаправляем сразу после входа
             } catch (error) {
                 console.error('Ошибка входа:', error);
                 showMessage('Ошибка входа. Проверьте почту и пароль.', true);
@@ -682,7 +784,7 @@
                 
                 if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
                     showMessage('Вход для администратора выполнен успешно!');
-                    // onAuthStateChanged позаботится о навигации
+                    showSection('adminPanel');
                 } else {
                     showMessage('Вход отклонён. Вы не являетесь администратором.', true);
                     signOut(auth);
@@ -887,6 +989,7 @@
             const videoUrl = document.getElementById('lessonVideo').value;
             const textBeforeTest = document.getElementById('textBeforeTest').value;
             const testResultText = document.getElementById('testResultText').value;
+            const testCooldown = document.getElementById('testCooldown').value;
             
             const questions = [];
             document.querySelectorAll('.test-question-item').forEach(item => {
@@ -935,6 +1038,7 @@
                     textBeforeTest: textBeforeTest,
                     lessonTest: questions,
                     testResultText: testResultText,
+                    testCooldown: testCooldown,
                     createdAt: new Date()
                 });
                 showMessage('Урок успешно добавлен!');
@@ -1047,7 +1151,8 @@
                     birthYear: birthYear,
                     group: group,
                     createdAt: new Date(),
-                    testResults: {}
+                    testResults: {},
+                    avatarUrl: ''
                 });
                 showMessage(`Студент ${name} ${lastName} успешно добавлен!`, false);
                 addStudentForm.reset();
@@ -1066,65 +1171,47 @@
             onSnapshot(studentRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const studentData = docSnap.data();
-                    studentNameDisplay.textContent = studentData.name || 'Неизвестно';
-                    studentLastNameDisplay.textContent = studentData.lastName || 'Неизвестно';
-                    studentBirthYearDisplay.textContent = studentData.birthYear || 'Неизвестно';
-                    studentGroupDisplay.textContent = studentData.group || 'Неизвестно';
+                    profileNameDisplay.textContent = studentData.name || 'Неизвестно';
+                    profileLastNameDisplay.textContent = studentData.lastName || 'Неизвестно';
+                    profileEmailDisplay.textContent = studentData.email || 'Неизвестно';
+                    profileBirthYearDisplay.textContent = studentData.birthYear || 'Неизвестно';
+                    profileGroupDisplay.textContent = studentData.group || 'Неизвестно';
+                    userAvatarUrl = studentData.avatarUrl || 'https://placehold.co/128x128';
+                    profileAvatar.src = userAvatarUrl;
+                    userAvatar.src = userAvatarUrl;
                     studentTestResults = studentData.testResults || {};
                 }
             }, (error) => {
                 console.error('Ошибка при загрузке данных студента: ', error);
             });
         }
-        
+
         // Загрузка уроков для студентов
         function loadLessons() {
             if (!db) return;
             const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
             onSnapshot(lessonsRef, (snapshot) => {
-                lessonsContainer.innerHTML = ''; // Очищаем контейнер
+                lessonsContainer.innerHTML = '';
+                allLessons = {};
                 const sortedLessons = snapshot.docs.sort((a, b) => a.data().createdAt.toDate() - b.data().createdAt.toDate());
-                let unlockedLessonsCount = 0;
-                
+
                 sortedLessons.forEach((docSnap, index) => {
                     const lesson = docSnap.data();
                     const lessonId = docSnap.id;
-                    const youtubeVideoId = lesson.videoUrl && lesson.videoUrl.split('v=')[1] ? lesson.videoUrl.split('v=')[1].split('&')[0] : null;
+                    allLessons[lessonId] = lesson;
                     const previousLessonId = index > 0 ? sortedLessons[index - 1].id : null;
                     const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
                     const isUnlocked = index === 0 || isPreviousLessonPassed;
                     
                     const lessonElement = `
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 ${!isUnlocked ? 'opacity-50 cursor-not-allowed' : ''}">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
                             ${!isUnlocked ? '<div class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center text-white text-xl font-bold z-10">Урок заблокирован</div>' : ''}
-                            ${lesson.imageUrl ? `<img src="${lesson.imageUrl}" alt="${lesson.title}" class="w-full h-48 object-cover">` : ''}
-                            <div class="p-6 relative">
-                                <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
-                                <p class="text-gray-600">${lesson.description}</p>
-                                ${youtubeVideoId ? `<div class="relative mt-4 pb-[56.25%] h-0">
-                                    <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${youtubeVideoId}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                </div>` : ''}
-                                ${lesson.textBeforeTest ? `<div class="mt-4 text-gray-700">${lesson.textBeforeTest}</div>` : ''}
-                                ${lesson.lessonTest && lesson.lessonTest.length > 0 ? `<div class="test-section mt-4 border-t border-gray-200 pt-4">
-                                    <h5 class="font-semibold mb-2">Тест:</h5>
-                                    <div class="test-content space-y-4" data-lesson-id="${lessonId}">
-                                        ${lesson.lessonTest.map((q, qIndex) => `
-                                            <div class="question-item">
-                                                <p class="font-medium">${q.question}</p>
-                                                <div class="options space-y-1">
-                                                    ${q.options.map((option, optIndex) => `
-                                                        <label class="block">
-                                                            <input type="radio" name="question-${lessonId}-${qIndex}" value="${option}" class="mr-2">
-                                                            <span>${option}</span>
-                                                        </label>
-                                                    `).join('')}
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                    <button class="submit-test-btn bg-indigo-500 text-white py-2 px-4 rounded-full mt-4 hover:bg-indigo-600 transition duration-300" data-lesson-id="${lessonId}">Отправить</button>
-                                </div>` : ''}
-                                ${lesson.testResultText ? `<div class="mt-4 text-gray-700 hidden test-result-text">${lesson.testResultText}</div>` : ''}
+                            <div class="cursor-pointer" data-lesson-id="${lessonId}">
+                                ${lesson.imageUrl ? `<img src="${lesson.imageUrl}" alt="${lesson.title}" class="w-full h-48 object-cover">` : ''}
+                                <div class="p-6">
+                                    <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
+                                    <p class="text-gray-600">${lesson.description}</p>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1134,17 +1221,100 @@
                 console.error("Ошибка при получении уроков: ", error);
             });
         }
-        
-        // Обработка теста
+
+        // Отображение деталей урока
         lessonsContainer.addEventListener('click', async (e) => {
+            const card = e.target.closest('[data-lesson-id]');
+            if (!card) return;
+
+            const lessonId = card.dataset.lessonId;
+            const lesson = allLessons[lessonId];
+            if (!lesson) return;
+
+            // Проверка, что урок разблокирован
+            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
+            const snapshot = await getDocs(lessonsRef);
+            const sortedLessons = snapshot.docs.sort((a, b) => a.data().createdAt.toDate() - b.data().createdAt.toDate());
+            const lessonIndex = sortedLessons.findIndex(doc => doc.id === lessonId);
+            const previousLessonId = lessonIndex > 0 ? sortedLessons[lessonIndex - 1].id : null;
+            const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
+            const isUnlocked = lessonIndex === 0 || isPreviousLessonPassed;
+
+            if (!isUnlocked) {
+                showMessage('Этот урок заблокирован. Пожалуйста, пройдите предыдущий тест.', true);
+                return;
+            }
+
+            dashboardLessonsSection.classList.add('hidden');
+            lessonViewSection.classList.remove('hidden');
+
+            const youtubeVideoId = lesson.videoUrl && lesson.videoUrl.split('v=')[1] ? lesson.videoUrl.split('v=')[1].split('&')[0] : null;
+
+            let testHtml = '';
+            if (lesson.lessonTest && lesson.lessonTest.length > 0) {
+                testHtml = `<div class="test-section mt-8 border-t border-gray-200 pt-8">
+                                <h5 class="font-semibold text-2xl mb-4">Тест:</h5>
+                                <div class="test-content space-y-4" data-lesson-id="${lessonId}">
+                                    ${lesson.lessonTest.map((q, qIndex) => `
+                                        <div class="question-item bg-gray-100 p-4 rounded-lg">
+                                            <p class="font-medium text-lg">${q.question}</p>
+                                            <div class="options space-y-1 mt-2">
+                                                ${q.options.map((option, optIndex) => `
+                                                    <label class="block">
+                                                        <input type="radio" name="question-${lessonId}-${qIndex}" value="${option}" class="mr-2">
+                                                        <span>${option}</span>
+                                                    </label>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <button class="submit-test-btn bg-indigo-500 text-white py-2 px-4 rounded-full mt-6 hover:bg-indigo-600 transition duration-300" data-lesson-id="${lessonId}">Отправить</button>
+                                <div class="test-result mt-4 text-lg font-bold"></div>
+                            </div>`;
+            }
+
+            lessonDetailsContainer.innerHTML = `
+                <h4 class="text-3xl font-bold mb-4">${lesson.title}</h4>
+                <p class="text-gray-600 mb-6">${lesson.description}</p>
+                ${youtubeVideoId ? `<div class="relative mt-4 pb-[56.25%] h-0 rounded-lg overflow-hidden">
+                    <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${youtubeVideoId}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>` : ''}
+                ${lesson.textBeforeTest ? `<div class="mt-8 text-gray-700">${lesson.textBeforeTest}</div>` : ''}
+                ${testHtml}
+                ${lesson.testResultText ? `<div class="mt-8 text-gray-700 hidden final-test-result-text">${lesson.testResultText}</div>` : ''}
+            `;
+        });
+        
+        backToLessonsBtn.addEventListener('click', () => {
+            lessonViewSection.classList.add('hidden');
+            dashboardLessonsSection.classList.remove('hidden');
+            loadLessons(); // Обновляем список уроков
+        });
+
+        // Обработка теста
+        lessonViewSection.addEventListener('click', async (e) => {
             if (e.target.classList.contains('submit-test-btn')) {
                 const lessonId = e.target.dataset.lessonId;
                 const lessonRef = doc(db, `artifacts/${appId}/public/data/lessons`, lessonId);
                 const lessonSnap = await getDoc(lessonRef);
                 const lessonData = lessonSnap.data();
                 const testQuestions = lessonData.lessonTest;
-                let correctAnswers = 0;
+                const testCooldown = lessonData.testCooldown || 5;
+
+                const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
+                const studentDoc = await getDoc(studentRef);
+                const lastAttemptTime = studentDoc.data().lastTestAttempt?.[lessonId] || 0;
+                const currentTime = new Date().getTime();
+                const cooldownInMs = testCooldown * 60 * 1000;
+
+                if (currentTime - lastAttemptTime < cooldownInMs) {
+                    const remainingTime = Math.ceil((cooldownInMs - (currentTime - lastAttemptTime)) / 60000);
+                    showMessage(`Повторное прохождение теста возможно через ${remainingTime} мин.`, true);
+                    return;
+                }
                 
+                let correctAnswers = 0;
                 const testContent = e.target.closest('.test-section').querySelector('.test-content');
                 testQuestions.forEach((q, qIndex) => {
                     const selectedOption = testContent.querySelector(`input[name="question-${lessonId}-${qIndex}"]:checked`);
@@ -1154,7 +1324,7 @@
                 });
 
                 const score = (correctAnswers / testQuestions.length) * 100;
-                showMessage(`Ваш результат: ${score.toFixed(0)}%`);
+                e.target.closest('.test-section').querySelector('.test-result').textContent = `Ваш результат: ${score.toFixed(0)}%`;
 
                 await runTransaction(db, async (transaction) => {
                     const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
@@ -1167,13 +1337,100 @@
                     const newTestResults = studentDoc.data().testResults || {};
                     newTestResults[lessonId] = score;
 
+                    const newLastTestAttempt = studentDoc.data().lastTestAttempt || {};
+                    newLastTestAttempt[lessonId] = currentTime;
+
                     transaction.update(studentRef, {
-                        testResults: newTestResults
+                        testResults: newTestResults,
+                        lastTestAttempt: newLastTestAttempt
                     });
                 });
                 
             }
         });
+
+        // Загрузка участников группы студента
+        async function loadMyGroup() {
+            if (!db || !userId) return;
+
+            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
+            const studentSnap = await getDoc(studentRef);
+            if (!studentSnap.exists()) {
+                groupMembersList.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
+                return;
+            }
+
+            const studentGroup = studentSnap.data().group;
+            if (!studentGroup) {
+                groupMembersList.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
+                return;
+            }
+
+            const q = query(collection(db, `artifacts/${appId}/public/data/students`), where("group", "==", studentGroup));
+            onSnapshot(q, async (snapshot) => {
+                const lessonDocs = await getDocs(collection(db, `artifacts/${appId}/public/data/lessons`));
+                const lessons = lessonDocs.docs.reduce((acc, doc) => {
+                    acc[doc.id] = doc.data().title;
+                    return acc;
+                }, {});
+                const lessonTitles = Object.values(lessons);
+
+                const tableHead = document.querySelector('#myGroupSection thead tr');
+                tableHead.innerHTML = `<th class="py-2 px-4 text-left">Имя</th>
+                                       <th class="py-2 px-4 text-left">Фамилия</th>
+                                       <th class="py-2 px-4 text-left">Аватар</th>`;
+                lessonTitles.forEach(title => {
+                    tableHead.innerHTML += `<th class="py-2 px-4 text-left">${title}</th>`;
+                });
+
+                groupMembersList.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const member = docSnap.data();
+                    const testResults = member.testResults || {};
+                    
+                    const row = document.createElement('tr');
+                    row.className = 'border-t border-gray-200';
+                    let cellsHtml = `<td class="py-2 px-4">${member.name}</td>
+                                     <td class="py-2 px-4">${member.lastName}</td>
+                                     <td class="py-2 px-4"><img src="${member.avatarUrl || 'https://placehold.co/32x32'}" alt="Аватар" class="rounded-full w-8 h-8"></td>`;
+                    
+                    for (const lessonId in lessons) {
+                        const score = testResults[lessonId] !== undefined ? `${testResults[lessonId].toFixed(0)}%` : 'Не пройден';
+                        cellsHtml += `<td class="py-2 px-4">${score}</td>`;
+                    }
+                    
+                    row.innerHTML = cellsHtml;
+                    groupMembersList.appendChild(row);
+                });
+            }, (error) => {
+                console.error("Ошибка при загрузке списка группы: ", error);
+            });
+        }
+
+        // Обработчик смены аватара
+        changeAvatarBtn.addEventListener('click', () => {
+            avatarFileInput.click();
+        });
+
+        avatarFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            showMessage('Загрузка аватара...', false);
+            const imageUrl = await uploadImageToImgbb(file);
+            if (imageUrl) {
+                try {
+                    await updateDoc(doc(db, `artifacts/${appId}/public/data/students`, userId), {
+                        avatarUrl: imageUrl
+                    });
+                    showMessage('Аватар успешно обновлен!');
+                } catch (error) {
+                    console.error('Ошибка при обновлении аватара:', error);
+                    showMessage('Ошибка при обновлении аватара.', true);
+                }
+            }
+        });
+
 
         // Загрузка уроков для админ-панели
         function loadAdminLessons() {
@@ -1225,56 +1482,6 @@
             });
         }
 
-        // Загрузка участников группы студента
-        async function loadMyGroup() {
-            if (!db || !userId) return;
-
-            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
-            const studentSnap = await getDoc(studentRef);
-            if (!studentSnap.exists()) {
-                groupMembersList.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
-                return;
-            }
-
-            const studentGroup = studentSnap.data().group;
-            if (!studentGroup) {
-                groupMembersList.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
-                return;
-            }
-
-            const q = query(collection(db, `artifacts/${appId}/public/data/students`), where("group", "==", studentGroup));
-            onSnapshot(q, async (snapshot) => {
-                const lessonDocs = await getDocs(collection(db, `artifacts/${appId}/public/data/lessons`));
-                const lessons = lessonDocs.docs.reduce((acc, doc) => {
-                    acc[doc.id] = doc.data().title;
-                    return acc;
-                }, {});
-
-                groupMembersList.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const member = docSnap.data();
-                    const testResults = member.testResults || {};
-                    let resultsHtml = '';
-                    
-                    for (const lessonId in lessons) {
-                        const score = testResults[lessonId] !== undefined ? `${testResults[lessonId].toFixed(0)}%` : 'Не пройден';
-                        resultsHtml += `<p><strong>${lessons[lessonId]}:</strong> ${score}</p>`;
-                    }
-
-                    const row = document.createElement('tr');
-                    row.className = 'border-t border-gray-200';
-                    row.innerHTML = `
-                        <td class="py-2 px-4">${member.name}</td>
-                        <td class="py-2 px-4">${member.lastName}</td>
-                        <td class="py-2 px-4">${resultsHtml || 'Нет данных'}</td>
-                    `;
-                    groupMembersList.appendChild(row);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке списка группы: ", error);
-            });
-        }
-
         // Обработчики для админ-панели
         lessonList.addEventListener('click', async (e) => {
             const target = e.target;
@@ -1322,13 +1529,17 @@
 
             if (target.classList.contains('delete-student-btn')) {
                 try {
+                    const studentRef = doc(db, `artifacts/${appId}/public/data/students`, studentId);
+                    const studentSnap = await getDoc(studentRef);
+                    const studentEmail = studentSnap.data().email;
+
                     // Удаление документа из Firestore
-                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId));
+                    await deleteDoc(studentRef);
                     
                     // Удаление пользователя из Firebase Auth
                     const functions = getFunctions(app);
-                    const deleteUserFromAuth = httpsCallable(functions, 'deleteUserFromAuth');
-                    await deleteUserFromAuth({ uid: studentId });
+                    const deleteUserFromAuth = httpsCallable(functions, 'deleteUserByEmail');
+                    await deleteUserFromAuth({ email: studentEmail });
 
                     showMessage('Студент успешно удален!');
                 } catch (e) {
@@ -1352,13 +1563,17 @@
                     for (const docSnap of querySnapshot.docs) {
                         const studentId = docSnap.id;
                         
+                        const studentRef = doc(db, `artifacts/${appId}/public/data/students`, studentId);
+                        const studentSnap = await getDoc(studentRef);
+                        const studentEmail = studentSnap.data().email;
+
                         // Удаление документа из Firestore
-                        await deleteDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId));
+                        await deleteDoc(studentRef);
                         
                         // Удаление пользователя из Firebase Auth
                         const functions = getFunctions(app);
-                        const deleteUserFromAuth = httpsCallable(functions, 'deleteUserFromAuth');
-                        await deleteUserFromAuth({ uid: studentId });
+                        const deleteUserFromAuth = httpsCallable(functions, 'deleteUserByEmail');
+                        await deleteUserFromAuth({ email: studentEmail });
                     }
                     showMessage('Все студенты успешно удалены!');
                 } catch (e) {
