@@ -11,11 +11,25 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+        }
+        :root {
+            --primary-color: #ef4444; /* red-500 */
+            --secondary-color: #fca5a5; /* red-300 */
+            --bg-color: #f3f4f6; /* gray-100 */
+            --text-color: #1f2937; /* gray-800 */
+            --card-bg-color: #ffffff; /* white */
+        }
+        body.dark-theme {
+            --primary-color: #b91c1c; /* red-700 */
+            --secondary-color: #ef4444; /* red-500 */
+            --bg-color: #1f2937; /* gray-800 */
+            --text-color: #f9fafb; /* gray-50 */
+            --card-bg-color: #374151; /* gray-700 */
         }
         .bg-welcome {
-            background: linear-gradient(135deg, #4c51bf 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         }
         .glow-button {
             transition: all 0.3s ease;
@@ -25,24 +39,44 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .hidden-test {
-            display: none;
-        }
         .profile-menu {
             position: absolute;
             right: 0;
             top: 100%;
             z-index: 50;
         }
+        .progress-circle {
+            position: relative;
+            width: 48px;
+            height: 48px;
+        }
+        .progress-circle circle {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke-width: 4;
+            transform: translate(2px, 2px);
+        }
+        .progress-circle .bg {
+            stroke: #e5e7eb;
+        }
+        .progress-circle .progress {
+            stroke: var(--progress-color);
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s linear;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="app" class="bg-white rounded-none shadow-none p-8 max-w-full w-full min-h-screen">
+    <div id="app" class="bg-card-bg-color rounded-none shadow-none p-8 max-w-full w-full min-h-screen">
 
         <!-- Основная навигация -->
         <nav class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-bold text-indigo-700">Ya_Buxgalter</h1>
+            <h1 id="logoContainer" class="text-3xl font-bold text-primary-color flex items-center space-x-2">
+                <img id="logoImg" src="https://placehold.co/40x40/ef4444/ffffff?text=L" alt="Логотип" class="w-10 h-10">
+                <span>Ya_Buxgalter</span>
+            </h1>
             <div class="space-x-4 flex items-center relative">
                 <button id="showHomeBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
                     Главная
@@ -51,7 +85,7 @@
                     Записаться на курс
                 </button>
                 <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
-                    Вход
+                    Вход для учеников
                 </button>
                 <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
                     Мои уроки
@@ -170,7 +204,7 @@
                 </form>
                 <div class="mt-4 text-center">
                     <button type="button" id="googleLoginBtn" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
-                        Вход для администратора
+                        Вход для администратора через Google
                     </button>
                 </div>
                 <p id="loadingIndicator" class="text-center text-gray-500 mt-4 hidden">Загрузка...</p>
@@ -405,9 +439,27 @@
             <div id="customizationSection" class="hidden">
                 <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Кастомизация</h3>
                 <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                    <h4 class="text-xl font-bold mb-4">Изменить информацию о курсах</h4>
-                    <form id="editCourseInfoForm" class="space-y-4">
-                        <div id="courseInfoContainer">
+                    <h4 class="text-xl font-bold mb-4">Настройки темы</h4>
+                    <div class="flex items-center space-x-4 mb-4">
+                        <span>Светлая тема:</span>
+                        <button id="setLightTheme" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-full">Выбрать</button>
+                    </div>
+                    <div class="flex items-center space-x-4 mb-8">
+                        <span>Тёмная тема:</span>
+                        <button id="setDarkTheme" class="bg-gray-800 text-white py-2 px-4 rounded-full">Выбрать</button>
+                    </div>
+
+                    <h4 class="text-xl font-bold mb-4">Редактировать логотип и информацию о курсах</h4>
+                    <form id="editMainInfoForm" class="space-y-4">
+                         <div>
+                            <label for="siteLogoText" class="block text-gray-700 font-semibold mb-2">Текст логотипа</label>
+                            <input type="text" id="siteLogoText" class="w-full px-3 py-2 border rounded-lg" placeholder="Например, Ya_Buxgalter">
+                        </div>
+                         <div>
+                            <label for="siteLogoUrl" class="block text-gray-700 font-semibold mb-2">URL логотипа</label>
+                            <input type="text" id="siteLogoUrl" class="w-full px-3 py-2 border rounded-lg" placeholder="https://...">
+                        </div>
+                        <div id="courseInfoContainer" class="space-y-4 mt-8">
                             <!-- Информация о курсах будет загружаться сюда -->
                         </div>
                         <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
@@ -526,7 +578,13 @@
         const dashboardLessonsSection = document.getElementById('dashboardLessonsSection');
         const myGroupSection = document.getElementById('myGroupSection');
         const courseInfoContainer = document.getElementById('courseInfoContainer');
-        const editCourseInfoForm = document.getElementById('editCourseInfoForm');
+        const editMainInfoForm = document.getElementById('editMainInfoForm');
+        const setLightTheme = document.getElementById('setLightTheme');
+        const setDarkTheme = document.getElementById('setDarkTheme');
+        const logoImg = document.getElementById('logoImg');
+        const logoContainer = document.getElementById('logoContainer');
+        const siteLogoText = document.getElementById('siteLogoText');
+        const siteLogoUrl = document.getElementById('siteLogoUrl');
         
         // Admin Panel Navigation Buttons
         const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
@@ -883,10 +941,20 @@
             });
         }
         
-        editCourseInfoForm.addEventListener('submit', async (e) => {
+        editMainInfoForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!db) return;
 
+            const siteLogoTextValue = document.getElementById('siteLogoText').value;
+            const siteLogoUrlValue = document.getElementById('siteLogoUrl').value;
+
+            // Update main info
+            await setDoc(doc(db, `artifacts/${appId}/public/data/mainInfo`, 'main'), {
+                siteLogoText: siteLogoTextValue,
+                siteLogoUrl: siteLogoUrlValue
+            }, { merge: true });
+
+            // Update course info
             const courseInfoRef = collection(db, `artifacts/${appId}/public/data/courseInfo`);
             const querySnapshot = await getDocs(courseInfoRef);
             
@@ -900,9 +968,30 @@
                     description: newDescription
                 });
             });
-            showMessage('Информация о курсах успешно обновлена!');
+            showMessage('Информация успешно обновлена!');
+        });
+        
+        // Переключение тем
+        setLightTheme.addEventListener('click', () => {
+            document.body.classList.remove('dark-theme');
+            localStorage.setItem('theme', 'light');
         });
 
+        setDarkTheme.addEventListener('click', () => {
+            document.body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark');
+        });
+
+        // Загрузка темы
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        }
+        loadTheme();
 
         // Обработчик формы заявок
         leadForm.addEventListener('submit', async (e) => {
