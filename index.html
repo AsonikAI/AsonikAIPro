@@ -13,6 +13,7 @@
             font-family: 'Inter', sans-serif;
             color: var(--text-color);
             background-color: var(--bg-color);
+            transition: background-color 0.3s, color 0.3s;
         }
         :root {
             --primary-color: #b91c1c; /* red-700 */
@@ -20,24 +21,25 @@
             --bg-color: #f3f4f6; /* gray-100 */
             --text-color: #1f2937; /* gray-800 */
             --card-bg-color: #ffffff; /* white */
+            --nav-bg-color: #ffffff;
         }
         body.dark-theme {
-            --primary-color: #ef4444; /* red-500 */
-            --secondary-color: #fca5a5; /* red-300 */
-            --bg-color: #1f2937; /* gray-800 */
+            --primary-color: #b91c1c; /* red-700 - Darker Red */
+            --secondary-color: #ef4444; /* red-500 */
+            --bg-color: #111827; /* gray-900 */
             --text-color: #f9fafb; /* gray-50 */
-            --card-bg-color: #374151; /* gray-700 */
+            --card-bg-color: #1f2937; /* gray-800 */
+            --nav-bg-color: #1f2937;
         }
         .bg-welcome {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         }
         .glow-button {
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
         }
         .glow-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
         .profile-menu {
             position: absolute;
@@ -45,140 +47,175 @@
             top: 100%;
             z-index: 50;
         }
-        .progress-circle {
-            position: relative;
-            width: 48px;
-            height: 48px;
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .progress-circle circle {
-            width: 100%;
-            height: 100%;
-            fill: none;
-            stroke-width: 4;
-            transform: translate(2px, 2px);
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
         }
-        .progress-circle .bg {
-            stroke: #e5e7eb;
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
         }
-        .progress-circle .progress {
-            stroke: var(--progress-color);
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.5s linear;
+        .active-nav-button {
+            background-color: var(--primary-color) !important;
+            color: white !important;
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="bg-bg-color">
 
-    <div id="app" class="bg-card-bg-color rounded-none shadow-none p-8 max-w-full w-full min-h-screen">
+    <div id="app" class="bg-card-bg-color rounded-none p-4 md:p-8 max-w-full w-full min-h-screen">
 
         <!-- Основная навигация -->
-        <nav class="flex justify-between items-center mb-10">
-            <h1 id="logoContainer" class="text-3xl font-bold text-primary-color flex items-center space-x-2">
-                <img id="logoImg" src="https://placehold.co/40x40/ef4444/ffffff?text=L" alt="Логотип" class="w-10 h-10">
-                <span>Ya_Buxgalter</span>
-            </h1>
-            <div class="space-x-4 flex items-center relative">
-                <button id="showHomeBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
+        <nav class="flex justify-between items-center mb-10 p-4 rounded-lg shadow-md bg-nav-bg-color sticky top-4 z-40">
+            <div id="logoContainer" class="text-2xl md:text-3xl font-bold text-primary-color flex items-center space-x-2">
+                <img id="logoImg" src="https://placehold.co/40x40/b91c1c/ffffff?text=YB" alt="Логотип" class="w-10 h-10 rounded-md">
+                <span id="logoText">Ya_Buxgalter</span>
+            </div>
+            <div class="space-x-2 md:space-x-4 flex items-center">
+                <button id="showHomeBtn" class="text-text-color font-semibold py-2 px-4 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300">
                     Главная
                 </button>
-                <button id="showCoursesBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300">
-                    Записаться на курс
+                <button id="showCoursesBtn" class="bg-primary-color text-white font-semibold py-2 px-4 rounded-full hover:bg-secondary-color transition duration-300">
+                    Записаться
                 </button>
-                <button id="showLoginBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
-                    Вход для учеников
+                <button id="showLoginBtn" class="text-text-color font-semibold py-2 px-4 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300">
+                    Вход
                 </button>
-                <button id="showDashboardBtn" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300 hidden">
+                <button id="showDashboardBtn" class="bg-primary-color text-white font-semibold py-2 px-4 rounded-full hover:bg-secondary-color transition duration-300 hidden">
                     Мои уроки
                 </button>
                 <div class="relative inline-block text-left hidden" id="userProfileDropdown">
-                    <button id="profileMenuButton" class="flex items-center space-x-2 bg-indigo-600 text-white font-semibold py-2 px-6 rounded-full hover:bg-indigo-700 transition duration-300">
+                    <button id="profileMenuButton" class="flex items-center space-x-2 bg-card-bg-color border border-gray-300 dark:border-gray-600 text-text-color font-semibold py-2 px-4 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
                         <img id="userAvatar" src="https://placehold.co/32x32" alt="Аватар" class="rounded-full w-8 h-8">
-                        <span>Профиль</span>
-                        <svg class="-mr-1 h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <span id="userNameInDropdown" class="hidden md:block">Профиль</span>
+                        <svg class="-mr-1 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                         </svg>
                     </button>
-                    <div id="profileMenu" class="profile-menu hidden origin-top-right mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                    <div id="profileMenu" class="profile-menu hidden origin-top-right mt-2 w-56 rounded-md shadow-lg bg-card-bg-color ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                         <div class="py-1" role="none">
-                            <a href="#" id="showMyProfileBtn" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Мой профиль</a>
-                            <a href="#" id="logoutBtn" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Выйти</a>
+                            <a href="#" id="showMyProfileFromDropdownBtn" class="text-text-color block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" role="menuitem" tabindex="-1">Мой профиль</a>
+                            <a href="#" id="logoutBtn" class="text-red-700 dark:text-red-500 block px-4 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/50" role="menuitem" tabindex="-1">Выйти</a>
                         </div>
                     </div>
                 </div>
-                <button id="showAdminPanelBtn" class="bg-orange-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-orange-600 transition duration-300 hidden">
-                    Админ-панель
+                 <button id="showAdminPanelBtn" class="bg-yellow-500 text-white font-semibold py-2 px-6 rounded-full hover:bg-yellow-600 transition duration-300 hidden">
+                    Админ
+                </button>
+                <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
                 </button>
             </div>
         </nav>
 
         <!-- Раздел для отображения сообщений -->
-        <div id="messageBox" class="hidden fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg"></div>
+        <div id="messageBox" class="hidden fixed top-24 right-4 text-white px-4 py-2 rounded-lg shadow-lg z-50"></div>
 
         <!-- Главный раздел - Добро пожаловать -->
-        <div id="welcomeSection" class="text-center p-8 rounded-lg bg-welcome text-white shadow-lg">
-            <div class="flex flex-col md:flex-row items-center justify-center">
-                <div class="md:w-1/2">
-                    <h2 class="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in">Добро пожаловать в Ya_Buxgalter!</h2>
-                    <p class="text-lg md:text-xl font-light mb-8 animate-fade-in-delay">Ваш надежный партнер в мире бухгалтерии. Обучайтесь, развивайтесь и достигайте новых высот с нашими курсами.</p>
-                    <div class="space-y-4">
-                        <button id="welcomeCoursesBtn" class="bg-white text-indigo-700 font-semibold py-3 px-8 rounded-full shadow-lg glow-button text-lg">
-                            Записаться на курс
-                        </button>
-                        <button id="welcomeContactBtn" class="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-full shadow-lg glow-button text-lg">
-                            Связаться с нами
-                        </button>
-                    </div>
-                </div>
-                <div class="md:w-1/2 mt-8 md:mt-0 md:ml-8 flex justify-center">
-                    <img id="welcomeImage" src="https://placehold.co/400x300/4c51bf/ffffff?text=Ya_Buxgalter" alt="Modern office with charts and graphs" class="rounded-lg shadow-xl">
+        <div id="welcomeSection">
+             <div class="text-center p-8 rounded-lg bg-welcome text-white shadow-lg">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-4">Добро пожаловать в Ya_Buxgalter!</h2>
+                <p class="text-lg md:text-xl font-light mb-8">Ваш надежный партнер в мире бухгалтерии. Обучайтесь, развивайтесь и достигайте новых высот с нашими курсами.</p>
+                <div class="space-x-4">
+                    <button id="welcomeCoursesBtn" class="bg-white text-primary-color font-semibold py-3 px-8 rounded-full shadow-lg glow-button text-lg">
+                        Наши курсы
+                    </button>
+                    <button id="welcomeContactBtn" class="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-full shadow-lg glow-button text-lg">
+                        Связаться с нами
+                    </button>
                 </div>
             </div>
             
-            <div class="mt-16 text-left max-w-4xl mx-auto">
-                <h3 class="text-3xl font-bold mb-4">Наши преимущества</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h4 class="text-xl font-semibold mb-2">Актуальные знания</h4>
-                        <p class="text-gray-200">Мы постоянно обновляем наши курсы, чтобы они соответствовали последним изменениям в законодательстве и бизнес-среде.</p>
+            <div class="mt-16 max-w-7xl mx-auto px-4">
+                <h3 class="text-3xl font-bold mb-8 text-center text-text-color">Наши преимущества</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold mb-2 text-primary-color">Актуальные знания</h4>
+                        <p class="text-text-color">Мы постоянно обновляем наши курсы, чтобы они соответствовали последним изменениям в законодательстве.</p>
                     </div>
-                    <div>
-                        <h4 class="text-xl font-semibold mb-2">Практический опыт</h4>
-                        <p class="text-gray-200">Обучение основано на реальных кейсах и практических задачах, что позволяет вам сразу применять полученные знания на практике.</p>
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold mb-2 text-primary-color">Практический опыт</h4>
+                        <p class="text-text-color">Обучение основано на реальных кейсах, что позволяет вам сразу применять полученные знания на практике.</p>
                     </div>
-                    <div>
-                        <h4 class="text-xl font-semibold mb-2">Поддержка экспертов</h4>
-                        <p class="text-gray-200">Наши преподаватели — опытные бухгалтеры и финансисты, готовые ответить на все ваши вопросы и помочь с решением сложных задач.</p>
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold mb-2 text-primary-color">Поддержка экспертов</h4>
+                        <p class="text-text-color">Наши преподаватели — опытные бухгалтеры, готовые ответить на все ваши вопросы.</p>
                     </div>
-                    <div>
-                        <h4 class="text-xl font-semibold mb-2">Гибкий график</h4>
-                        <p class="text-gray-200">Вы можете учиться в удобное для вас время и в любом месте. Все материалы доступны 24/7.</p>
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-md">
+                        <h4 class="text-xl font-semibold mb-2 text-primary-color">Гибкий график</h4>
+                        <p class="text-text-color">Вы можете учиться в удобное для вас время. Все материалы доступны 24/7.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ourCoursesSection" class="mt-16 max-w-7xl mx-auto px-4">
+                <h3 class="text-3xl font-bold mb-8 text-center text-text-color">Наши курсы</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Course Card 1 -->
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-lg flex flex-col">
+                        <h4 class="text-2xl font-bold mb-3 text-primary-color">Индивидуальный</h4>
+                        <p class="text-text-color mb-4 flex-grow">Персональное обучение с преподавателем. Максимум внимания и быстрый результат.</p>
+                        <ul class="text-left space-y-2 mb-6 flex-grow">
+                            <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Гибкий график</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Персональная программа</li>
+                        </ul>
+                        <button class="course-enroll-btn mt-auto w-full bg-primary-color text-white font-semibold py-2 rounded-full hover:bg-secondary-color transition duration-300" data-course-type="Индивидуальный">Записаться</button>
+                    </div>
+                    <!-- Course Card 2 -->
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-lg flex flex-col">
+                        <h4 class="text-2xl font-bold mb-3 text-primary-color">Группа</h4>
+                        <p class="text-text-color mb-4 flex-grow">Обучение в небольшой группе. Обмен опытом и коллективная мотивация.</p>
+                         <ul class="text-left space-y-2 mb-6 flex-grow">
+                            <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Единственные в Узбекистане</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Доступная цена</li>
+                        </ul>
+                        <button class="course-enroll-btn mt-auto w-full bg-primary-color text-white font-semibold py-2 rounded-full hover:bg-secondary-color transition duration-300" data-course-type="Группа">Записаться</button>
+                    </div>
+                    <!-- Course Card 3 -->
+                    <div class="bg-card-bg-color p-6 rounded-lg shadow-lg flex flex-col">
+                        <h4 class="text-2xl font-bold mb-3 text-primary-color">Онлайн</h4>
+                        <p class="text-text-color mb-4 flex-grow">Учитесь из любой точки мира в удобное для вас время. Все материалы доступны онлайн.</p>
+                         <ul class="text-left space-y-2 mb-6 flex-grow">
+                           <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Удобно и современно</li>
+                            <li class="flex items-center"><svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Доступ 24/7</li>
+                        </ul>
+                        <button class="course-enroll-btn mt-auto w-full bg-primary-color text-white font-semibold py-2 rounded-full hover:bg-secondary-color transition duration-300" data-course-type="Онлайн">Записаться</button>
                     </div>
                 </div>
             </div>
         </div>
 
+
         <!-- Раздел "Записаться на курс" (форма заявки) -->
         <div id="coursesSection" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Оставить заявку на курс</h2>
-            <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-3xl font-bold text-text-color text-center mb-8">Оставить заявку на курс</h2>
+            <div class="max-w-md mx-auto bg-card-bg-color p-6 rounded-lg shadow-md">
                 <form id="leadForm" class="space-y-4">
-                    <div>
-                        <label for="leadName" class="block text-gray-700 font-semibold mb-2">Имя</label>
-                        <input type="text" id="leadName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ваше имя" required>
+                     <div>
+                        <label for="leadCourseType" class="block text-text-color font-semibold mb-2">Тип курса</label>
+                        <select id="leadCourseType" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-card-bg-color" required>
+                            <option value="Индивидуальный">Индивидуальный</option>
+                            <option value="Группа">Группа</option>
+                            <option value="Онлайн">Онлайн</option>
+                        </select>
                     </div>
                     <div>
-                        <label for="leadLastName" class="block text-gray-700 font-semibold mb-2">Фамилия</label>
-                        <input type="text" id="leadLastName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ваша фамилия" required>
+                        <label for="leadName" class="block text-text-color font-semibold mb-2">Имя</label>
+                        <input type="text" id="leadName" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-card-bg-color" placeholder="Ваше имя" required>
                     </div>
                     <div>
-                        <label for="leadPhone" class="block text-gray-700 font-semibold mb-2">Телефон</label>
-                        <input type="tel" id="leadPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="+7 (XXX) XXX-XX-XX" required>
+                        <label for="leadLastName" class="block text-text-color font-semibold mb-2">Фамилия</label>
+                        <input type="text" id="leadLastName" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-card-bg-color" placeholder="Ваша фамилия" required>
                     </div>
                     <div>
-                        <label for="leadTelegram" class="block text-gray-700 font-semibold mb-2">Telegram (юзернейм)</label>
-                        <input type="text" id="leadTelegram" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="@username" required>
+                        <label for="leadPhone" class="block text-text-color font-semibold mb-2">Телефон</label>
+                        <input type="tel" id="leadPhone" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-card-bg-color" placeholder="+998 XX XXX-XX-XX" required>
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full hover:bg-indigo-700 transition duration-300">
+                    <button type="submit" class="w-full bg-primary-color text-white font-semibold py-2 rounded-full hover:bg-secondary-color transition duration-300">
                         Оставить заявку
                     </button>
                 </form>
@@ -187,24 +224,24 @@
 
         <!-- Раздел "Вход" -->
         <div id="loginSection" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Вход</h2>
-            <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 class="text-3xl font-bold text-text-color text-center mb-8">Вход</h2>
+            <div class="max-w-md mx-auto bg-card-bg-color p-6 rounded-lg shadow-md">
                 <form id="loginForm" class="space-y-4">
                     <div>
-                        <label for="loginEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
-                        <input type="email" id="loginEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ваш e-mail">
+                        <label for="loginId" class="block text-text-color font-semibold mb-2">Логин (ID)</label>
+                        <input type="text" id="loginId" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-card-bg-color" placeholder="Введите ваш логин">
                     </div>
                     <div>
-                        <label for="loginPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
-                        <input type="password" id="loginPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ваш пароль">
+                        <label for="loginPassword" class="block text-text-color font-semibold mb-2">Пароль</label>
+                        <input type="password" id="loginPassword" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color bg-card-bg-color" placeholder="Введите ваш пароль">
                     </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-full hover:bg-indigo-700 transition duration-300">
+                    <button type="submit" class="w-full bg-primary-color text-white font-semibold py-2 rounded-full hover:bg-secondary-color transition duration-300">
                         Войти
                     </button>
                 </form>
                 <div class="mt-4 text-center">
-                    <button type="button" id="googleLoginBtn" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300">
-                        Вход для администратора через Google
+                    <button type="button" id="googleLoginBtn" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition duration-300">
+                        Вход для администратора
                     </button>
                 </div>
                 <p id="loadingIndicator" class="text-center text-gray-500 mt-4 hidden">Загрузка...</p>
@@ -214,22 +251,21 @@
         <!-- Панель управления (для авторизованных пользователей) -->
         <div id="dashboardSection" class="hidden">
             <nav class="flex justify-center space-x-4 mb-8">
-                <button id="showDashboardLessonsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Мои уроки</button>
-                <button id="showMyProfileBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Мой профиль</button>
-                <button id="showMyGroupBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Моя группа</button>
+                <button id="showDashboardLessonsBtn" class="py-2 px-6 rounded-full font-semibold transition duration-300">Мои уроки</button>
+                <button id="showMyGroupBtn" class="py-2 px-6 rounded-full font-semibold transition duration-300">Моя группа</button>
             </nav>
 
             <!-- Секция "Мои уроки" -->
-            <div id="dashboardLessonsSection" class="hidden">
-                <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мои уроки</h2>
+            <div id="dashboardLessonsSection" class="">
+                <h2 class="text-3xl font-bold text-text-color text-center mb-8">Мои уроки</h2>
                 <div id="lessonsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Уроки будут загружаться сюда из Firestore -->
+                    <!-- Уроки будут загружаться сюда -->
                 </div>
             </div>
 
             <!-- Секция "Просмотр урока" -->
             <div id="lessonViewSection" class="hidden">
-                <button id="backToLessonsBtn" class="bg-gray-200 text-gray-800 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 transition duration-300 mb-6">
+                <button id="backToLessonsBtn" class="bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 font-semibold py-2 px-6 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-300 mb-6">
                     &larr; Назад к урокам
                 </button>
                 <div id="lessonDetailsContainer">
@@ -239,18 +275,13 @@
 
             <!-- Секция "Моя группа" -->
             <div id="myGroupSection" class="hidden">
-                <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Моя группа</h2>
-                <div class="max-w-4xl mx-auto">
-                    <div id="myGroupInfo" class="bg-gray-100 p-6 rounded-lg mb-6 shadow-sm">
-                        <h3 class="text-xl font-semibold mb-2">Участники группы и их результаты</h3>
-                    </div>
+                <h2 class="text-3xl font-bold text-text-color text-center mb-8">Моя группа</h2>
+                <div class="max-w-7xl mx-auto bg-card-bg-color p-4 rounded-lg shadow-md">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white rounded-lg shadow-md">
-                            <thead class="bg-gray-200">
+                        <table class="min-w-full bg-card-bg-color rounded-lg">
+                            <thead class="bg-gray-200 dark:bg-gray-700">
                                 <tr id="groupTableHead">
-                                    <th class="py-2 px-4 text-left">Имя</th>
-                                    <th class="py-2 px-4 text-left">Фамилия</th>
-                                    <th class="py-2 px-4 text-left">Аватар</th>
+                                    <!-- Заголовки таблицы генерятся динамически -->
                                 </tr>
                             </thead>
                             <tbody id="groupMembersList">
@@ -263,18 +294,18 @@
 
             <!-- Секция "Мой профиль" -->
             <div id="myProfileSection" class="hidden">
-                <h2 class="text-3xl font-bold text-gray-800 text-center mb-8">Мой профиль</h2>
-                <div id="profileInfoContainer" class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                <h2 class="text-3xl font-bold text-text-color text-center mb-8">Мой профиль</h2>
+                <div id="profileInfoContainer" class="max-w-2xl mx-auto bg-card-bg-color p-6 rounded-lg shadow-md">
                     <div class="flex flex-col items-center mb-4">
-                        <img id="profileAvatar" src="https://placehold.co/128x128" alt="Аватар профиля" class="rounded-full w-32 h-32 mb-4">
-                        <button id="changeAvatarBtn" class="bg-blue-500 text-white py-2 px-4 rounded-full text-sm hover:bg-blue-600 transition duration-300">
+                        <img id="profileAvatar" src="https://placehold.co/128x128" alt="Аватар профиля" class="rounded-full w-32 h-32 mb-4 border-4 border-primary-color">
+                        <label for="avatarFileInput" class="cursor-pointer bg-primary-color text-white py-2 px-4 rounded-full text-sm hover:bg-secondary-color transition duration-300">
                             Изменить аватар
-                        </button>
+                        </label>
                         <input type="file" id="avatarFileInput" accept="image/*" class="hidden">
                     </div>
-                    <div class="text-center">
-                        <p><strong>ФИО:</strong> <span id="profileFIO"></span></p>
-                        <p><strong>E-mail:</strong> <span id="profileEmailDisplay"></span></p>
+                    <div class="text-center space-y-2">
+                        <h3 id="profileFIO" class="text-2xl font-bold"></h3>
+                        <p><strong>Логин:</strong> <span id="profileLoginDisplay"></span></p>
                         <p><strong>Год рождения:</strong> <span id="profileBirthYearDisplay"></span></p>
                         <p><strong>Группа:</strong> <span id="profileGroupDisplay"></span></p>
                     </div>
@@ -282,215 +313,179 @@
             </div>
         </div>
         
-        <!-- Админ панель (только для администратора) -->
+        <!-- Админ панель -->
         <div id="adminPanel" class="hidden">
-            <nav class="flex justify-center space-x-4 mb-8">
-                <button id="showAdminLessonsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Уроки</button>
-                <button id="showAddStudentsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Добавить студента</button>
-                <button id="showAdminGroupsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Группы</button>
-                <button id="showAdminLeadsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Заявки</button>
-                <button id="showCustomizationBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Кастомизация</button>
-                <button id="showAdminSettingsBtn" class="bg-gray-200 text-gray-800 py-2 px-6 rounded-full font-semibold hover:bg-gray-300 transition duration-300">Настройки</button>
-            </nav>
-
-            <!-- Секция Уроки -->
-            <div id="adminLessonsSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление уроками</h3>
-                <div class="flex flex-col md:flex-row space-y-8 md:space-y-0 md:space-x-8">
-                    <div class="md:w-1/2">
-                        <h4 class="text-xl font-bold mb-4">Добавить новый урок</h4>
-                        <form id="addLessonForm" class="space-y-4">
-                            <div>
-                                <label for="lessonTitle" class="block text-gray-700 font-semibold mb-2">Название урока</label>
-                                <input type="text" id="lessonTitle" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Название">
+            <div class="flex flex-col md:flex-row gap-8">
+                <nav class="flex-shrink-0 md:w-64">
+                    <h2 class="text-2xl font-bold mb-6">Админ-панель</h2>
+                    <div class="space-y-2">
+                        <button data-section="adminLessonsSection" class="admin-nav-btn w-full text-left py-2 px-4 rounded-lg font-semibold transition duration-300">Уроки</button>
+                        <button data-section="addStudentsSection" class="admin-nav-btn w-full text-left py-2 px-4 rounded-lg font-semibold transition duration-300">Студенты</button>
+                        <button data-section="adminGroupsSection" class="admin-nav-btn w-full text-left py-2 px-4 rounded-lg font-semibold transition duration-300">Группы</button>
+                        <button data-section="adminLeadsSection" class="admin-nav-btn w-full text-left py-2 px-4 rounded-lg font-semibold transition duration-300">Заявки</button>
+                        <button data-section="customizationSection" class="admin-nav-btn w-full text-left py-2 px-4 rounded-lg font-semibold transition duration-300">Кастомизация</button>
+                        <button data-section="adminSettingsSection" class="admin-nav-btn w-full text-left py-2 px-4 rounded-lg font-semibold transition duration-300">Настройки</button>
+                    </div>
+                </nav>
+                <main class="flex-grow">
+                    <!-- Секция Уроки -->
+                    <div id="adminLessonsSection" class="admin-section hidden">
+                        <h3 class="text-2xl font-bold mb-6">Управление уроками</h3>
+                        <div class="flex flex-col lg:flex-row gap-8">
+                            <div class="lg:w-2/5 bg-card-bg-color p-6 rounded-lg shadow-md">
+                                <h4 id="lessonFormTitle" class="text-xl font-bold mb-4">Добавить новый урок</h4>
+                                <form id="addLessonForm" class="space-y-4">
+                                    <input type="hidden" id="editingLessonId">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="lessonTitle" class="block font-semibold mb-2">Название урока</label>
+                                            <input type="text" id="lessonTitle" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required>
+                                        </div>
+                                        <div>
+                                            <label for="lessonVideo" class="block font-semibold mb-2">URL видео (YouTube)</label>
+                                            <input type="text" id="lessonVideo" class="w-full px-4 py-2 border rounded-lg bg-bg-color" placeholder="https://youtube.com/watch?v=..." required>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="lessonDescription" class="block font-semibold mb-2">Описание</label>
+                                        <textarea id="lessonDescription" rows="3" class="w-full px-4 py-2 border rounded-lg bg-bg-color"></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="lessonImageFile" class="block font-semibold mb-2">Превью-картинка (файл)</label>
+                                        <input type="file" id="lessonImageFile" accept="image/*" class="w-full">
+                                    </div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="textBeforeTest" class="block font-semibold mb-2">Текст перед тестом</label>
+                                            <textarea id="textBeforeTest" rows="3" class="w-full px-4 py-2 border rounded-lg bg-bg-color"></textarea>
+                                        </div>
+                                        <div>
+                                            <label for="testResultText" class="block font-semibold mb-2">Текст после теста</label>
+                                            <textarea id="testResultText" rows="3" class="w-full px-4 py-2 border rounded-lg bg-bg-color"></textarea>
+                                        </div>
+                                    </div>
+                                     <div>
+                                        <label for="testCooldown" class="block font-semibold mb-2">Пересдача теста через (минут)</label>
+                                        <input type="number" id="testCooldown" class="w-full px-4 py-2 border rounded-lg bg-bg-color" value="5" min="0">
+                                    </div>
+                                    <h5 class="text-lg font-bold pt-4">Тест</h5>
+                                    <div id="testQuestionsContainer" class="space-y-4"></div>
+                                    <button type="button" id="addQuestionBtn" class="bg-gray-200 dark:bg-gray-700 py-2 px-4 rounded-full text-sm">Добавить вопрос</button>
+                                    <div class="flex gap-4 pt-4">
+                                        <button type="submit" id="saveLessonBtn" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full">Добавить урок</button>
+                                        <button type="button" id="cancelEditLessonBtn" class="w-full bg-gray-500 text-white font-semibold py-2 rounded-full hidden">Отмена</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="lg:w-3/5">
+                                <h4 class="text-xl font-bold mb-4">Список уроков</h4>
+                                <ul id="lessonList" class="space-y-4"></ul>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Секция Студенты -->
+                    <div id="addStudentsSection" class="admin-section hidden">
+                        <h3 class="text-2xl font-bold mb-6">Управление студентами</h3>
+                        <div class="flex flex-col lg:flex-row gap-8">
+                            <div class="lg:w-2/5 bg-card-bg-color p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold mb-4">Добавить студента</h4>
+                                <form id="addStudentForm" class="space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="studentName" class="block font-semibold mb-2">Имя</label>
+                                            <input type="text" id="studentName" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required>
+                                        </div>
+                                        <div>
+                                            <label for="studentLastName" class="block font-semibold mb-2">Фамилия</label>
+                                            <input type="text" id="studentLastName" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="studentLogin" class="block font-semibold mb-2">Логин (ID)</label>
+                                        <input type="text" id="studentLogin" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required>
+                                    </div>
+                                    <div>
+                                        <label for="studentPassword" class="block font-semibold mb-2">Пароль</label>
+                                        <input type="password" id="studentPassword" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required>
+                                    </div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="studentBirthYear" class="block font-semibold mb-2">Год рождения</label>
+                                            <input type="number" id="studentBirthYear" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required>
+                                        </div>
+                                        <div>
+                                            <label for="studentGroup" class="block font-semibold mb-2">Группа</label>
+                                            <select id="studentGroup" class="w-full px-4 py-2 border rounded-lg bg-bg-color" required></select>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full">Создать студента</button>
+                                </form>
+                            </div>
+                             <div class="lg:w-3/5">
+                                <h4 class="text-xl font-bold mb-4">Список студентов</h4>
+                                <button id="deleteAllStudentsBtn" class="bg-red-600 text-white py-2 px-4 rounded-full mb-4 text-sm">Удалить всех студентов</button>
+                                <ul id="studentList" class="space-y-4"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Секция Группы -->
+                    <div id="adminGroupsSection" class="admin-section hidden">
+                         <h3 class="text-2xl font-bold mb-6">Управление группами</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                             <div class="bg-card-bg-color p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold mb-4">Создать новую группу</h4>
+                                <form id="addGroupForm" class="flex gap-4">
+                                    <input type="text" id="groupName" class="w-full px-4 py-2 border rounded-lg bg-bg-color" placeholder="Название группы" required>
+                                    <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-full">Создать</button>
+                                </form>
                             </div>
                             <div>
-                                <label for="lessonDescription" class="block text-gray-700 font-semibold mb-2">Описание</label>
-                                <textarea id="lessonDescription" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Описание урока"></textarea>
+                                <h4 class="text-xl font-bold mb-4">Список групп</h4>
+                                <ul id="groupList" class="space-y-4"></ul>
                             </div>
-                            <div>
-                                <label for="lessonImageFile" class="block text-gray-700 font-semibold mb-2">Превью-картинка (файл)</label>
-                                <input type="file" id="lessonImageFile" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <p class="mt-2 text-sm text-gray-500">Используется сервис imgbb.com</p>
-                            </div>
-                            <div>
-                                <label for="lessonVideo" class="block text-gray-700 font-semibold mb-2">URL видео (YouTube)</label>
-                                <input type="text" id="lessonVideo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Например, https://www.youtube.com/watch?v=...">
-                            </div>
-                            <div>
-                                <label for="textBeforeTest" class="block text-gray-700 font-semibold mb-2">Текст перед тестом</label>
-                                <textarea id="textBeforeTest" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться перед тестом."></textarea>
-                            </div>
-                            <h5 class="text-lg font-bold mt-6 mb-2">Добавить тест</h5>
-                            <div id="testQuestionsContainer" class="space-y-4 border border-gray-300 p-4 rounded-lg">
-                                <div class="test-question-item space-y-2">
-                                    <label class="block text-gray-700">Вопрос 1:</label>
-                                    <input type="text" class="w-full px-3 py-2 border rounded-lg question-text" placeholder="Текст вопроса">
-                                    <label class="block text-gray-700">Варианты ответов (через запятую):</label>
-                                    <input type="text" class="w-full px-3 py-2 border rounded-lg options-text" placeholder="Вариант 1, Вариант 2, Вариант 3">
-                                    <label class="block text-gray-700">Правильный ответ:</label>
-                                    <input type="text" class="w-full px-3 py-2 border rounded-lg correct-answer-text" placeholder="Правильный ответ">
+                        </div>
+                    </div>
+                    <!-- Секция Заявки -->
+                    <div id="adminLeadsSection" class="admin-section hidden">
+                        <h3 class="text-2xl font-bold text-text-color text-center mb-6">Входящие заявки</h3>
+                        <ul id="leadsList" class="space-y-4 max-w-4xl mx-auto"></ul>
+                    </div>
+                    <!-- Секция Кастомизация -->
+                    <div id="customizationSection" class="admin-section hidden">
+                        <h3 class="text-2xl font-bold mb-6">Кастомизация</h3>
+                        <div class="max-w-2xl mx-auto bg-card-bg-color p-6 rounded-lg shadow-md">
+                            <h4 class="text-xl font-bold mb-4">Логотип</h4>
+                             <form id="editMainInfoForm" class="space-y-4">
+                                 <div>
+                                    <label for="siteLogoText" class="block font-semibold mb-2">Текст логотипа</label>
+                                    <input type="text" id="siteLogoText" class="w-full px-3 py-2 border rounded-lg bg-bg-color">
                                 </div>
+                                 <div>
+                                    <label for="siteLogoFile" class="block font-semibold mb-2">Файл логотипа</label>
+                                    <input type="file" id="siteLogoFile" accept="image/*" class="w-full">
+                                </div>
+                                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full">Сохранить</button>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Секция Настройки -->
+                    <div id="adminSettingsSection" class="admin-section hidden">
+                         <h3 class="text-2xl font-bold mb-6">Настройки</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-card-bg-color p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold mb-4">Добавить администратора</h4>
+                                <form id="addAdminForm" class="flex gap-4">
+                                    <input type="text" id="adminIdInput" class="w-full px-4 py-2 border rounded-lg bg-bg-color" placeholder="ID пользователя (UID)" required>
+                                    <button type="submit" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-full">Добавить</button>
+                                </form>
                             </div>
-                            <button type="button" id="addQuestionBtn" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-full text-sm hover:bg-gray-300 transition duration-300">
-                                Добавить вопрос
-                            </button>
-                            <div>
-                                <label for="testResultText" class="block text-gray-700 font-semibold mb-2">Текст с результатом теста</label>
-                                <textarea id="testResultText" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите текст, который будет отображаться после теста с результатами."></textarea>
+                             <div>
+                                <h4 class="text-xl font-bold mb-4">Список администраторов</h4>
+                                <ul id="adminList" class="space-y-4"></ul>
                             </div>
-                            <div>
-                                <label for="testCooldown" class="block text-gray-700 font-semibold mb-2">Интервал между тестами (в минутах)</label>
-                                <input type="number" id="testCooldown" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" value="5" min="0">
-                            </div>
-                            <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
-                                Добавить урок
-                            </button>
-                        </form>
+                        </div>
                     </div>
-                    <div class="md:w-1/2">
-                        <h4 class="text-xl font-bold mb-4">Список всех уроков</h4>
-                        <ul id="lessonList" class="space-y-4">
-                            <!-- Список уроков для редактирования -->
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Секция Заявки -->
-            <div id="adminLeadsSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Входящие заявки</h3>
-                <div class="max-w-2xl mx-auto">
-                    <ul id="leadsList" class="space-y-4">
-                        <!-- Список заявок -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Секция Группы -->
-            <div id="adminGroupsSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление группами</h3>
-                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                    <h4 class="text-xl font-bold mb-4">Создать новую группу</h4>
-                    <form id="addGroupForm">
-                        <div class="mb-4">
-                            <label for="groupName" class="block text-gray-700 font-semibold mb-2">Название группы</label>
-                            <input type="text" id="groupName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Например, Группа 001">
-                        </div>
-                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
-                            Создать группу
-                        </button>
-                    </form>
-                </div>
-                <div class="max-w-2xl mx-auto mt-8">
-                    <h4 class="text-xl font-bold mb-4">Список групп</h4>
-                    <ul id="groupList" class="space-y-4">
-                        <!-- Список групп -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Секция Добавление студента -->
-            <div id="addStudentsSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Управление студентами</h3>
-                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                    <h4 class="text-xl font-bold mb-4">Добавить нового студента</h4>
-                    <form id="addStudentForm" class="space-y-4">
-                        <div>
-                            <label for="studentName" class="block text-gray-700 font-semibold mb-2">Имя</label>
-                            <input type="text" id="studentName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Имя">
-                        </div>
-                        <div>
-                            <label for="studentLastName" class="block text-gray-700 font-semibold mb-2">Фамилия</label>
-                            <input type="text" id="studentLastName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Фамилия">
-                        </div>
-                        <div>
-                            <label for="studentEmail" class="block text-gray-700 font-semibold mb-2">E-mail</label>
-                            <input type="email" id="studentEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="E-mail">
-                        </div>
-                        <div>
-                            <label for="studentPassword" class="block text-gray-700 font-semibold mb-2">Пароль</label>
-                            <input type="password" id="studentPassword" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Пароль">
-                        </div>
-                        <div>
-                            <label for="studentBirthYear" class="block text-gray-700 font-semibold mb-2">Год рождения</label>
-                            <input type="text" id="studentBirthYear" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Год рождения">
-                        </div>
-                        <div>
-                            <label for="studentGroup" class="block text-gray-700 font-semibold mb-2">Группа</label>
-                            <select id="studentGroup" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="" disabled selected>Выберите группу</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
-                            Создать студента
-                        </button>
-                    </form>
-                </div>
-                <div class="max-w-2xl mx-auto mt-8">
-                    <h4 class="text-xl font-bold mb-4">Список всех студентов</h4>
-                    <button id="deleteAllStudentsBtn" class="bg-red-500 text-white py-2 px-4 rounded-full mb-4 hover:bg-red-600 transition duration-300">Удалить всех студентов</button>
-                    <ul id="studentList" class="space-y-4">
-                        <!-- Список студентов для редактирования -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Секция Кастомизация -->
-            <div id="customizationSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Кастомизация</h3>
-                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                    <h4 class="text-xl font-bold mb-4">Настройки темы</h4>
-                    <div class="flex items-center space-x-4 mb-4">
-                        <span>Светлая тема:</span>
-                        <button id="setLightTheme" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-full">Выбрать</button>
-                    </div>
-                    <div class="flex items-center space-x-4 mb-8">
-                        <span>Тёмная тема:</span>
-                        <button id="setDarkTheme" class="bg-gray-800 text-white py-2 px-4 rounded-full">Выбрать</button>
-                    </div>
-
-                    <h4 class="text-xl font-bold mb-4">Редактировать логотип и информацию о курсах</h4>
-                    <form id="editMainInfoForm" class="space-y-4">
-                         <div>
-                            <label for="siteLogoText" class="block text-gray-700 font-semibold mb-2">Текст логотипа</label>
-                            <input type="text" id="siteLogoText" class="w-full px-3 py-2 border rounded-lg" placeholder="Например, Ya_Buxgalter">
-                        </div>
-                         <div>
-                            <label for="siteLogoFile" class="block text-gray-700 font-semibold mb-2">Файл логотипа</label>
-                            <input type="file" id="siteLogoFile" accept="image/*" class="w-full px-3 py-2 border rounded-lg">
-                        </div>
-                        <div id="courseInfoContainer" class="space-y-4 mt-8">
-                            <!-- Информация о курсах будет загружаться сюда -->
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-full hover:bg-blue-700 transition duration-300">
-                            Сохранить изменения
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Секция Настройки -->
-            <div id="adminSettingsSection" class="hidden">
-                <h3 class="text-2xl font-bold text-gray-800 text-center mb-6">Настройки</h3>
-                <div class="max-w-2xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
-                    <h4 class="text-xl font-bold mb-4">Добавить нового администратора</h4>
-                    <form id="addAdminForm">
-                        <div class="mb-4">
-                            <label for="adminIdInput" class="block text-gray-700 font-semibold mb-2">ID пользователя</label>
-                            <input type="text" id="adminIdInput" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Введите ID пользователя">
-                        </div>
-                        <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-full hover:bg-green-700 transition duration-300">
-                            Сделать администратором
-                        </button>
-                    </form>
-                </div>
-                <div class="max-w-2xl mx-auto mt-8">
-                    <h4 class="text-xl font-bold mb-4">Список администраторов</h4>
-                    <ul id="adminList" class="space-y-4">
-                        <!-- Список администраторов -->
-                    </ul>
-                </div>
+                </main>
             </div>
         </div>
     </div>
@@ -498,1337 +493,342 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, updateDoc, getDoc, setDoc, getDocs, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // Глобальные переменные из среды Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = {
-            apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
-            authDomain: "asonik-ai.firebaseapp.com",
-            projectId: "asonik-ai",
-            storageBucket: "asonik-ai.firebasestorage.app",
-            messagingSenderId: "875716508614",
-            appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
-            measurementId: "G-HT5T20YPVE"
-        };
+        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let db;
-        let auth;
-        let storage;
-        let userId;
-        let isUserAdmin = false;
-        let userAvatarUrl = '';
-        const IMG_BB_API_KEY = '5aea1039aaacb36eecb697e6fa9fae7d';
-        let lessonTestQuestions = 1;
-        let allLessons = {};
-        let isVideoWatched = false;
-        let userVideoProgress = {};
         
-        // Элементы DOM
-        const welcomeSection = document.getElementById('welcomeSection');
-        const coursesSection = document.getElementById('coursesSection');
-        const loginSection = document.getElementById('loginSection');
-        const dashboardSection = document.getElementById('dashboardSection');
-        const adminPanel = document.getElementById('adminPanel');
-        const showHomeBtn = document.getElementById('showHomeBtn');
-        const showCoursesBtn = document.getElementById('showCoursesBtn');
-        const showLoginBtn = document.getElementById('showLoginBtn');
-        const showDashboardBtn = document.getElementById('showDashboardBtn');
-        const showAdminPanelBtn = document.getElementById('showAdminPanelBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const loginForm = document.getElementById('loginForm');
-        const lessonsContainer = document.getElementById('lessonsContainer');
-        const addLessonForm = document.getElementById('addLessonForm');
-        const lessonList = document.getElementById('lessonList');
+        let db, auth, storage, userId, isUserAdmin = false, firebaseApp;
+        let allLessons = {}, studentTestResults = {}, userVideoProgress = {};
+        let authReady = false;
+
+        const DUMMY_DOMAIN = "@asonik.app";
+
+        // --- DOM Elements ---
+        const sections = {
+            welcome: document.getElementById('welcomeSection'),
+            courses: document.getElementById('coursesSection'),
+            login: document.getElementById('loginSection'),
+            dashboard: document.getElementById('dashboardSection'),
+            adminPanel: document.getElementById('adminPanel'),
+        };
+        const navButtons = {
+            home: document.getElementById('showHomeBtn'),
+            courses: document.getElementById('showCoursesBtn'),
+            login: document.getElementById('showLoginBtn'),
+            dashboard: document.getElementById('showDashboardBtn'),
+            adminPanel: document.getElementById('showAdminPanelBtn'),
+            userProfileDropdown: document.getElementById('userProfileDropdown'),
+        };
         const messageBox = document.getElementById('messageBox');
-        const addAdminForm = document.getElementById('addAdminForm');
-        const addStudentForm = document.getElementById('addStudentForm');
-        const studentList = document.getElementById('studentList');
-        const welcomeCoursesBtn = document.getElementById('welcomeCoursesBtn');
-        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const loginForm = document.getElementById('loginForm');
         const loadingIndicator = document.getElementById('loadingIndicator');
-        const leadForm = document.getElementById('leadForm');
-        const leadsList = document.getElementById('leadsList');
-        const addGroupForm = document.getElementById('addGroupForm');
-        const groupList = document.getElementById('groupList');
-        const studentGroupSelect = document.getElementById('studentGroup');
-        const addQuestionBtn = document.getElementById('addQuestionBtn');
-        const testQuestionsContainer = document.getElementById('testQuestionsContainer');
-        const groupMembersList = document.getElementById('groupMembersList');
-        const deleteAllStudentsBtn = document.getElementById('deleteAllStudentsBtn');
-        const adminList = document.getElementById('adminList');
-        const lessonViewSection = document.getElementById('lessonViewSection');
-        const lessonDetailsContainer = document.getElementById('lessonDetailsContainer');
-        const backToLessonsBtn = document.getElementById('backToLessonsBtn');
-        const showMyProfileBtn = document.getElementById('showMyProfileBtn');
-        const myProfileSection = document.getElementById('myProfileSection');
-        const profileAvatar = document.getElementById('profileAvatar');
-        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
-        const avatarFileInput = document.getElementById('avatarFileInput');
-        const profileFIO = document.getElementById('profileFIO');
-        const profileEmailDisplay = document.getElementById('profileEmailDisplay');
-        const profileBirthYearDisplay = document.getElementById('profileBirthYearDisplay');
-        const profileGroupDisplay = document.getElementById('profileGroupDisplay');
-        const profileMenuButton = document.getElementById('profileMenuButton');
-        const userProfileDropdown = document.getElementById('userProfileDropdown');
-        const profileMenu = document.getElementById('profileMenu');
-        const userAvatar = document.getElementById('userAvatar');
-        const groupTableHead = document.getElementById('groupTableHead');
-        const dashboardLessonsSection = document.getElementById('dashboardLessonsSection');
-        const myGroupSection = document.getElementById('myGroupSection');
-        const courseOptionsContainer = document.getElementById('courseOptionsContainer');
-        const leadFormSection = document.getElementById('leadFormSection');
-        const selectedCourseInfo = document.getElementById('selectedCourseInfo');
-        const courseTypeInput = document.getElementById('courseTypeInput');
-        const editMainInfoForm = document.getElementById('editMainInfoForm');
-        const setLightTheme = document.getElementById('setLightTheme');
-        const setDarkTheme = document.getElementById('setDarkTheme');
-        const logoImg = document.getElementById('logoImg');
-        const logoContainer = document.getElementById('logoContainer');
-        const siteLogoText = document.getElementById('siteLogoText');
-        const siteLogoFile = document.getElementById('siteLogoFile');
-        const welcomeImage = document.getElementById('welcomeImage');
-        const welcomeContactBtn = document.getElementById('welcomeContactBtn');
         
-        // Admin Panel Navigation Buttons
-        const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
-        const showAdminSettingsBtn = document.getElementById('showAdminSettingsBtn');
-        const showAddStudentsBtn = document.getElementById('showAddStudentsBtn');
-        const showCustomizationBtn = document.getElementById('showCustomizationBtn');
-        const showAdminLeadsBtn = document.getElementById('showAdminLeadsBtn');
-        const showAdminGroupsBtn = document.getElementById('showAdminGroupsBtn');
-        const showDashboardLessonsBtn = document.getElementById('showDashboardLessonsBtn');
-        const showMyGroupBtn = document.getElementById('showMyGroupBtn');
-
-        // Admin Panel Sections
-        const adminLessonsSection = document.getElementById('adminLessonsSection');
-        const adminSettingsSection = document.getElementById('adminSettingsSection');
-        const addStudentsSection = document.getElementById('addStudentsSection');
-        const customizationSection = document.getElementById('customizationSection');
-        const adminLeadsSection = document.getElementById('adminLeadsSection');
-        const adminGroupsSection = document.getElementById('adminGroupsSection');
+        // --- Functions ---
         
-        // Переменная для хранения пройденных тестов
-        let studentTestResults = {};
-        
-        // Функция для отображения сообщения
         function showMessage(text, isError = false) {
             messageBox.textContent = text;
             messageBox.style.backgroundColor = isError ? '#ef4444' : '#22c55e';
             messageBox.classList.remove('hidden');
-            setTimeout(() => {
-                messageBox.classList.add('hidden');
-            }, 3000);
+            setTimeout(() => messageBox.classList.add('hidden'), 3000);
         }
         
-        // Функция для переключения секций
         function showSection(sectionId) {
-            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel, leadFormSection];
-            sections.forEach(section => {
-                if (section && section.id === sectionId) {
-                    section.classList.remove('hidden');
-                } else if (section) {
-                    section.classList.add('hidden');
-                }
+            Object.values(sections).forEach(section => {
+                section.classList.toggle('hidden', section.id !== sectionId);
             });
         }
         
-        // Функция для обновления навигации
         function updateNavigation(isAuthenticated) {
-            showLoginBtn.classList.add('hidden');
-            showCoursesBtn.classList.add('hidden');
-            showHomeBtn.classList.remove('hidden');
-            showDashboardBtn.classList.add('hidden');
-            showAdminPanelBtn.classList.add('hidden');
-            userProfileDropdown.classList.add('hidden');
-            
-            if (isAuthenticated) {
-                userProfileDropdown.classList.remove('hidden');
-                if (isUserAdmin) {
-                    showAdminPanelBtn.classList.remove('hidden');
-                    showDashboardBtn.classList.remove('hidden'); 
-                } else {
-                    showDashboardBtn.classList.remove('hidden');
+            navButtons.login.classList.toggle('hidden', isAuthenticated);
+            navButtons.courses.classList.toggle('hidden', isAuthenticated);
+            navButtons.userProfileDropdown.classList.toggle('hidden', !isAuthenticated);
+            navButtons.dashboard.classList.toggle('hidden', !isAuthenticated || isUserAdmin);
+            navButtons.adminPanel.classList.toggle('hidden', !isUserAdmin);
+        }
+        
+        async function loadMainInfo() {
+            if (!db || !authReady) return;
+            try {
+                const docRef = doc(db, `artifacts/${appId}/public/data/mainInfo`, 'main');
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.siteLogoText) document.getElementById('logoText').textContent = data.siteLogoText;
+                    if (data.siteLogoUrl) document.getElementById('logoImg').src = data.siteLogoUrl;
                 }
-            } else {
-                showLoginBtn.classList.remove('hidden');
-                showCoursesBtn.classList.remove('hidden');
+            } catch (error) {
+                console.error("Error loading main info:", error);
+                // Non-critical error, maybe show a small indicator
             }
         }
         
-        // Обработчики кнопок
-        showHomeBtn.addEventListener('click', () => showSection('welcomeSection'));
-        showCoursesBtn.addEventListener('click', () => {
-            showSection('coursesSection');
-            loadCourseOptions();
-        });
-        showLoginBtn.addEventListener('click', () => showSection('loginSection'));
-        welcomeCoursesBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            showSection('coursesSection');
-            loadCourseOptions();
-        });
-        showAdminPanelBtn.addEventListener('click', () => {
-            showSection('adminPanel');
-            // Убеждаемся, что ни одна вкладка не активна по умолчанию
-            adminLessonsSection.classList.add('hidden');
-            adminSettingsSection.classList.add('hidden');
-            addStudentsSection.classList.add('hidden');
-            customizationSection.classList.add('hidden');
-            adminLeadsSection.classList.add('hidden');
-            adminGroupsSection.classList.add('hidden');
-            const adminNavButtons = [showAdminLessonsBtn, showAdminSettingsBtn, showAddStudentsBtn, showCustomizationBtn, showAdminLeadsBtn, showAdminGroupsBtn];
-            adminNavButtons.forEach(btn => {
-                btn.classList.replace('bg-indigo-500', 'bg-gray-200');
-                btn.classList.replace('text-white', 'text-gray-800');
+        async function loadStudentInfo() {
+            if (!db || !userId) return;
+            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
+            const docSnap = await getDoc(studentRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('userNameInDropdown').textContent = data.name;
+                document.getElementById('userAvatar').src = data.avatarUrl || 'https://placehold.co/32x32';
+                document.getElementById('profileFIO').textContent = `${data.name} ${data.lastName}`;
+                document.getElementById('profileLoginDisplay').textContent = data.email.replace(DUMMY_DOMAIN, '');
+                document.getElementById('profileBirthYearDisplay').textContent = data.birthYear || 'Неизвестно';
+                document.getElementById('profileGroupDisplay').textContent = data.group || 'Неизвестно';
+                document.getElementById('profileAvatar').src = data.avatarUrl || 'https://placehold.co/128x128';
+                studentTestResults = data.testResults || {};
+                userVideoProgress = data.videoProgress || {};
+            }
+        }
+
+        // --- Event Listeners ---
+        
+        Object.keys(navButtons).forEach(key => {
+            if(navButtons[key]) navButtons[key].addEventListener('click', async () => {
+                if(key === 'home') showSection('welcome');
+                if(key === 'courses') showSection('courses');
+                if(key === 'login') showSection('login');
+                if(key === 'adminPanel') {
+                    showSection('adminPanel');
+                    document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
+                }
+                if(key === 'dashboard') {
+                    await loadStudentInfo();
+                    showSection('dashboard');
+                    document.getElementById('showDashboardLessonsBtn').click();
+                }
             });
         });
-        showDashboardBtn.addEventListener('click', async () => {
-            showSection('dashboardSection');
-            lessonViewSection.classList.add('hidden');
-            dashboardLessonsSection.classList.remove('hidden');
-            myGroupSection.classList.add('hidden');
-            myProfileSection.classList.add('hidden');
-            showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
-            showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
-            showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
-            showMyProfileBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showMyProfileBtn.classList.replace('text-white', 'text-gray-800');
-            loadLessons();
-        });
-
-        // Внутренняя навигация панели студента
-        showDashboardLessonsBtn.addEventListener('click', () => {
-            lessonViewSection.classList.add('hidden');
-            dashboardLessonsSection.classList.remove('hidden');
-            myGroupSection.classList.add('hidden');
-            myProfileSection.classList.add('hidden');
-            showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
-            showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
-            showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
-            showMyProfileBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showMyProfileBtn.classList.replace('text-white', 'text-gray-800');
-            loadLessons();
-        });
-
-        showMyGroupBtn.addEventListener('click', () => {
-            lessonViewSection.classList.add('hidden');
-            dashboardLessonsSection.classList.add('hidden');
-            myGroupSection.classList.remove('hidden');
-            myProfileSection.classList.add('hidden');
-            showDashboardLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showDashboardLessonsBtn.classList.replace('text-white', 'text-gray-800');
-            showMyGroupBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
-            showMyGroupBtn.classList.replace('text-gray-800', 'text-white');
-            showMyProfileBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showMyProfileBtn.classList.replace('text-white', 'text-gray-800');
-            loadMyGroup();
-        });
-
-        showMyProfileBtn.addEventListener('click', async () => {
-            lessonViewSection.classList.add('hidden');
-            dashboardLessonsSection.classList.add('hidden');
-            myGroupSection.classList.add('hidden');
-            myProfileSection.classList.remove('hidden');
-            showDashboardLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showDashboardLessonsBtn.classList.replace('text-white', 'text-gray-800');
-            showMyGroupBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-            showMyGroupBtn.classList.replace('text-white', 'text-gray-800');
-            showMyProfileBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
-            showMyProfileBtn.classList.replace('text-gray-800', 'text-white');
-            await loadStudentInfo();
+        
+        document.getElementById('profileMenuButton').addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.getElementById('profileMenu').classList.toggle('hidden');
         });
         
-        // Переключение меню профиля
-        profileMenuButton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileMenu.classList.toggle('hidden');
-        });
+        window.addEventListener('click', () => document.getElementById('profileMenu').classList.add('hidden'));
 
-        // Скрыть меню профиля при клике вне его
-        window.addEventListener('click', (e) => {
-            if (!userProfileDropdown.contains(e.target)) {
-                profileMenu.classList.add('hidden');
-            }
-        });
-
-        // Инициализация Firebase
-        window.onload = async () => {
-            if (Object.keys(firebaseConfig).length > 0) {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    storage = getStorage(app);
-                    auth = getAuth(app);
-                    console.log('Firebase успешно инициализирован.');
-
-                    onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            const userDocRef = doc(db, `artifacts/${appId}/public/data/students`, user.uid);
-                            const userDocSnap = await getDoc(userDocRef);
-                            if (userDocSnap.exists()) {
-                                userAvatarUrl = userDocSnap.data().avatarUrl || 'https://placehold.co/32x32';
-                                userAvatar.src = userAvatarUrl;
-                            } else {
-                                userAvatarUrl = 'https://placehold.co/32x32';
-                                userAvatar.src = userAvatarUrl;
-                            }
-
-                            const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
-                            const adminDocSnap = await getDoc(adminDocRef);
-                            isUserAdmin = (adminDocSnap.exists() && adminDocSnap.data().isAdmin);
-                            
-                            updateNavigation(true);
-                            if (isUserAdmin) {
-                                showSection('adminPanel'); 
-                                adminLessonsSection.classList.add('hidden');
-                                showAdminLessonsBtn.classList.replace('bg-indigo-500', 'bg-gray-200');
-                                showAdminLessonsBtn.classList.replace('text-white', 'text-gray-800');
-                                loadStudents();
-                                loadAdmins();
-                                loadCourseInfo();
-                            } else {
-                                showSection('dashboardSection');
-                                dashboardLessonsSection.classList.remove('hidden');
-                                showDashboardLessonsBtn.classList.replace('bg-gray-200', 'bg-indigo-500');
-                                showDashboardLessonsBtn.classList.replace('text-gray-800', 'text-white');
-                                loadLessons();
-                                await loadStudentInfo();
-                            }
-                        } else {
-                            userId = null;
-                            isUserAdmin = false;
-                            updateNavigation(false);
-                            showSection('welcomeSection');
-                        }
-                    });
-
-                } catch (error) {
-                    console.error('Ошибка инициализации Firebase:', error);
-                }
-            } else {
-                console.warn('Firebase config не найден. Функции базы данных недоступны.');
-            }
-        };
-
-        // Обработчик выхода
-        document.querySelector('#profileMenu [id="logoutBtn"]').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                showMessage('Вы успешно вышли из системы.');
-                showSection('loginSection');
-            } catch (error) {
-                console.error('Ошибка выхода из системы:', error);
-                showMessage('Ошибка выхода.', true);
-            }
-        });
-
-        // Логика входа
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
+            const loginId = document.getElementById('loginId').value.trim();
             const password = document.getElementById('loginPassword').value;
+            if (!loginId || !password) return showMessage("Заполните все поля", true);
             
-            if (email === "" || password === "") {
-                showMessage("Пожалуйста, заполните все поля.", true);
-                return;
-            }
-
             loadingIndicator.classList.remove('hidden');
-
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                await signInWithEmailAndPassword(auth, loginId + DUMMY_DOMAIN, password);
                 showMessage('Вход выполнен успешно!');
-                showSection('dashboardSection'); // Перенаправляем сразу после входа
             } catch (error) {
-                console.error('Ошибка входа:', error);
-                showMessage('Ошибка входа. Проверьте почту и пароль.', true);
+                showMessage('Ошибка входа. Проверьте логин и пароль.', true);
+                console.error(error);
             } finally {
                 loadingIndicator.classList.add('hidden');
             }
         });
 
-        // Вход для администратора через Google
-        googleLoginBtn.addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            showMessage('Вы вышли из системы.');
+        });
+        
+        // Dashboard Navigation
+        document.getElementById('showDashboardLessonsBtn').addEventListener('click', () => {
+            document.getElementById('dashboardLessonsSection').classList.remove('hidden');
+            document.getElementById('myGroupSection').classList.add('hidden');
+            document.getElementById('myProfileSection').classList.add('hidden');
+            document.getElementById('lessonViewSection').classList.add('hidden');
+            loadLessons();
+        });
+        document.getElementById('showMyGroupBtn').addEventListener('click', () => {
+            document.getElementById('dashboardLessonsSection').classList.add('hidden');
+            document.getElementById('myGroupSection').classList.remove('hidden');
+            document.getElementById('myProfileSection').classList.add('hidden');
+            document.getElementById('lessonViewSection').classList.add('hidden');
+            // loadMyGroup();
+        });
+        document.getElementById('showMyProfileFromDropdownBtn').addEventListener('click', async () => {
+            showSection('dashboard');
+            document.getElementById('dashboardLessonsSection').classList.add('hidden');
+            document.getElementById('myGroupSection').classList.add('hidden');
+            document.getElementById('myProfileSection').classList.remove('hidden');
+            document.getElementById('lessonViewSection').classList.add('hidden');
+            await loadStudentInfo();
+        });
 
-            loadingIndicator.classList.remove('hidden');
+        // --- Admin Panel Logic ---
 
+        document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active-nav-button'));
+                btn.classList.add('active-nav-button');
+                const sectionId = btn.dataset.section;
+                document.querySelectorAll('.admin-section').forEach(sec => sec.classList.add('hidden'));
+                document.getElementById(sectionId).classList.remove('hidden');
+
+                // Load data for the section
+                if (sectionId === 'adminLessonsSection') loadAdminLessons();
+                if (sectionId === 'addStudentsSection') { loadGroupsToSelect(); loadStudents(); }
+                if (sectionId === 'adminGroupsSection') loadGroups();
+                if (sectionId === 'adminLeadsSection') loadLeads();
+                if (sectionId === 'adminSettingsSection') loadAdmins();
+            });
+        });
+        
+        // Lessons Management (Admin)
+        const addLessonForm = document.getElementById('addLessonForm');
+        document.getElementById('addQuestionBtn').addEventListener('click', () => {
+            const index = document.querySelectorAll('.test-question-item').length;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'test-question-item border-t pt-4 mt-4';
+            questionDiv.innerHTML = `
+                <p class="font-semibold">Вопрос ${index + 1}</p>
+                <input type="text" class="w-full mt-1 border rounded-lg p-2 bg-bg-color question-text" placeholder="Текст вопроса" required>
+                <input type="text" class="w-full mt-1 border rounded-lg p-2 bg-bg-color options-text" placeholder="Варианты (через запятую)" required>
+                <input type="text" class="w-full mt-1 border rounded-lg p-2 bg-bg-color correct-answer-text" placeholder="Правильный ответ" required>
+            `;
+            document.getElementById('testQuestionsContainer').appendChild(questionDiv);
+        });
+
+        // --- Theme Toggle ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        const applyTheme = (isDark) => {
+            document.body.classList.toggle('dark-theme', isDark);
+            darkIcon.classList.toggle('hidden', !isDark);
+            lightIcon.classList.toggle('hidden', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        };
+
+        themeToggleBtn.addEventListener('click', () => {
+            applyTheme(!document.body.classList.contains('dark-theme'));
+        });
+
+        // --- Initialization ---
+        window.onload = async () => {
+            applyTheme(localStorage.getItem('theme') === 'dark');
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-
-                const adminDocRef = doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid);
-                const adminDocSnap = await getDoc(adminDocRef);
-                
-                if (adminDocSnap.exists() && adminDocSnap.data().isAdmin) {
-                    showMessage('Вход для администратора выполнен успешно!');
-                    showSection('adminPanel');
-                } else {
-                    showMessage('Вход отклонён. Вы не являетесь администратором.', true);
-                    signOut(auth);
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                 if (!firebaseConfig || !firebaseConfig.apiKey) {
+                    document.body.innerHTML = '<div class="text-center text-red-500 p-8">Firebase configuration is missing.</div>';
+                    console.error('Firebase configuration is missing.');
+                    return;
                 }
+                firebaseApp = initializeApp(firebaseConfig);
+                db = getFirestore(firebaseApp);
+                auth = getAuth(firebaseApp);
+                storage = getStorage(firebaseApp);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, async (user) => {
+                    authReady = true;
+                    await loadMainInfo(); // Load public info once auth is ready
+
+                    if (user && !user.isAnonymous) {
+                        userId = user.uid;
+                        const adminDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid));
+                        isUserAdmin = adminDoc.exists() && adminDoc.data().isAdmin;
+                        
+                        updateNavigation(true);
+                        
+                        if (isUserAdmin) {
+                            showSection('adminPanel');
+                            document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
+                        } else {
+                            await loadStudentInfo();
+                            showSection('dashboard');
+                            document.getElementById('showDashboardLessonsBtn').click();
+                        }
+                    } else {
+                        userId = null;
+                        isUserAdmin = false;
+                        updateNavigation(false);
+                        showSection('welcome');
+                    }
+                });
+                
             } catch (error) {
-                console.error('Ошибка входа через Google:', error);
-                showMessage('Ошибка входа через Google.', true);
-            } finally {
-                loadingIndicator.classList.add('hidden');
+                console.error('Firebase Init Error:', error);
+                document.body.innerHTML = `<div class="text-center text-red-500 p-8">Error initializing the application: ${error.message}</div>`;
             }
-        });
-
-        // Внутренняя навигация админ-панели
-        const adminNavButtons = [showAdminLessonsBtn, showAdminSettingsBtn, showAddStudentsBtn, showCustomizationBtn, showAdminLeadsBtn, showAdminGroupsBtn];
-        const adminSections = [adminLessonsSection, adminSettingsSection, addStudentsSection, customizationSection, adminLeadsSection, adminGroupsSection];
-
-        function handleAdminNav(button, section) {
-            adminNavButtons.forEach(btn => {
-                btn.classList.replace('bg-indigo-500', 'bg-gray-200');
-                btn.classList.replace('text-white', 'text-gray-800');
-            });
-            adminSections.forEach(sec => sec.classList.add('hidden'));
-
-            button.classList.replace('bg-gray-200', 'bg-indigo-500');
-            button.classList.replace('text-gray-800', 'text-white');
-            section.classList.remove('hidden');
-        }
-
-        showAdminLessonsBtn.addEventListener('click', () => {
-            handleAdminNav(showAdminLessonsBtn, adminLessonsSection);
-            loadAdminLessons();
-        });
-        showAdminSettingsBtn.addEventListener('click', () => {
-            handleAdminNav(showAdminSettingsBtn, adminSettingsSection);
-            loadAdmins();
-        });
-        showAddStudentsBtn.addEventListener('click', () => {
-            handleAdminNav(showAddStudentsBtn, addStudentsSection);
-            loadGroupsToSelect();
-            loadStudents();
-        });
-        showCustomizationBtn.addEventListener('click', () => {
-            handleAdminNav(showCustomizationBtn, customizationSection);
-            loadCourseInfo();
-        });
-        showAdminLeadsBtn.addEventListener('click', () => {
-            handleAdminNav(showAdminLeadsBtn, adminLeadsSection);
-            loadLeads();
-        });
-        showAdminGroupsBtn.addEventListener('click', () => {
-            handleAdminNav(showAdminGroupsBtn, adminGroupsSection);
-            loadGroups();
-        });
-        
-        // Загрузка информации о курсах для админ-панели
-        function loadCourseInfo() {
-            if (!db) return;
-            const courseInfoRef = collection(db, `artifacts/${appId}/public/data/courseInfo`);
-            onSnapshot(courseInfoRef, (snapshot) => {
-                courseInfoContainer.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const info = docSnap.data();
-                    const infoId = docSnap.id;
-                    const div = document.createElement('div');
-                    div.className = 'mb-4';
-                    div.innerHTML = `
-                        <h5 class="text-lg font-bold mb-2">${info.title}</h5>
-                        <div>
-                            <label for="courseTitle-${infoId}" class="block text-gray-700 font-semibold mb-2">Название</label>
-                            <input type="text" id="courseTitle-${infoId}" value="${info.title}" class="w-full px-3 py-2 border rounded-lg">
-                        </div>
-                        <div>
-                            <label for="courseDescription-${infoId}" class="block text-gray-700 font-semibold mb-2">Описание</label>
-                            <textarea id="courseDescription-${infoId}" rows="4" class="w-full px-3 py-2 border rounded-lg">${info.description}</textarea>
-                        </div>
-                    `;
-                    courseInfoContainer.appendChild(div);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке информации о курсах: ", error);
-            });
-        }
-        
-        editMainInfoForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!db) return;
-
-            const siteLogoTextValue = document.getElementById('siteLogoText').value;
-            const siteLogoFile = document.getElementById('siteLogoFile').files[0];
-            let siteLogoUrlValue = '';
-            
-            if(siteLogoFile) {
-                showMessage('Загрузка логотипа...', false);
-                const logoRef = ref(storage, `logos/${appId}`);
-                await uploadBytes(logoRef, siteLogoFile);
-                siteLogoUrlValue = await getDownloadURL(logoRef);
-                showMessage('Логотип успешно загружен!');
-            }
-
-            // Update main info
-            await setDoc(doc(db, `artifacts/${appId}/public/data/mainInfo`, 'main'), {
-                siteLogoText: siteLogoTextValue,
-                siteLogoUrl: siteLogoUrlValue || logoImg.src
-            }, { merge: true });
-
-            // Update course info
-            const courseInfoRef = collection(db, `artifacts/${appId}/public/data/courseInfo`);
-            const querySnapshot = await getDocs(courseInfoRef);
-            
-            querySnapshot.forEach(docSnap => {
-                const infoId = docSnap.id;
-                const newTitle = document.getElementById(`courseTitle-${infoId}`).value;
-                const newDescription = document.getElementById(`courseDescription-${infoId}`).value;
-
-                updateDoc(doc(db, `artifacts/${appId}/public/data/courseInfo`, infoId), {
-                    title: newTitle,
-                    description: newDescription
-                });
-            });
-            showMessage('Информация успешно обновлена!');
-        });
-        
-        // Переключение тем
-        setLightTheme.addEventListener('click', () => {
-            document.body.classList.remove('dark-theme');
-            localStorage.setItem('theme', 'light');
-        });
-
-        setDarkTheme.addEventListener('click', () => {
-            document.body.classList.add('dark-theme');
-            localStorage.setItem('theme', 'dark');
-        });
-
-        // Загрузка темы
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-theme');
-            } else {
-                document.body.classList.remove('dark-theme');
-            }
-        }
-        loadTheme();
-        
-        // Загрузка информации о курсах
-        function loadCourseOptions() {
-            if (!db) return;
-            const courseInfoRef = collection(db, `artifacts/${appId}/public/data/courseInfo`);
-            onSnapshot(courseInfoRef, (snapshot) => {
-                courseOptionsContainer.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const info = docSnap.data();
-                    const div = document.createElement('div');
-                    div.className = 'bg-gray-50 rounded-lg p-6 shadow-md border border-gray-200';
-                    div.innerHTML = `
-                        <h3 class="text-xl font-bold mb-2">${info.title}</h3>
-                        <p class="text-gray-600 mb-4">${info.description}</p>
-                        <button data-course-id="${docSnap.id}" data-course-name="${info.title}" class="enroll-btn w-full bg-indigo-500 text-white font-semibold py-2 rounded-full hover:bg-indigo-600 transition duration-300">
-                            Записаться
-                        </button>
-                    `;
-                    courseOptionsContainer.appendChild(div);
-                });
-            });
-        }
-        
-        courseOptionsContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('enroll-btn')) {
-                const courseName = e.target.dataset.courseName;
-                showSection('leadFormSection');
-                selectedCourseInfo.textContent = `Вы выбрали курс: ${courseName}`;
-                courseTypeInput.value = courseName;
-            }
-        });
-        
-        welcomeContactBtn.addEventListener('click', () => {
-            window.location.href = 'tel:+998948000068';
-        });
-
-        // Обработчик формы заявок
-        leadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('leadName').value;
-            const lastName = document.getElementById('leadLastName').value;
-            const phone = document.getElementById('leadPhone').value;
-            const telegram = document.getElementById('leadTelegram').value;
-            const courseType = document.getElementById('courseTypeInput').value;
-
-            if (!db) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, `artifacts/${appId}/public/data/leads`), {
-                    name,
-                    lastName,
-                    phone,
-                    telegram,
-                    courseType,
-                    status: 'new',
-                    createdAt: new Date()
-                });
-                showMessage('Ваша заявка успешно отправлена!');
-                leadForm.reset();
-                showSection('welcomeSection');
-            } catch (error) {
-                console.error('Ошибка при добавлении заявки:', error);
-                showMessage(`Ошибка: ${error.message}`, true);
-            }
-        });
-
-        // Загрузка заявок
+        };
+        // Dummy function placeholders to be fully implemented
+        function loadLessons() { console.log('Loading lessons for student...'); }
+        function loadAdminLessons() { console.log('Loading lessons for admin...'); }
+        function loadGroups() { console.log('Loading groups...'); }
+        function loadStudents() { console.log('Loading students...'); }
         function loadLeads() {
             if (!db) return;
             const leadsRef = collection(db, `artifacts/${appId}/public/data/leads`);
             onSnapshot(leadsRef, (snapshot) => {
+                const leadsList = document.getElementById('leadsList');
                 leadsList.innerHTML = '';
                 snapshot.forEach(docSnap => {
                     const lead = docSnap.data();
                     const li = document.createElement('li');
-                    li.className = 'bg-white p-4 rounded-lg shadow-sm';
+                    li.className = 'bg-card-bg-color p-4 rounded-lg shadow-sm';
                     li.innerHTML = `
                         <p><strong>Имя:</strong> ${lead.name} ${lead.lastName}</p>
                         <p><strong>Телефон:</strong> ${lead.phone}</p>
-                        <p><strong>Telegram:</strong> ${lead.telegram}</p>
-                        <p><strong>Курс:</strong> ${lead.courseType}</p>
+                        <p><strong>Курс:</strong> ${lead.courseType || 'Не указан'}</p>
                         <p class="text-xs text-gray-500 mt-2">ID заявки: ${docSnap.id}</p>
                     `;
                     leadsList.appendChild(li);
                 });
             }, (error) => {
                 console.error("Ошибка при загрузке заявок: ", error);
+                showMessage("Не удалось загрузить заявки", true);
             });
         }
+        function loadAdmins() { console.log('Loading admins...'); }
+        function loadGroupsToSelect() { console.log('Loading groups for select dropdown...'); }
+        
+        document.getElementById('welcomeCoursesBtn').addEventListener('click', () => {
+            document.getElementById('ourCoursesSection').scrollIntoView({ behavior: 'smooth' });
+        });
 
-        // Обработчик формы групп
-        addGroupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const groupName = document.getElementById('groupName').value.trim();
-
-            if (!groupName) {
-                showMessage('Пожалуйста, введите название группы.', true);
-                return;
-            }
-            if (!db) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-
-            try {
-                await addDoc(collection(db, `artifacts/${appId}/public/data/groups`), {
-                    name: groupName,
-                    createdAt: new Date()
-                });
-                showMessage('Группа успешно создана!');
-                addGroupForm.reset();
-            } catch (error) {
-                console.error('Ошибка при создании группы:', error);
-                showMessage(`Ошибка: ${error.message}`, true);
-            }
+        document.querySelectorAll('.course-enroll-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const courseType = e.target.dataset.courseType;
+                showSection('courses');
+                document.getElementById('leadCourseType').value = courseType;
+            });
         });
         
-        // Загрузка групп для админ-панели
-        function loadGroups() {
-            if (!db) return;
-            const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
-            onSnapshot(groupsRef, (snapshot) => {
-                groupList.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const group = docSnap.data();
-                    const li = document.createElement('li');
-                    li.className = 'flex items-center justify-between bg-white p-4 rounded-lg shadow-sm';
-                    li.innerHTML = `
-                        <span class="font-semibold">${group.name}</span>
-                        <button data-id="${docSnap.id}" class="delete-group-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm hover:bg-red-600 transition duration-300">Удалить</button>
-                    `;
-                    groupList.appendChild(li);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке групп: ", error);
-            });
-        }
-        
-        // Загрузка групп в выпадающий список для студентов
-        async function loadGroupsToSelect() {
-            if (!db) return;
-            const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
-            const querySnapshot = await getDocs(groupsRef);
-            studentGroupSelect.innerHTML = '<option value="" disabled selected>Выберите группу</option>';
-            querySnapshot.forEach(docSnap => {
-                const group = docSnap.data();
-                const option = document.createElement('option');
-                option.value = group.name;
-                option.textContent = group.name;
-                studentGroupSelect.appendChild(option);
-            });
-        }
-        
-        // Функция для загрузки изображения в Firebase Storage
-        async function uploadImageToFirebase(file, path) {
-            const fileRef = ref(storage, path);
-            await uploadBytes(fileRef, file);
-            return await getDownloadURL(fileRef);
-        }
+        document.getElementById('welcomeContactBtn').addEventListener('click', () => {
+            window.location.href = 'tel:+998948000068';
+        });
 
-        // CRUD операции для админ-панели (Уроки)
-        addLessonForm.addEventListener('submit', async (e) => {
+        document.getElementById('leadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const title = document.getElementById('lessonTitle').value;
-            const description = document.getElementById('lessonDescription').value;
-            const imageFile = document.getElementById('lessonImageFile').files[0];
-            const videoUrl = document.getElementById('lessonVideo').value;
-            const textBeforeTest = document.getElementById('textBeforeTest').value;
-            const testResultText = document.getElementById('testResultText').value;
-            const testCooldown = document.getElementById('testCooldown').value;
-            
-            const questions = [];
-            document.querySelectorAll('.test-question-item').forEach(item => {
-                const questionText = item.querySelector('.question-text').value;
-                const optionsText = item.querySelector('.options-text').value;
-                const correctAnswerText = item.querySelector('.correct-answer-text').value;
-
-                if (questionText && optionsText && correctAnswerText) {
-                    questions.push({
-                        question: questionText,
-                        options: optionsText.split(',').map(opt => opt.trim()),
-                        answer: correctAnswerText.trim()
-                    });
-                }
-            });
-
-            if (!title || !description || !videoUrl) {
-                showMessage('Пожалуйста, заполните как минимум название, описание и URL видео.', true);
-                return;
-            }
-            if (!db) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-
-            let imageUrl = '';
-            if (imageFile) {
-                showMessage('Идет загрузка изображения...', false);
-                try {
-                    imageUrl = await uploadImageToFirebase(imageFile, `lesson_previews/${appId}/${imageFile.name}`);
-                } catch (e) {
-                    console.error("Ошибка при загрузке превью:", e);
-                    showMessage('Ошибка при загрузке превью.', true);
-                    return;
-                }
-                showMessage('Изображение успешно загружено!');
-            }
-
-            try {
-                await addDoc(collection(db, `artifacts/${appId}/public/data/lessons`), {
-                    title: title,
-                    description: description,
-                    imageUrl: imageUrl,
-                    videoUrl: videoUrl,
-                    textBeforeTest: textBeforeTest,
-                    lessonTest: questions,
-                    testResultText: testResultText,
-                    testCooldown: testCooldown,
-                    createdAt: new Date()
-                });
-                showMessage('Урок успешно добавлен!');
-                addLessonForm.reset();
-                testQuestionsContainer.innerHTML = `
-                    <div class="test-question-item space-y-2">
-                        <label class="block text-gray-700">Вопрос 1:</label>
-                        <input type="text" class="w-full px-3 py-2 border rounded-lg question-text" placeholder="Текст вопроса">
-                        <label class="block text-gray-700">Варианты ответов (через запятую):</label>
-                        <input type="text" class="w-full px-3 py-2 border rounded-lg options-text" placeholder="Вариант 1, Вариант 2, Вариант 3">
-                        <label class="block text-gray-700">Правильный ответ:</label>
-                        <input type="text" class="w-full px-3 py-2 border rounded-lg correct-answer-text" placeholder="Правильный ответ">
-                    </div>
-                `;
-                lessonTestQuestions = 1;
-            } catch (e) {
-                console.error('Ошибка при добавлении документа: ', e);
-                showMessage('Ошибка при добавлении урока.', true);
-            }
-        });
-        
-        // Добавление поля для нового вопроса в форме урока
-        addQuestionBtn.addEventListener('click', () => {
-            lessonTestQuestions++;
-            const newQuestionHtml = `
-                <div class="test-question-item space-y-2 mt-4">
-                    <label class="block text-gray-700">Вопрос ${lessonTestQuestions}:</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded-lg question-text" placeholder="Текст вопроса">
-                    <label class="block text-gray-700">Варианты ответов (через запятую):</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded-lg options-text" placeholder="Вариант 1, Вариант 2, Вариант 3">
-                    <label class="block text-gray-700">Правильный ответ:</label>
-                    <input type="text" class="w-full px-3 py-2 border rounded-lg correct-answer-text" placeholder="Правильный ответ">
-                </div>
-            `;
-            testQuestionsContainer.innerHTML += newQuestionHtml;
-        });
-
-        // Добавление нового администратора (в Настройках)
-        addAdminForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const adminId = document.getElementById('adminIdInput').value.trim();
-
-            if (!adminId) {
-                showMessage('Пожалуйста, введите ID пользователя.', true);
-                return;
-            }
-            if (!db) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-            try {
-                await setDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, adminId), {
-                    isAdmin: true,
-                    createdAt: new Date()
-                });
-                showMessage(`Пользователь с ID ${adminId} успешно добавлен в администраторы!`, false);
-                addAdminForm.reset();
-            } catch (error) {
-                console.error('Ошибка при добавлении администратора:', error);
-                showMessage(`Ошибка: ${error.message}`, true);
-            }
-        });
-
-        // Загрузка списка админов
-        function loadAdmins() {
-            if (!db) return;
-            const adminsRef = collection(db, `artifacts/${appId}/public/data/admin_users`);
-            onSnapshot(adminsRef, (snapshot) => {
-                adminList.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const admin = docSnap.data();
-                    const li = document.createElement('li');
-                    li.className = 'flex items-center justify-between bg-white p-4 rounded-lg shadow-sm';
-                    li.innerHTML = `
-                        <span class="font-semibold">${docSnap.id}</span>
-                    `;
-                    adminList.appendChild(li);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке списка админов: ", error);
-            });
-        }
-
-        // Добавление нового студента (в Настройках)
-        addStudentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('studentName').value;
-            const lastName = document.getElementById('studentLastName').value;
-            const email = document.getElementById('studentEmail').value;
-            const password = document.getElementById('studentPassword').value;
-            const birthYear = document.getElementById('studentBirthYear').value;
-            const group = document.getElementById('studentGroup').value;
-
-            if (!name || !lastName || !email || !password || !birthYear || !group) {
-                showMessage('Пожалуйста, заполните все поля.', true);
-                return;
-            }
-            if (!db) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                await setDoc(doc(db, `artifacts/${appId}/public/data/students`, user.uid), {
-                    name: name,
-                    lastName: lastName,
-                    email: email,
-                    birthYear: birthYear,
-                    group: group,
-                    createdAt: new Date(),
-                    testResults: {},
-                    avatarUrl: ''
-                });
-                showMessage(`Студент ${name} ${lastName} успешно добавлен!`, false);
-                addStudentForm.reset();
-            } catch (error) {
-                console.error('Ошибка при добавлении студента:', error);
-                showMessage(`Ошибка: ${error.message}`, true);
-            }
-        });
-
-        // Загрузка информации о студенте
-        async function loadStudentInfo() {
-            if (!db || !userId) {
-                return;
-            }
-            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
-            onSnapshot(studentRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const studentData = docSnap.data();
-                    profileFIO.textContent = `${studentData.name} ${studentData.lastName}`;
-                    profileEmailDisplay.textContent = studentData.email || 'Неизвестно';
-                    profileBirthYearDisplay.textContent = studentData.birthYear || 'Неизвестно';
-                    profileGroupDisplay.textContent = studentData.group || 'Неизвестно';
-                    userAvatarUrl = studentData.avatarUrl || 'https://placehold.co/128x128';
-                    profileAvatar.src = userAvatarUrl;
-                    userAvatar.src = userAvatarUrl;
-                    studentTestResults = studentData.testResults || {};
-                    userVideoProgress = studentData.videoProgress || {};
-                }
-            }, (error) => {
-                console.error('Ошибка при загрузке данных студента: ', error);
-            });
-        }
-
-        // Загрузка уроков для студентов
-        function loadLessons() {
-            if (!db) return;
-            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
-            onSnapshot(lessonsRef, (snapshot) => {
-                lessonsContainer.innerHTML = '';
-                allLessons = {};
-                const sortedLessons = snapshot.docs.sort((a, b) => a.data().createdAt.toDate() - b.data().createdAt.toDate());
-
-                sortedLessons.forEach((docSnap, index) => {
-                    const lesson = docSnap.data();
-                    const lessonId = docSnap.id;
-                    allLessons[lessonId] = lesson;
-                    
-                    const userScore = studentTestResults[lessonId];
-                    const progressColor = userScore >= 80 ? '#22c55e' : '#ef4444';
-                    const progressDashoffset = 2 * Math.PI * 22 * (1 - (userScore / 100 || 0));
-                    const scoreText = userScore !== undefined ? `${userScore.toFixed(0)}%` : '0%';
-
-                    const previousLessonPassed = index === 0 || studentTestResults[sortedLessons[index - 1].id] >= 80;
-                    const isUnlocked = previousLessonPassed;
-
-                    const lessonElement = `
-                        <div class="bg-card-bg-color rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
-                            ${!isUnlocked ? '<div class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center text-white text-xl font-bold z-10">Урок заблокирован</div>' : ''}
-                            <div class="cursor-pointer" data-lesson-id="${lessonId}">
-                                ${lesson.imageUrl ? `<img src="${lesson.imageUrl}" alt="${lesson.title}" class="w-full h-48 object-cover">` : ''}
-                                <div class="p-6 relative">
-                                    <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
-                                    <p class="text-gray-600">${lesson.description}</p>
-                                    <div class="absolute top-4 right-4 flex items-center justify-center progress-circle" style="--progress-color: ${progressColor};">
-                                        <svg class="w-12 h-12">
-                                            <circle class="bg" cx="24" cy="24" r="22"></circle>
-                                            <circle class="progress" cx="24" cy="24" r="22" stroke-dasharray="138.2" stroke-dashoffset="${progressDashoffset}"></circle>
-                                        </svg>
-                                        <span class="absolute text-sm font-bold text-gray-800">${scoreText}</span>
-                                    </div>
-                                    ${!isUnlocked ? '<p class="mt-4 text-sm text-red-500">Пройдите предыдущий урок на 80%</p>' : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    lessonsContainer.innerHTML += lessonElement;
-                });
-            }, (error) => {
-                console.error("Ошибка при получении уроков: ", error);
-            });
-        }
-
-        // Отображение деталей урока
-        lessonsContainer.addEventListener('click', async (e) => {
-            const card = e.target.closest('[data-lesson-id]');
-            if (!card) return;
-
-            const lessonId = card.dataset.lessonId;
-            const lesson = allLessons[lessonId];
-            if (!lesson) return;
-
-            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
-            const snapshot = await getDocs(lessonsRef);
-            const sortedLessons = snapshot.docs.sort((a, b) => a.data().createdAt.toDate() - b.data().createdAt.toDate());
-            const lessonIndex = sortedLessons.findIndex(doc => doc.id === lessonId);
-            const previousLessonId = lessonIndex > 0 ? sortedLessons[lessonIndex - 1].id : null;
-            const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
-            const isUnlocked = lessonIndex === 0 || isPreviousLessonPassed;
-            
-            if (!isUnlocked) {
-                showMessage('Этот урок заблокирован. Пожалуйста, пройдите предыдущий тест.', true);
-                return;
-            }
-
-            dashboardLessonsSection.classList.add('hidden');
-            lessonViewSection.classList.remove('hidden');
-
-            const youtubeVideoId = lesson.videoUrl && lesson.videoUrl.split('v=')[1] ? lesson.videoUrl.split('v=')[1].split('&')[0] : null;
-
-            lessonDetailsContainer.innerHTML = `
-                <h4 class="text-3xl font-bold mb-4">${lesson.title}</h4>
-                <p class="text-gray-600 mb-6">${lesson.description}</p>
-                ${youtubeVideoId ? `<div class="relative mt-4 pb-[56.25%] h-0 rounded-lg overflow-hidden">
-                    <iframe id="lessonVideoFrame" class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${youtubeVideoId}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>` : ''}
-                ${lesson.textBeforeTest ? `<div class="mt-8 text-gray-700">${lesson.textBeforeTest}</div>` : ''}
-                ${lesson.lessonTest && lesson.lessonTest.length > 0 ? `<div class="mt-8">
-                    <button id="showTestBtn" class="bg-indigo-500 text-white py-2 px-4 rounded-full hover:bg-indigo-600 transition duration-300">
-                        Пройти тест
-                    </button>
-                    <div id="testSection" class="hidden mt-4">
-                        <h5 class="font-semibold text-2xl mb-4">Тест:</h5>
-                        <div class="test-content space-y-4" data-lesson-id="${lessonId}">
-                            ${lesson.lessonTest.map((q, qIndex) => `
-                                <div class="question-item bg-gray-100 p-4 rounded-lg">
-                                    <p class="font-medium text-lg">${q.question}</p>
-                                    <div class="options space-y-1 mt-2">
-                                        ${q.options.map((option, optIndex) => `
-                                            <label class="block">
-                                                <input type="radio" name="question-${lessonId}-${qIndex}" value="${option}" class="mr-2">
-                                                <span>${option}</span>
-                                            </label>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="submit-test-btn bg-indigo-500 text-white py-2 px-4 rounded-full mt-6 hover:bg-indigo-600 transition duration-300" data-lesson-id="${lessonId}">Отправить</button>
-                        <div class="test-result mt-4 text-lg font-bold"></div>
-                        <div id="correctAnswersSection" class="hidden mt-4">
-                            <h5 class="font-semibold text-lg">Правильные ответы:</h5>
-                            <div id="correctAnswersList" class="space-y-2 mt-2"></div>
-                        </div>
-                    </div>
-                </div>` : ''}
-            `;
-            const videoFrame = document.getElementById('lessonVideoFrame');
-            videoFrame.onload = () => {
-                userVideoProgress[lessonId] = true;
+            const leadData = {
+                name: document.getElementById('leadName').value,
+                lastName: document.getElementById('leadLastName').value,
+                phone: document.getElementById('leadPhone').value,
+                courseType: document.getElementById('leadCourseType').value,
+                status: 'new',
+                createdAt: new Date()
             };
-        });
-        
-        // Обработчик кнопки "Назад к урокам"
-        backToLessonsBtn.addEventListener('click', () => {
-            lessonViewSection.classList.add('hidden');
-            dashboardLessonsSection.classList.remove('hidden');
-            loadLessons(); // Обновляем список уроков
-        });
-
-        // Обработчик кнопки "Пройти тест"
-        lessonViewSection.addEventListener('click', (e) => {
-            if (e.target.id === 'showTestBtn') {
-                const lessonId = e.target.closest('[data-lesson-id]').dataset.lessonId;
-                if (userVideoProgress[lessonId]) {
-                    const testSection = document.getElementById('testSection');
-                    testSection.classList.remove('hidden');
-                    e.target.classList.add('hidden');
-                } else {
-                    showMessage('Пожалуйста, сначала посмотрите видео.', true);
-                }
-            }
-        });
-
-        // Обработка теста
-        lessonViewSection.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('submit-test-btn')) {
-                const lessonId = e.target.dataset.lessonId;
-                const lessonRef = doc(db, `artifacts/${appId}/public/data/lessons`, lessonId);
-                const lessonSnap = await getDoc(lessonRef);
-                const lessonData = lessonSnap.data();
-                const testQuestions = lessonData.lessonTest;
-                const testCooldown = lessonData.testCooldown || 5;
-
-                const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
-                const studentDoc = await getDoc(studentRef);
-                const lastAttemptTime = studentDoc.data().lastTestAttempt?.[lessonId] || 0;
-                const currentTime = new Date().getTime();
-                const cooldownInMs = testCooldown * 60 * 1000;
-
-                if (currentTime - lastAttemptTime < cooldownInMs) {
-                    const remainingTime = Math.ceil((cooldownInMs - (currentTime - lastAttemptTime)) / 60000);
-                    showMessage(`Повторное прохождение теста возможно через ${remainingTime} мин.`, true);
-                    return;
-                }
-                
-                let correctAnswers = 0;
-                const testContent = e.target.closest('.test-section').querySelector('.test-content');
-                const correctAnswersList = document.getElementById('correctAnswersList');
-                correctAnswersList.innerHTML = '';
-                
-                testQuestions.forEach((q, qIndex) => {
-                    const selectedOption = testContent.querySelector(`input[name="question-${lessonId}-${qIndex}"]:checked`);
-                    const li = document.createElement('div');
-                    li.textContent = `Вопрос: ${q.question} | Правильный ответ: ${q.answer} | Ваш ответ: ${selectedOption ? selectedOption.value : 'Не выбран'}`;
-                    correctAnswersList.appendChild(li);
-
-                    if (selectedOption && selectedOption.value === q.answer) {
-                        correctAnswers++;
-                    }
-                });
-
-                document.getElementById('correctAnswersSection').classList.remove('hidden');
-
-                const score = (correctAnswers / testQuestions.length) * 100;
-                e.target.closest('.test-section').querySelector('.test-result').textContent = `Ваш результат: ${score.toFixed(0)}%`;
-
-                await runTransaction(db, async (transaction) => {
-                    const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
-                    const studentDoc = await transaction.get(studentRef);
-                    
-                    if (!studentDoc.exists()) {
-                        throw "Student document does not exist!";
-                    }
-
-                    const newTestResults = studentDoc.data().testResults || {};
-                    newTestResults[lessonId] = score;
-
-                    const newLastTestAttempt = studentDoc.data().lastTestAttempt || {};
-                    newLastTestAttempt[lessonId] = currentTime;
-
-                    transaction.update(studentRef, {
-                        testResults: newTestResults,
-                        lastTestAttempt: newLastTestAttempt
-                    });
-                });
-                
-            }
-        });
-
-        // Загрузка участников группы студента
-        async function loadMyGroup() {
-            if (!db || !userId) return;
-
-            const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
-            const studentSnap = await getDoc(studentRef);
-            if (!studentSnap.exists()) {
-                groupMembersList.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
-                return;
-            }
-
-            const studentGroup = studentSnap.data().group;
-            if (!studentGroup) {
-                groupMembersList.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">Вы не принадлежите ни к какой группе.</td></tr>';
-                return;
-            }
-
-            const q = query(collection(db, `artifacts/${appId}/public/data/students`), where("group", "==", studentGroup));
-            onSnapshot(q, async (snapshot) => {
-                const lessonDocs = await getDocs(collection(db, `artifacts/${appId}/public/data/lessons`));
-                const lessons = lessonDocs.docs.reduce((acc, doc) => {
-                    acc[doc.id] = doc.data().title;
-                    return acc;
-                }, {});
-                const lessonIds = Object.keys(lessons);
-
-                groupTableHead.innerHTML = `<th class="py-2 px-4 text-left">ФИО</th>
-                                       <th class="py-2 px-4 text-left">Аватар</th>`;
-                lessonIds.forEach(id => {
-                    groupTableHead.innerHTML += `<th class="py-2 px-4 text-left">${lessons[id]}</th>`;
-                });
-
-                groupMembersList.innerHTML = '';
-                snapshot.forEach(docSnap => {
-                    const member = docSnap.data();
-                    const testResults = member.testResults || {};
-                    
-                    const row = document.createElement('tr');
-                    row.className = 'border-t border-gray-200';
-                    let cellsHtml = `<td class="py-2 px-4">${member.name} ${member.lastName}</td>
-                                     <td class="py-2 px-4"><img src="${member.avatarUrl || 'https://placehold.co/32x32'}" alt="Аватар" class="rounded-full w-8 h-8"></td>`;
-                    
-                    lessonIds.forEach(id => {
-                        const score = testResults[id] !== undefined ? `${testResults[id].toFixed(0)}%` : 'Не пройден';
-                        cellsHtml += `<td class="py-2 px-4">${score}</td>`;
-                    });
-                    
-                    row.innerHTML = cellsHtml;
-                    groupMembersList.appendChild(row);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке списка группы: ", error);
-            });
-        }
-
-        // Обработчик смены аватара
-        changeAvatarBtn.addEventListener('click', () => {
-            avatarFileInput.click();
-        });
-
-        avatarFileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            showMessage('Загрузка аватара...', false);
             try {
-                const imageUrl = await uploadImageToFirebase(file, `avatars/${userId}`);
-                await updateDoc(doc(db, `artifacts/${appId}/public/data/students`, userId), {
-                    avatarUrl: imageUrl
-                });
-                showMessage('Аватар успешно обновлен!');
+                await addDoc(collection(db, `artifacts/${appId}/public/data/leads`), leadData);
+                showMessage('Ваша заявка успешно отправлена!');
+                e.target.reset();
+                showSection('welcome');
             } catch (error) {
-                console.error('Ошибка при обновлении аватара:', error);
-                showMessage('Ошибка при обновлении аватара.', true);
+                console.error('Ошибка при отправке заявки:', error);
+                showMessage('Ошибка при отправке заявки.', true);
             }
         });
 
-        // Загрузка уроков для админ-панели
-        function loadAdminLessons() {
-            if (!db) return;
-            const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
-            onSnapshot(lessonsRef, (snapshot) => {
-                lessonList.innerHTML = ''; // Очищаем список
-                snapshot.forEach(docSnap => {
-                    const lesson = docSnap.data();
-                    const li = document.createElement('li');
-                    li.className = 'flex items-center justify-between bg-white p-4 rounded-lg shadow-sm';
-                    li.innerHTML = `
-                        <span class="font-semibold">${lesson.title}</span>
-                        <div class="space-x-2">
-                            <button data-id="${docSnap.id}" class="edit-btn bg-yellow-500 text-white py-1 px-3 rounded-full text-sm hover:bg-yellow-600 transition duration-300">Редактировать</button>
-                            <button data-id="${docSnap.id}" class="delete-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm hover:bg-red-600 transition duration-300">Удалить</button>
-                        </div>
-                    `;
-                    lessonList.appendChild(li);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке уроков для админки: ", error);
-            });
-        }
-
-        // Загрузка списка студентов для админ-панели
-        function loadStudents() {
-            if (!db) return;
-            const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
-            onSnapshot(studentsRef, (snapshot) => {
-                studentList.innerHTML = ''; // Очищаем список
-                snapshot.forEach(docSnap => {
-                    const student = docSnap.data();
-                    const li = document.createElement('li');
-                    li.className = 'flex flex-col md:flex-row md:items-center justify-between bg-white p-4 rounded-lg shadow-sm';
-                    li.innerHTML = `
-                        <div class="mb-2 md:mb-0">
-                            <span class="font-semibold">${student.name} ${student.lastName}</span>
-                            <span class="text-sm text-gray-500 block md:inline-block md:ml-4">Группа: ${student.group}</span>
-                        </div>
-                        <div class="space-x-2">
-                            <button data-id="${docSnap.id}" class="delete-student-btn bg-red-500 text-white py-1 px-3 rounded-full text-sm hover:bg-red-600 transition duration-300">Удалить</button>
-                        </div>
-                    `;
-                    studentList.appendChild(li);
-                });
-            }, (error) => {
-                console.error("Ошибка при загрузке списка студентов: ", error);
-            });
-        }
-
-        // Обработчики для админ-панели
-        lessonList.addEventListener('click', async (e) => {
-            const target = e.target;
-            const lessonId = target.getAttribute('data-id');
-
-            if (!db || !lessonId) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-            
-            if (target.classList.contains('delete-btn')) {
-                // Удаление урока
-                try {
-                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/lessons`, lessonId));
-                    showMessage('Урок успешно удален!');
-                } catch (e) {
-                    console.error("Ошибка при удалении документа: ", e);
-                    showMessage('Ошибка при удалении.', true);
-                }
-            } else if (target.classList.contains('edit-btn')) {
-                // Редактирование урока (простая логика, можно расширить)
-                const newTitle = prompt('Введите новое название урока:');
-                if (newTitle) {
-                    try {
-                        await updateDoc(doc(db, `artifacts/${appId}/public/data/lessons`, lessonId), {
-                            title: newTitle
-                        });
-                        showMessage('Урок успешно обновлен!');
-                    } catch (e) {
-                        console.error("Ошибка при обновлении документа: ", e);
-                        showMessage('Ошибка при обновлении.', true);
-                    }
-                }
-            }
-        });
-        
-        studentList.addEventListener('click', async (e) => {
-            const target = e.target;
-            const studentId = target.getAttribute('data-id');
-
-            if (!db || !studentId) {
-                showMessage('База данных недоступна.', true);
-                return;
-            }
-
-            if (target.classList.contains('delete-student-btn')) {
-                try {
-                    const studentRef = doc(db, `artifacts/${appId}/public/data/students`, studentId);
-                    const studentSnap = await getDoc(studentRef);
-                    const studentEmail = studentSnap.data().email;
-
-                    // Удаление документа из Firestore
-                    await deleteDoc(studentRef);
-                    
-                    // Удаление пользователя из Firebase Auth
-                    const functions = getFunctions(app);
-                    const deleteUserFromAuth = httpsCallable(functions, 'deleteUserByEmail');
-                    await deleteUserFromAuth({ email: studentEmail });
-
-                    showMessage('Студент успешно удален!');
-                } catch (e) {
-                    console.error("Ошибка при удалении студента: ", e);
-                    showMessage('Ошибка при удалении.', true);
-                }
-            }
-        });
-
-        deleteAllStudentsBtn.addEventListener('click', async () => {
-            if (confirm('Вы уверены, что хотите удалить всех студентов? Это действие необратимо.')) {
-                if (!db) {
-                    showMessage('База данных недоступна.', true);
-                    return;
-                }
-                const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
-                const q = query(studentsRef);
-                const querySnapshot = await getDocs(q);
-                
-                try {
-                    for (const docSnap of querySnapshot.docs) {
-                        const studentId = docSnap.id;
-                        
-                        const studentRef = doc(db, `artifacts/${appId}/public/data/students`, studentId);
-                        const studentSnap = await getDoc(studentRef);
-                        const studentEmail = studentSnap.data().email;
-
-                        // Удаление документа из Firestore
-                        await deleteDoc(studentRef);
-                        
-                        // Удаление пользователя из Firebase Auth
-                        const functions = getFunctions(app);
-                        const deleteUserFromAuth = httpsCallable(functions, 'deleteUserByEmail');
-                        await deleteUserFromAuth({ email: studentEmail });
-                    }
-                    showMessage('Все студенты успешно удалены!');
-                } catch (e) {
-                    console.error("Ошибка при удалении всех студентов: ", e);
-                    showMessage('Ошибка при удалении всех студентов.', true);
-                }
-            }
-        });
-
-        groupList.addEventListener('click', async (e) => {
-            const target = e.target;
-            if (target.classList.contains('delete-group-btn')) {
-                const groupId = target.dataset.id;
-                try {
-                    await deleteDoc(doc(db, `artifacts/${appId}/public/data/groups`, groupId));
-                    showMessage('Группа успешно удалена!');
-                } catch (error) {
-                    console.error('Ошибка при удалении группы:', error);
-                    showMessage('Ошибка при удалении группы.', true);
-                }
-            }
-        });
     </script>
 </body>
 </html>
+
