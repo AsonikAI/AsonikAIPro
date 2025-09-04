@@ -517,10 +517,6 @@
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
         let db, auth, storage, functions, userId, isUserAdmin = false, firebaseApp;
         let allLessons = {}, studentTestResults = {}, userVideoProgress = {};
         let authReady = false;
@@ -576,6 +572,7 @@
         async function loadMainInfo() {
             if (!db) return;
             try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const docRef = doc(db, `artifacts/${appId}/public/data/mainInfo`, 'main');
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
@@ -593,6 +590,7 @@
         
         function loadStudentInfo() {
             if (!db || !userId) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const studentRef = doc(db, `artifacts/${appId}/public/data/students`, userId);
             onSnapshot(studentRef, (docSnap) => {
                  if (docSnap.exists()) {
@@ -625,8 +623,12 @@
         // --- Initialization ---
         window.onload = async () => {
             applyTheme(localStorage.getItem('theme') === 'dark');
-            let firebaseConfig = {};
+            
             try {
+                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                let firebaseConfig = {};
                 if (firebaseConfigStr && firebaseConfigStr !== '{}') {
                     firebaseConfig = JSON.parse(firebaseConfigStr);
                 } else {
@@ -644,6 +646,7 @@
                 functions = getFunctions(firebaseApp);
 
                 onAuthStateChanged(auth, async (user) => {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                     
                     if (user) {
                         userId = user.uid;
@@ -821,6 +824,7 @@
         // Leads
         function loadLeads() {
             if (!db) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const leadsRef = collection(db, `artifacts/${appId}/public/data/leads`);
             onSnapshot(query(leadsRef), (snapshot) => {
                 const leadsList = document.getElementById('leadsList');
@@ -847,6 +851,7 @@
         }
         document.getElementById('leadsList').addEventListener('click', async e => {
             if(e.target.classList.contains('delete-lead-btn')) {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const leadId = e.target.dataset.id;
                 if(confirm('Удалить эту заявку?')) {
                     await deleteDoc(doc(db, `artifacts/${appId}/public/data/leads`, leadId));
@@ -860,6 +865,7 @@
             e.preventDefault();
             const text = document.getElementById('siteLogoText').value;
             const file = document.getElementById('siteLogoFile').files[0];
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const docRef = doc(db, `artifacts/${appId}/public/data/mainInfo`, 'main');
             
             try {
@@ -885,6 +891,7 @@
         async function loadGroups() {
             document.getElementById('groupDetailsSection').classList.add('hidden');
             if(!db) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
             onSnapshot(query(groupsRef), snapshot => {
                 const groupList = document.getElementById('groupList');
@@ -910,6 +917,7 @@
         }
         
         document.getElementById('groupList').addEventListener('click', async e => {
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             if(e.target.classList.contains('delete-group-btn')) {
                 const groupId = e.target.dataset.id;
                 // Add checks for students in group before deleting
@@ -928,6 +936,7 @@
         });
 
         async function loadStudentsInGroup(groupId) {
+             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
              const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
              const q = query(studentsRef, where("group_id", "==", groupId));
              onSnapshot(q, snapshot => {
@@ -946,6 +955,7 @@
         
         document.getElementById('studentsInGroupList').addEventListener('click', async e => {
             if (e.target.classList.contains('remove-student-from-group-btn')) {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 const studentId = e.target.dataset.id;
                 await updateDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId), {
                     group: '',
@@ -956,6 +966,7 @@
         });
         
         async function loadStudentsToAddToGroup() {
+             const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
              const select = document.getElementById('addStudentToGroupSelect');
              select.innerHTML = '<option>Загрузка...</option>';
              const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
@@ -971,6 +982,7 @@
         document.getElementById('addStudentToGroupBtn').addEventListener('click', async () => {
             const studentId = document.getElementById('addStudentToGroupSelect').value;
             if(!studentId || !currentGroupId) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const groupName = document.getElementById('groupDetailsTitle').textContent.replace('Группа: ', '');
 
             await updateDoc(doc(db, `artifacts/${appId}/public/data/students`, studentId), {
@@ -991,6 +1003,7 @@
             const select = document.getElementById(selectId);
             if (!db || !select) return;
             select.innerHTML = '<option>Загрузка...</option>';
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
             const snapshot = await getDocs(query(groupsRef));
             select.innerHTML = '<option value="">Выберите группу</option>';
@@ -1010,6 +1023,7 @@
             const groupVal = document.getElementById('studentGroup').value.split('|');
             const groupId = groupVal[0];
             const groupName = groupVal[1];
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             
             if(!name || !lastName || !login || !password || !birthYear || !groupId) {
                 return showMessage("Заполните все поля", true);
@@ -1049,6 +1063,7 @@
         document.getElementById('welcomeContactBtn').addEventListener('click', () => window.location.href = 'tel:+998948000068');
         document.getElementById('leadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const leadData = {
                 name: document.getElementById('leadName').value,
                 lastName: document.getElementById('leadLastName').value,
@@ -1071,6 +1086,7 @@
         // --- Functions with actual implementation ---
         function loadAdminLessons() { 
             if (!db) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
             onSnapshot(lessonsRef, (snapshot) => {
                 const lessonListEl = document.getElementById('lessonList');
@@ -1092,6 +1108,7 @@
         }
         function loadStudents() { 
             if (!db) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const studentsRef = collection(db, `artifacts/${appId}/public/data/students`);
             onSnapshot(studentsRef, (snapshot) => {
                 const studentListEl = document.getElementById('studentList');
@@ -1115,6 +1132,7 @@
         }
         function loadAdmins() { 
              if (!db) return;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const adminsRef = collection(db, `artifacts/${appId}/public/data/admin_users`);
             onSnapshot(adminsRef, (snapshot) => {
                 const adminListEl = document.getElementById('adminList');
@@ -1132,6 +1150,7 @@
         document.getElementById('addGroupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const groupName = document.getElementById('groupName').value.trim();
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             if(!groupName) return showMessage('Введите название группы', true);
             try {
                 await addDoc(collection(db, `artifacts/${appId}/public/data/groups`), { name: groupName });
