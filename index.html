@@ -525,10 +525,10 @@
 
         // --- DOM Elements ---
         const sections = {
-            welcome: document.getElementById('welcomeSection'),
-            courses: document.getElementById('coursesSection'),
-            login: document.getElementById('loginSection'),
-            dashboard: document.getElementById('dashboardSection'),
+            welcomeSection: document.getElementById('welcomeSection'),
+            coursesSection: document.getElementById('coursesSection'),
+            loginSection: document.getElementById('loginSection'),
+            dashboardSection: document.getElementById('dashboardSection'),
             adminPanel: document.getElementById('adminPanel'),
         };
         const navButtons = {
@@ -556,8 +556,8 @@
         }
         
         function showSection(sectionId) {
-            Object.values(sections).forEach(section => {
-                section.classList.toggle('hidden', section.id !== sectionId);
+            Object.keys(sections).forEach(key => {
+                sections[key].classList.toggle('hidden', key !== sectionId);
             });
         }
         
@@ -656,7 +656,7 @@
                         if (user.isAnonymous) {
                             isUserAdmin = false;
                             updateNavigation(false); 
-                            showSection('welcome');
+                            showSection('welcomeSection');
                         } else {
                             const adminDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/admin_users`, user.uid));
                             isUserAdmin = adminDoc.exists() && adminDoc.data().isAdmin;
@@ -670,7 +670,7 @@
                                 if (studentDoc.exists()){
                                     updateNavigation(true);
                                     loadStudentInfo();
-                                    showSection('dashboard');
+                                    showSection('dashboardSection');
                                     document.getElementById('showDashboardLessonsBtn').click();
                                 } else {
                                     await signOut(auth); 
@@ -681,7 +681,7 @@
                         userId = null;
                         isUserAdmin = false;
                         updateNavigation(false);
-                        showSection('welcome');
+                        showSection('welcomeSection');
                         
                         if (initialAuthToken) {
                             try {
@@ -702,7 +702,7 @@
         }
 
         function waitForConfigAndInit() {
-            if (typeof __firebase_config !== 'undefined' && __firebase_config !== '{}') {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config !== '{}' && __firebase_config.trim() !== '') {
                 initializeFirebase();
             } else {
                 setTimeout(waitForConfigAndInit, 100);
@@ -722,16 +722,17 @@
             if(navButtons[key]) navButtons[key].addEventListener('click', async (e) => {
                 e.preventDefault();
                 if(!authReady) return;
-                if(key === 'home') showSection('welcome');
-                if(key === 'courses') showSection('courses');
-                if(key === 'login') showSection('login');
-                if(key === 'adminPanel') {
-                    showSection('adminPanel');
-                    document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
-                }
-                if(key === 'dashboard') {
-                    showSection('dashboard');
-                    document.getElementById('showDashboardLessonsBtn').click();
+                const sectionMap = {
+                    home: 'welcomeSection',
+                    courses: 'coursesSection',
+                    login: 'loginSection',
+                    adminPanel: 'adminPanel',
+                    dashboard: 'dashboardSection'
+                };
+                if (sectionMap[key]) {
+                    showSection(sectionMap[key]);
+                    if (key === 'adminPanel') document.querySelector('.admin-nav-btn[data-section="adminLessonsSection"]').click();
+                    if (key === 'dashboard') document.getElementById('showDashboardLessonsBtn').click();
                 }
             });
         });
@@ -806,7 +807,7 @@
 
         document.getElementById('showMyProfileFromDropdownBtn').addEventListener('click', (e) => {
             e.preventDefault();
-            showSection('dashboard');
+            showSection('dashboardSection');
             document.querySelectorAll('.dashboard-nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('dashboardLessonsSection').classList.add('hidden');
             document.getElementById('myGroupSection').classList.add('hidden');
@@ -1068,7 +1069,7 @@
         document.querySelectorAll('.course-enroll-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const courseType = e.target.dataset.courseType;
-                showSection('courses');
+                showSection('coursesSection');
                 document.getElementById('leadCourseType').value = courseType;
             });
         });
@@ -1088,7 +1089,7 @@
                 await addDoc(collection(db, `artifacts/${appId}/public/data/leads`), leadData);
                 showMessage('Ваша заявка успешно отправлена!');
                 e.target.reset();
-                showSection('welcome');
+                showSection('welcomeSection');
             } catch (error) {
                 console.error('Ошибка отправки заявки:', error);
                 showMessage('Ошибка при отправке заявки.', true);
@@ -1176,5 +1177,4 @@
     </script>
 </body>
 </html>
-
 
