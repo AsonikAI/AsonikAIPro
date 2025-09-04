@@ -15,15 +15,15 @@
             background-color: var(--bg-color);
         }
         :root {
-            --primary-color: #ef4444; /* red-500 */
-            --secondary-color: #fca5a5; /* red-300 */
+            --primary-color: #b91c1c; /* red-700 */
+            --secondary-color: #ef4444; /* red-500 */
             --bg-color: #f3f4f6; /* gray-100 */
             --text-color: #1f2937; /* gray-800 */
             --card-bg-color: #ffffff; /* white */
         }
         body.dark-theme {
-            --primary-color: #b91c1c; /* red-700 */
-            --secondary-color: #ef4444; /* red-500 */
+            --primary-color: #ef4444; /* red-500 */
+            --secondary-color: #fca5a5; /* red-300 */
             --bg-color: #1f2937; /* gray-800 */
             --text-color: #f9fafb; /* gray-50 */
             --card-bg-color: #374151; /* gray-700 */
@@ -130,7 +130,7 @@
                     </div>
                 </div>
                 <div class="md:w-1/2 mt-8 md:mt-0 md:ml-8 flex justify-center">
-                    <img src="https://placehold.co/400x300/4c51bf/ffffff?text=Ya_Buxgalter" alt="Modern office with charts and graphs" class="rounded-lg shadow-xl">
+                    <img id="welcomeImage" src="https://placehold.co/400x300/4c51bf/ffffff?text=Ya_Buxgalter" alt="Modern office with charts and graphs" class="rounded-lg shadow-xl">
                 </div>
             </div>
             
@@ -456,8 +456,8 @@
                             <input type="text" id="siteLogoText" class="w-full px-3 py-2 border rounded-lg" placeholder="Например, Ya_Buxgalter">
                         </div>
                          <div>
-                            <label for="siteLogoUrl" class="block text-gray-700 font-semibold mb-2">URL логотипа</label>
-                            <input type="text" id="siteLogoUrl" class="w-full px-3 py-2 border rounded-lg" placeholder="https://...">
+                            <label for="siteLogoFile" class="block text-gray-700 font-semibold mb-2">Файл логотипа</label>
+                            <input type="file" id="siteLogoFile" accept="image/*" class="w-full px-3 py-2 border rounded-lg">
                         </div>
                         <div id="courseInfoContainer" class="space-y-4 mt-8">
                             <!-- Информация о курсах будет загружаться сюда -->
@@ -577,15 +577,20 @@
         const groupTableHead = document.getElementById('groupTableHead');
         const dashboardLessonsSection = document.getElementById('dashboardLessonsSection');
         const myGroupSection = document.getElementById('myGroupSection');
-        const courseInfoContainer = document.getElementById('courseInfoContainer');
+        const courseOptionsContainer = document.getElementById('courseOptionsContainer');
+        const leadFormSection = document.getElementById('leadFormSection');
+        const selectedCourseInfo = document.getElementById('selectedCourseInfo');
+        const courseTypeInput = document.getElementById('courseTypeInput');
         const editMainInfoForm = document.getElementById('editMainInfoForm');
         const setLightTheme = document.getElementById('setLightTheme');
         const setDarkTheme = document.getElementById('setDarkTheme');
         const logoImg = document.getElementById('logoImg');
         const logoContainer = document.getElementById('logoContainer');
         const siteLogoText = document.getElementById('siteLogoText');
-        const siteLogoUrl = document.getElementById('siteLogoUrl');
-        
+        const siteLogoFile = document.getElementById('siteLogoFile');
+        const welcomeImage = document.getElementById('welcomeImage');
+        const welcomeContactBtn = document.getElementById('welcomeContactBtn');
+
         // Admin Panel Navigation Buttons
         const showAdminLessonsBtn = document.getElementById('showAdminLessonsBtn');
         const showAdminSettingsBtn = document.getElementById('showAdminSettingsBtn');
@@ -619,11 +624,11 @@
         
         // Функция для переключения секций
         function showSection(sectionId) {
-            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel];
+            const sections = [welcomeSection, coursesSection, loginSection, dashboardSection, adminPanel, leadFormSection];
             sections.forEach(section => {
-                if (section.id === sectionId) {
+                if (section && section.id === sectionId) {
                     section.classList.remove('hidden');
-                } else {
+                } else if (section) {
                     section.classList.add('hidden');
                 }
             });
@@ -654,11 +659,15 @@
         
         // Обработчики кнопок
         showHomeBtn.addEventListener('click', () => showSection('welcomeSection'));
-        showCoursesBtn.addEventListener('click', () => showSection('coursesSection'));
+        showCoursesBtn.addEventListener('click', () => {
+            showSection('coursesSection');
+            loadCourseOptions();
+        });
         showLoginBtn.addEventListener('click', () => showSection('loginSection'));
         welcomeCoursesBtn.addEventListener('click', (e) => {
             e.preventDefault();
             showSection('coursesSection');
+            loadCourseOptions();
         });
         showAdminPanelBtn.addEventListener('click', () => {
             showSection('adminPanel');
@@ -946,12 +955,22 @@
             if (!db) return;
 
             const siteLogoTextValue = document.getElementById('siteLogoText').value;
-            const siteLogoUrlValue = document.getElementById('siteLogoUrl').value;
+            const siteLogoFile = document.getElementById('siteLogoFile').files[0];
+            let siteLogoUrlValue = '';
+            
+            if(siteLogoFile) {
+                showMessage('Загрузка логотипа...', false);
+                siteLogoUrlValue = await uploadImageToImgbb(siteLogoFile);
+                if (!siteLogoUrlValue) {
+                    return;
+                }
+                showMessage('Логотип успешно загружен!');
+            }
 
             // Update main info
             await setDoc(doc(db, `artifacts/${appId}/public/data/mainInfo`, 'main'), {
                 siteLogoText: siteLogoTextValue,
-                siteLogoUrl: siteLogoUrlValue
+                siteLogoUrl: siteLogoUrlValue || logoImg.src
             }, { merge: true });
 
             // Update course info
@@ -992,6 +1011,41 @@
             }
         }
         loadTheme();
+        
+        // Загрузка информации о курсах
+        function loadCourseOptions() {
+            if (!db) return;
+            const courseInfoRef = collection(db, `artifacts/${appId}/public/data/courseInfo`);
+            onSnapshot(courseInfoRef, (snapshot) => {
+                courseOptionsContainer.innerHTML = '';
+                snapshot.forEach(docSnap => {
+                    const info = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = 'bg-gray-50 rounded-lg p-6 shadow-md border border-gray-200';
+                    div.innerHTML = `
+                        <h3 class="text-xl font-bold mb-2">${info.title}</h3>
+                        <p class="text-gray-600 mb-4">${info.description}</p>
+                        <button data-course-id="${docSnap.id}" data-course-name="${info.title}" class="enroll-btn w-full bg-indigo-500 text-white font-semibold py-2 rounded-full hover:bg-indigo-600 transition duration-300">
+                            Записаться
+                        </button>
+                    `;
+                    courseOptionsContainer.appendChild(div);
+                });
+            });
+        }
+        
+        courseOptionsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('enroll-btn')) {
+                const courseName = e.target.dataset.courseName;
+                showSection('leadFormSection');
+                selectedCourseInfo.textContent = `Вы выбрали курс: ${courseName}`;
+                courseTypeInput.value = courseName;
+            }
+        });
+        
+        welcomeContactBtn.addEventListener('click', () => {
+            window.location.href = 'tel:+998948000068';
+        });
 
         // Обработчик формы заявок
         leadForm.addEventListener('submit', async (e) => {
@@ -1000,6 +1054,7 @@
             const lastName = document.getElementById('leadLastName').value;
             const phone = document.getElementById('leadPhone').value;
             const telegram = document.getElementById('leadTelegram').value;
+            const courseType = document.getElementById('courseTypeInput').value;
 
             if (!db) {
                 showMessage('База данных недоступна.', true);
@@ -1012,11 +1067,13 @@
                     lastName,
                     phone,
                     telegram,
+                    courseType,
                     status: 'new',
                     createdAt: new Date()
                 });
                 showMessage('Ваша заявка успешно отправлена!');
                 leadForm.reset();
+                showSection('welcomeSection');
             } catch (error) {
                 console.error('Ошибка при добавлении заявки:', error);
                 showMessage(`Ошибка: ${error.message}`, true);
@@ -1037,6 +1094,7 @@
                         <p><strong>Имя:</strong> ${lead.name} ${lead.lastName}</p>
                         <p><strong>Телефон:</strong> ${lead.phone}</p>
                         <p><strong>Telegram:</strong> ${lead.telegram}</p>
+                        <p><strong>Курс:</strong> ${lead.courseType}</p>
                         <p class="text-xs text-gray-500 mt-2">ID заявки: ${docSnap.id}</p>
                     `;
                     leadsList.appendChild(li);
@@ -1359,15 +1417,27 @@
                     const previousLessonId = index > 0 ? sortedLessons[index - 1].id : null;
                     const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
                     const isUnlocked = index === 0 || isPreviousLessonPassed;
+                    const userScore = studentTestResults[lessonId];
+                    const progressColor = userScore >= 80 ? '#22c55e' : '#ef4444';
+                    const progressDashoffset = 2 * Math.PI * 22 * (1 - (userScore / 100));
+                    const scoreText = userScore !== undefined ? `${userScore.toFixed(0)}%` : '0%';
                     
                     const lessonElement = `
                         <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105">
                             ${!isUnlocked ? '<div class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center text-white text-xl font-bold z-10">Урок заблокирован</div>' : ''}
                             <div class="cursor-pointer" data-lesson-id="${lessonId}">
                                 ${lesson.imageUrl ? `<img src="${lesson.imageUrl}" alt="${lesson.title}" class="w-full h-48 object-cover">` : ''}
-                                <div class="p-6">
+                                <div class="p-6 relative">
                                     <h4 class="text-xl font-bold mb-2">${lesson.title}</h4>
                                     <p class="text-gray-600">${lesson.description}</p>
+                                    <div class="absolute top-4 right-4 flex items-center justify-center progress-circle" style="--progress-color: ${progressColor};">
+                                        <svg class="w-12 h-12">
+                                            <circle class="bg" cx="24" cy="24" r="22"></circle>
+                                            <circle class="progress" cx="24" cy="24" r="22" stroke-dasharray="138.2" stroke-dashoffset="${progressDashoffset}"></circle>
+                                        </svg>
+                                        <span class="absolute text-sm font-bold text-gray-800">${scoreText}</span>
+                                    </div>
+                                    ${isUnlocked ? '' : '<p class="mt-4 text-sm text-red-500">Минимум 80% для перехода к следующему уроку</p>'}
                                 </div>
                             </div>
                         </div>
@@ -1388,14 +1458,13 @@
             const lesson = allLessons[lessonId];
             if (!lesson) return;
 
-            // Проверка, что урок разблокирован
             const lessonsRef = collection(db, `artifacts/${appId}/public/data/lessons`);
             const snapshot = await getDocs(lessonsRef);
             const sortedLessons = snapshot.docs.sort((a, b) => a.data().createdAt.toDate() - b.data().createdAt.toDate());
             const lessonIndex = sortedLessons.findIndex(doc => doc.id === lessonId);
             const previousLessonId = lessonIndex > 0 ? sortedLessons[lessonIndex - 1].id : null;
             const isPreviousLessonPassed = previousLessonId ? studentTestResults[previousLessonId] >= 80 : true;
-            const isUnlocked = index === 0 || isPreviousLessonPassed;
+            const isUnlocked = lessonIndex === 0 || isPreviousLessonPassed;
 
             if (!isUnlocked) {
                 showMessage('Этот урок заблокирован. Пожалуйста, пройдите предыдущий тест.', true);
@@ -1777,4 +1846,3 @@
     </script>
 </body>
 </html>
-
