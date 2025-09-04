@@ -24,7 +24,7 @@
             --nav-bg-color: #ffffff;
         }
         body.dark-theme {
-            --primary-color: #b91c1c; /* Darker Red */
+            --primary-color: #b91c1c; /* Darker Red for dark theme */
             --secondary-color: #ef4444; /* red-500 */
             --bg-color: #111827; /* gray-900 */
             --text-color: #f9fafb; /* gray-50 */
@@ -621,15 +621,14 @@
         themeToggleBtn.addEventListener('click', () => applyTheme(!document.body.classList.contains('dark-theme')));
 
         // --- Initialization ---
-        window.onload = async () => {
-            applyTheme(localStorage.getItem('theme') === 'dark');
-            
+        function initializeFirebase() {
             try {
                 const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
                 const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
                 let firebaseConfig = {};
-                if (firebaseConfigStr && firebaseConfigStr !== '{}') {
+                if (firebaseConfigStr && firebaseConfigStr.trim() !== '{}' && firebaseConfigStr.trim() !== '') {
                     firebaseConfig = JSON.parse(firebaseConfigStr);
                 } else {
                      throw new Error("Firebase configuration string is missing or empty.");
@@ -646,7 +645,6 @@
                 functions = getFunctions(firebaseApp);
 
                 onAuthStateChanged(auth, async (user) => {
-                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                     
                     if (user) {
                         userId = user.uid;
@@ -701,7 +699,21 @@
                 console.error('Firebase Init Error:', error);
                 document.body.innerHTML = `<div class="text-center text-red-500 p-8">Error initializing the application: ${error.message}</div>`;
             }
+        }
+
+        function waitForConfigAndInit() {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config !== '{}') {
+                initializeFirebase();
+            } else {
+                setTimeout(waitForConfigAndInit, 100);
+            }
+        }
+
+        window.onload = () => {
+             applyTheme(localStorage.getItem('theme') === 'dark');
+             waitForConfigAndInit();
         };
+
 
         // --- Event Listeners ---
         
