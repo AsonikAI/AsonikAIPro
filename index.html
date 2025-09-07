@@ -140,18 +140,22 @@
         <section id="login-section" class="hidden flex flex-col items-center justify-center p-8">
             <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
                 <h2 class="text-2xl font-bold text-center mb-6">Вход в систему</h2>
-                <form id="login-form">
-                    <div class="mb-4">
+                <form id="login-form" class="space-y-4">
+                    <div>
                         <label for="login-email" class="block text-gray-700 font-bold mb-2">Email</label>
                         <input type="email" id="login-email" name="email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ya_buxgalter" required>
                     </div>
-                    <div class="mb-6">
+                    <div>
                         <label for="login-password" class="block text-gray-700 font-bold mb-2">Пароль</label>
                         <input type="password" id="login-password" name="password" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ya_buxgalter" required>
                     </div>
                     <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-semibold transition-colors duration-200">Войти</button>
                     <div id="login-message" class="mt-4 text-center"></div>
                 </form>
+                <div class="text-center my-4">или</div>
+                <button id="google-login-btn" class="w-full bg-gray-600 text-white py-2 rounded-md font-semibold transition-colors duration-200 hover:bg-gray-700">
+                    Войти через Google
+                </button>
             </div>
         </section>
 
@@ -261,6 +265,7 @@
                                     </select>
                             </div>
                             <button type="submit" class="w-full btn-primary text-white py-2 rounded-md">Сохранить студента</button>
+                            <div id="add-student-message" class="mt-4 text-center"></div>
                         </form>
                     </div>
                 </div>
@@ -282,6 +287,7 @@
                                 <input type="text" id="group-name" class="w-full px-3 py-2 border rounded-md" required>
                             </div>
                             <button type="submit" class="w-full btn-primary text-white py-2 rounded-md">Добавить группу</button>
+                            <div id="add-group-message" class="mt-4 text-center"></div>
                         </form>
                     </div>
                 </div>
@@ -344,8 +350,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-functions-compat.js"></script>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
         import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js';
 
@@ -503,20 +509,28 @@
                 try {
                     const userRef = doc(db, "users", user.uid);
                     const userSnap = await getDoc(userRef);
+                    let userData;
                     if (userSnap.exists()) {
-                        const userData = userSnap.data();
-                        userName.textContent = userData.fio || 'Пользователь';
-                        userRole.textContent = userData.role || 'Студент';
-                        userAvatar.src = userData.photoURL || "https://via.placeholder.com/40";
-                        if (userData.role === 'admin') {
-                            showSection('admin-dashboard');
-                            loadAdminPanel();
-                        } else {
-                            showSection('student-dashboard');
-                            loadStudentDashboard(user.uid);
-                        }
+                        userData = userSnap.data();
                     } else {
-                        // Handle new user or user without role
+                        // For new Google users, create a profile
+                        userData = {
+                            fio: user.displayName || 'Пользователь',
+                            email: user.email,
+                            photoURL: user.photoURL,
+                            role: 'student' // default role for new users
+                        };
+                        await setDoc(userRef, userData, { merge: true });
+                    }
+                    
+                    userName.textContent = userData.fio || 'Пользователь';
+                    userRole.textContent = userData.role || 'Студент';
+                    userAvatar.src = userData.photoURL || "https://via.placeholder.com/40";
+                    
+                    if (userData.role === 'admin') {
+                        showSection('admin-dashboard');
+                        loadAdminPanel();
+                    } else {
                         showSection('student-dashboard');
                         loadStudentDashboard(user.uid);
                     }
@@ -555,7 +569,7 @@
                 loginMessage.classList.remove('text-red-500');
                 loginMessage.classList.add('text-green-500');
             } catch (error) {
-                if (error.code === 'auth/invalid-credential') {
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                     loginMessage.textContent = 'Неверный Email или пароль.';
                 } else {
                     loginMessage.textContent = `Ошибка входа: ${error.message}`;
@@ -563,6 +577,22 @@
                 loginMessage.classList.remove('text-green-500');
                 loginMessage.classList.add('text-red-500');
                 console.error("Ошибка входа:", error);
+            }
+        });
+
+        const googleLoginBtn = document.getElementById('google-login-btn');
+        googleLoginBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+                loginMessage.textContent = 'Вход выполнен. Перенаправление...';
+                loginMessage.classList.remove('text-red-500');
+                loginMessage.classList.add('text-green-500');
+            } catch (error) {
+                console.error("Ошибка входа через Google:", error);
+                loginMessage.textContent = `Ошибка входа через Google: ${error.message}`;
+                loginMessage.classList.remove('text-green-500');
+                loginMessage.classList.add('text-red-500');
             }
         });
 
@@ -856,6 +886,7 @@
 
         // Students
         const addStudentForm = document.getElementById('add-student-form');
+        const addStudentMessage = document.getElementById('add-student-message');
         addStudentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const fio = document.getElementById('student-fio').value;
@@ -864,22 +895,24 @@
             const groupId = document.getElementById('student-group-select').value;
             
             try {
-                // Here we create the user in Firebase Auth
-                const authUser = await signInWithEmailAndPassword(auth, email, password);
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 
-                // Then save their data to Firestore
-                await setDoc(doc(db, "users", authUser.user.uid), {
+                await setDoc(doc(db, "users", userCredential.user.uid), {
                     fio: fio,
                     email: email,
                     group: groupId,
                     role: 'student'
                 });
-                alert('Студент успешно добавлен!');
+                addStudentMessage.textContent = 'Студент успешно добавлен!';
+                addStudentMessage.classList.remove('text-red-500');
+                addStudentMessage.classList.add('text-green-500');
                 addStudentForm.reset();
                 loadStudentsTable();
             } catch (e) {
                 console.error("Ошибка добавления студента:", e);
-                alert(`Ошибка добавления студента: ${e.message}`);
+                addStudentMessage.textContent = `Ошибка добавления студента: ${e.message}`;
+                addStudentMessage.classList.remove('text-green-500');
+                addStudentMessage.classList.add('text-red-500');
             }
         });
 
@@ -888,7 +921,7 @@
             studentsList.innerHTML = '<p>Загрузка студентов...</p>';
             try {
                 const usersRef = collection(db, "users");
-                const usersSnap = await getDocs(usersRef);
+                const usersSnap = await getDocs(query(usersRef, where("role", "==", "student")));
                 let studentsHtml = `<table class="min-w-full bg-white border border-gray-200">
                                     <thead class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                                         <tr>
@@ -954,17 +987,22 @@
 
         // Groups
         const addGroupForm = document.getElementById('add-group-form');
+        const addGroupMessage = document.getElementById('add-group-message');
         addGroupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const groupName = document.getElementById('group-name').value;
             try {
                 await addDoc(collection(db, `artifacts/${appId}/public/data/groups`), { name: groupName, createdAt: new Date() });
-                alert('Группа успешно добавлена!');
+                addGroupMessage.textContent = 'Группа успешно добавлена!';
+                addGroupMessage.classList.remove('text-red-500');
+                addGroupMessage.classList.add('text-green-500');
                 addGroupForm.reset();
                 loadGroupsList();
             } catch (e) {
                 console.error("Ошибка добавления группы:", e);
-                alert("Ошибка добавления группы.");
+                addGroupMessage.textContent = 'Ошибка добавления группы.';
+                addGroupMessage.classList.remove('text-green-500');
+                addGroupMessage.classList.add('text-red-500');
             }
         });
 
@@ -978,7 +1016,7 @@
                 for (const groupDoc of groupsSnap.docs) {
                     const group = groupDoc.data();
                     const studentsInGroupRef = collection(db, `users`);
-                    const studentsSnap = await getDocs(studentsInGroupRef.where('group', '==', groupDoc.id));
+                    const studentsSnap = await getDocs(query(studentsInGroupRef, where('group', '==', groupDoc.id)));
                     const studentCount = studentsSnap.size;
                     groupsHtml += `<li class="p-2 border rounded-md hover:bg-gray-50">
                                     <div class="flex justify-between items-center">
