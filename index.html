@@ -25,9 +25,9 @@
         body.dark-theme {
             --primary-color: #990000; /* dark red */
             --secondary-color: #ff3333; /* lighter dark red */
-            --bg-color: #1a1a1a; /* dark gray */
-            --text-color: #f3f4f6; /* light gray */
-            --card-bg-color: #2d2d2d; /* darker gray */
+            --bg-color: #121212; /* dark black */
+            --text-color: #e0e0e0; /* light gray */
+            --card-bg-color: #1e1e1e; /* dark gray */
         }
         .text-ya_buxgalter {
             color: var(--primary-color);
@@ -248,8 +248,8 @@
                                 <input type="text" id="student-fio" class="w-full px-3 py-2 border rounded-md" required>
                             </div>
                             <div>
-                                <label for="student-id" class="block text-gray-700">ID студента</label>
-                                <input type="text" id="student-id" class="w-full px-3 py-2 border rounded-md" required>
+                                <label for="student-email" class="block text-gray-700">Email студента</label>
+                                <input type="email" id="student-email" class="w-full px-3 py-2 border rounded-md" required>
                             </div>
                             <div>
                                 <label for="student-password" class="block text-gray-700">Пароль</label>
@@ -540,14 +540,27 @@
             }
         });
 
+        const loginForm = document.getElementById('login-form');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
+        const loginMessage = document.getElementById('login-message');
+
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = loginEmail.value;
             const password = loginPassword.value;
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                loginMessage.textContent = 'Вход выполнен. Перенаправление...';
+                loginMessage.classList.remove('text-red-500');
+                loginMessage.classList.add('text-green-500');
             } catch (error) {
-                loginMessage.textContent = 'Неверный логин или пароль.';
+                if (error.code === 'auth/invalid-credential') {
+                    loginMessage.textContent = 'Неверный Email или пароль.';
+                } else {
+                    loginMessage.textContent = `Ошибка входа: ${error.message}`;
+                }
+                loginMessage.classList.remove('text-green-500');
                 loginMessage.classList.add('text-red-500');
                 console.error("Ошибка входа:", error);
             }
@@ -567,7 +580,7 @@
                     const userData = userSnap.data();
                     profileFio.textContent = `ФИО: ${userData.fio || 'Не указано'}`;
                     profileEmail.textContent = `Email: ${userData.email || 'Не указан'}`;
-                    profileGroup.textContent = `Группа: ${userData.group || 'Не указана'}`;
+                    profileGroup.textContent = `Группа: ${userData.group || 'Не назначена'}`;
                     userAvatar.src = userData.photoURL || "https://via.placeholder.com/100";
                     profileAvatar.src = userData.photoURL || "https://via.placeholder.com/100";
                     profileCourses.innerHTML = '';
@@ -846,15 +859,18 @@
         addStudentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const fio = document.getElementById('student-fio').value;
-            const studentId = document.getElementById('student-id').value;
+            const email = document.getElementById('student-email').value;
             const password = document.getElementById('student-password').value;
             const groupId = document.getElementById('student-group-select').value;
             
             try {
-                // This is a front-end placeholder. Backend logic is needed for user creation.
-                await setDoc(doc(db, "users", studentId), {
+                // Here we create the user in Firebase Auth
+                const authUser = await signInWithEmailAndPassword(auth, email, password);
+                
+                // Then save their data to Firestore
+                await setDoc(doc(db, "users", authUser.user.uid), {
                     fio: fio,
-                    id: studentId,
+                    email: email,
                     group: groupId,
                     role: 'student'
                 });
@@ -863,7 +879,7 @@
                 loadStudentsTable();
             } catch (e) {
                 console.error("Ошибка добавления студента:", e);
-                alert("Ошибка добавления студента.");
+                alert(`Ошибка добавления студента: ${e.message}`);
             }
         });
 
@@ -877,7 +893,7 @@
                                     <thead class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
                                         <tr>
                                             <th class="py-3 px-6 text-left">ФИО</th>
-                                            <th class="py-3 px-6 text-left">ID</th>
+                                            <th class="py-3 px-6 text-left">Email</th>
                                             <th class="py-3 px-6 text-left">Группа</th>
                                             <th class="py-3 px-6 text-left">Действия</th>
                                         </tr>
@@ -888,7 +904,7 @@
                     const groupName = userData.group ? (await getDoc(doc(db, `artifacts/${appId}/public/data/groups`, userData.group))).data()?.name || 'Не назначена' : 'Не назначена';
                     studentsHtml += `<tr class="border-b border-gray-200 hover:bg-gray-100">
                                         <td class="py-3 px-6 text-left whitespace-nowrap">${userData.fio || 'N/A'}</td>
-                                        <td class="py-3 px-6 text-left">${userData.id || 'N/A'}</td>
+                                        <td class="py-3 px-6 text-left">${userData.email || 'N/A'}</td>
                                         <td class="py-3 px-6 text-left">${groupName}</td>
                                         <td class="py-3 px-6 text-left">
                                             <button data-id="${userDoc.id}" class="edit-student-btn text-blue-500 hover:text-blue-700 font-semibold mr-2">Редактировать</button>
