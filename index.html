@@ -513,30 +513,45 @@
                     if (userSnap.exists()) {
                         userData = userSnap.data();
                     } else {
-                        // For new Google users, create a profile
+                        // For new users who haven't been added by admin
+                        // This case should ideally not happen for non-admin users if we control registration
                         userData = {
                             fio: user.displayName || 'Пользователь',
                             email: user.email,
                             photoURL: user.photoURL,
-                            role: 'student' // default role for new users
+                            role: 'student'
                         };
-                        await setDoc(userRef, userData, { merge: true });
+                        // We do not auto-create users on login, they must be pre-created by admin
+                        // This part is for new Google logins, but we'll enforce the admin-only check below
                     }
                     
-                    userName.textContent = userData.fio || 'Пользователь';
-                    userRole.textContent = userData.role || 'Студент';
-                    userAvatar.src = userData.photoURL || "https://via.placeholder.com/40";
-                    
-                    if (userData.role === 'admin') {
+                    if (userData && userData.role) {
+                         userName.textContent = userData.fio || 'Пользователь';
+                         userRole.textContent = userData.role || 'Студент';
+                         userAvatar.src = userData.photoURL || "https://via.placeholder.com/40";
+                    }
+
+                    if (userData && userData.role === 'admin') {
                         showSection('admin-dashboard');
                         loadAdminPanel();
-                    } else {
+                    } else if (userData && userData.role === 'student') {
                         showSection('student-dashboard');
                         loadStudentDashboard(user.uid);
+                    } else {
+                        await signOut(auth); // Force logout if role is not found or not recognized
+                        showSection('login-section');
+                        const loginMessage = document.getElementById('login-message');
+                        loginMessage.textContent = 'Ошибка доступа. Ваш аккаунт не зарегистрирован как администратор.';
+                        loginMessage.classList.remove('text-green-500');
+                        loginMessage.classList.add('text-red-500');
                     }
                 } catch (e) {
                     console.error("Ошибка загрузки данных пользователя:", e);
                     showSection('login-section');
+                    const loginMessage = document.getElementById('login-message');
+                    loginMessage.textContent = 'Ошибка загрузки данных пользователя. Пожалуйста, попробуйте еще раз.';
+                    loginMessage.classList.remove('text-green-500');
+                    loginMessage.classList.add('text-red-500');
                 }
             } else {
                 guestInfo.classList.remove('hidden');
@@ -584,10 +599,39 @@
         googleLoginBtn.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
-                await signInWithPopup(auth, provider);
-                loginMessage.textContent = 'Вход выполнен. Перенаправление...';
-                loginMessage.classList.remove('text-red-500');
-                loginMessage.classList.add('text-green-500');
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                // Check if user's email exists as an admin in Firestore
+                const userQuery = query(collection(db, "users"), where("email", "==", user.email));
+                const userSnap = await getDocs(userQuery);
+                
+                if (userSnap.empty) {
+                    await signOut(auth);
+                    loginMessage.textContent = 'Ошибка входа: Аккаунт Google не зарегистрирован как администратор.';
+                    loginMessage.classList.remove('text-green-500');
+                    loginMessage.classList.add('text-red-500');
+                    console.error('Аккаунт Google не зарегистрирован как администратор.');
+                } else {
+                    const userData = userSnap.docs[0].data();
+                    if (userData.role === 'admin') {
+                        // Successful admin login via Google
+                        loginMessage.textContent = 'Вход администратора выполнен. Перенаправление...';
+                        loginMessage.classList.remove('text-red-500');
+                        loginMessage.classList.add('text-green-500');
+                        // Update user data with Google info
+                        await setDoc(doc(db, "users", userSnap.docs[0].id), {
+                            photoURL: user.photoURL,
+                            fio: user.displayName,
+                        }, { merge: true });
+                    } else {
+                        await signOut(auth);
+                        loginMessage.textContent = 'Ошибка входа: Этот аккаунт Google не является администратором.';
+                        loginMessage.classList.remove('text-green-500');
+                        loginMessage.classList.add('text-red-500');
+                        console.error('Этот аккаунт Google не является администратором.');
+                    }
+                }
             } catch (error) {
                 console.error("Ошибка входа через Google:", error);
                 loginMessage.textContent = `Ошибка входа через Google: ${error.message}`;
