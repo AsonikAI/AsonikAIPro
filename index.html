@@ -3,1120 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ya_Buxgalter</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Игровой Портал</title>
+    <!-- Подключение Tailwind CSS для стилизации -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Иконки -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
+        /* Дополнительные стили для плавных переходов и красивого вида */
         body {
+            background-color: #111827; /* Темно-синий фон */
+            color: #e5e7eb; /* Светло-серый текст */
             font-family: 'Inter', sans-serif;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            transition: color 0.3s, background-color 0.3s;
         }
-        :root {
-            --primary-color: #b91c1c; /* red-700 */
-            --secondary-color: #ef4444; /* red-500 */
-            --bg-color: #f3f4f6; /* gray-100 */
-            --text-color: #1f2937; /* gray-800 */
-            --card-bg-color: #ffffff; /* white */
+        .game-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            will-change: transform;
         }
-        body.dark-theme {
-            --primary-color: #990000; /* dark red */
-            --secondary-color: #ff3333; /* lighter dark red */
-            --bg-color: #121212; /* dark black */
-            --text-color: #e0e0e0; /* light gray */
-            --card-bg-color: #1e1e1e; /* dark gray */
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
-        .text-ya_buxgalter {
-            color: var(--primary-color);
+        .btn {
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        .bg-ya_buxgalter {
-            background-color: var(--primary-color);
+        .btn:hover {
+            transform: translateY(-2px);
         }
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
+        .modal-backdrop {
+            transition: opacity 0.3s ease-in-out;
         }
-        .btn-primary:hover {
-            background-color: var(--secondary-color);
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
         }
-        .btn-logout {
-            background-color: #ef4444; /* bright red */
-            color: white;
+        /* Стили для кастомного скроллбара */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .btn-logout:hover {
-            background-color: #b91c1c; /* dark red */
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
         }
-        /* Admin Panel specific styles */
-        .admin-panel-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 4px;
         }
-        @media (max-width: 768px) {
-            .admin-panel-grid {
-                grid-template-columns: 1fr;
-            }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-    <nav class="bg-white shadow p-4 flex justify-between items-center fixed top-0 w-full z-50">
-        <div class="flex items-center space-x-4">
-            <a href="#" id="logo-link" class="flex items-center space-x-2">
-                <img id="logo-image" src="" alt="Логотип" class="h-8 w-8">
-                <span id="logo-text" class="text-2xl font-bold text-ya_buxgalter"></span>
-            </a>
-        </div>
-        <div class="flex items-center space-x-4">
-            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200">
-                <svg id="moon-icon" class="w-6 h-6 text-gray-800 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                </svg>
-                <svg id="sun-icon" class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
-            </button>
-            <div id="user-info" class="flex items-center space-x-2 hidden">
-                <img id="user-avatar" src="https://via.placeholder.com/40" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
-                <div class="flex flex-col">
-                    <span id="user-name" class="font-medium"></span>
-                    <span id="user-role" class="text-sm text-gray-500"></span>
+<body class="antialiased">
+
+    <!-- Навигационная панель -->
+    <nav class="bg-gray-900/80 backdrop-blur-sm shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-gamepad text-3xl text-indigo-400"></i>
+                    <h1 class="text-2xl font-bold ml-3 tracking-wider">GameHub</h1>
                 </div>
-                <button id="logout-btn" class="btn-logout text-white px-3 py-1 rounded-md text-sm font-semibold transition-colors duration-200">Выход</button>
-            </div>
-            <div id="guest-info" class="space-x-4">
-                <button id="login-btn-nav" class="btn-primary text-white px-4 py-2 rounded-md font-semibold transition-colors duration-200">Вход</button>
-                <button id="contact-btn-nav" class="btn-primary text-white px-4 py-2 rounded-md font-semibold transition-colors duration-200">Связаться</button>
+                <div class="flex items-center">
+                    <div id="user-info" class="hidden items-center mr-4">
+                        <img id="user-avatar" class="w-8 h-8 rounded-full mr-2" alt="Avatar">
+                        <span id="user-name" class="font-medium"></span>
+                    </div>
+                    <button id="auth-button" class="btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
+                        <i class="fab fa-google mr-2"></i>
+                        <span>Войти через Google</span>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="mt-20 p-4">
-        <section id="main-page-section" class="flex flex-col items-center justify-center text-center p-8">
-            <h1 class="text-4xl md:text-6xl font-extrabold text-ya_buxgalter mb-4">Ya_Buxgalter</h1>
-            <p class="text-lg md:text-xl text-gray-600 mb-8">Платформа для курсов по бухгалтерии. Обучение, которое меняет жизнь!</p>
-            <button id="enroll-now-btn" class="bg-ya_buxgalter text-white px-8 py-4 rounded-md text-xl font-semibold hover:bg-red-500 transition-colors duration-200">Записаться на курс</button>
-
-            <div class="container mx-auto mt-16">
-                <h2 class="text-3xl font-bold text-center mb-8">Наши преимущества</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="font-bold text-xl mb-2 text-ya_buxgalter">Удобно</h3>
-                        <p class="text-gray-600">Обучайтесь онлайн в удобное для вас время, из любой точки мира.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="font-bold text-xl mb-2 text-ya_buxgalter">Доступно</h3>
-                        <p class="text-gray-600">Эффективные курсы по доступной цене. Мы делаем образование доступным.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="font-bold text-xl mb-2 text-ya_buxgalter">Уникально</h3>
-                        <p class="text-gray-600">Единственный в Узбекистане онлайн-курс по бухгалтерии с живыми вебинарами.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="container mx-auto mt-16">
-                <h2 class="text-3xl font-bold text-center mb-8">Наши курсы</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="font-bold text-xl mb-2 text-ya_buxgalter">Индивидуальный</h3>
-                        <p class="text-gray-600">Персональное обучение с наставником. Индивидуальный подход к каждому.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="font-bold text-xl mb-2 text-ya_buxgalter">Группа</h3>
-                        <p class="text-gray-600">Обучение в небольшой группе. Возможность общения и обмена опытом.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="font-bold text-xl mb-2 text-ya_buxgalter">Онлайн</h3>
-                        <p class="text-gray-600">Полностью онлайн-формат с доступом к записям уроков и материалам.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="login-section" class="hidden flex flex-col items-center justify-center p-8">
-            <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h2 class="text-2xl font-bold text-center mb-6">Вход в систему</h2>
-                <form id="login-form" class="space-y-4">
-                    <div>
-                        <label for="login-email" class="block text-gray-700 font-bold mb-2">Email</label>
-                        <input type="email" id="login-email" name="email" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ya_buxgalter" required>
-                    </div>
-                    <div>
-                        <label for="login-password" class="block text-gray-700 font-bold mb-2">Пароль</label>
-                        <input type="password" id="login-password" name="password" class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-ya_buxgalter" required>
-                    </div>
-                    <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-semibold transition-colors duration-200">Войти</button>
-                    <div id="login-message" class="mt-4 text-center"></div>
-                </form>
-                <div class="text-center my-4">или</div>
-                <button id="google-login-btn" class="w-full bg-gray-600 text-white py-2 rounded-md font-semibold transition-colors duration-200 hover:bg-gray-700">
-                    Войти через Google
+    <!-- Основной контент -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Секция для добавления новой игры (видна только администратору/авторизованному пользователю) -->
+        <div id="add-game-section" class="hidden mb-12 bg-gray-800 p-6 rounded-2xl shadow-xl">
+            <h2 class="text-2xl font-bold mb-4">Добавить новую игру</h2>
+            <form id="add-game-form" class="space-y-4">
+                <input type="text" id="game-title" placeholder="Название игры" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                <textarea id="game-description" placeholder="Описание игры" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" required></textarea>
+                <input type="url" id="game-image-url" placeholder="URL изображения (обложка)" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                <input type="url" id="game-url" placeholder="URL игры (ссылка для запуска)" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                <button type="submit" class="btn w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg">
+                    Добавить игру
                 </button>
-            </div>
-        </section>
+            </form>
+        </div>
 
-        <section id="student-dashboard" class="hidden p-8">
-            <h2 class="text-3xl font-bold mb-6 text-ya_buxgalter">Личный кабинет студента</h2>
-            <div id="dashboard-nav" class="flex space-x-4 mb-6 border-b border-gray-300">
-                <button class="py-2 px-4 border-b-2 border-transparent hover:border-ya_buxgalter transition-colors duration-200" id="my-lessons-btn">Мои уроки</button>
-                <button class="py-2 px-4 border-b-2 border-transparent hover:border-ya_buxgalter transition-colors duration-200" id="my-profile-btn">Мой профиль</button>
-            </div>
-            <div id="my-lessons-content" class="hidden">
-                <h3 class="text-2xl font-semibold mb-4">Мои уроки</h3>
-                <div id="lessons-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    </div>
-            </div>
-            <div id="my-profile-content" class="hidden">
-                <h3 class="text-2xl font-semibold mb-4">Мой профиль</h3>
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <div class="flex items-center space-x-4 mb-4">
-                        <img id="profile-avatar" src="https://via.placeholder.com/100" alt="Аватар" class="w-24 h-24 rounded-full object-cover">
-                        <div>
-                            <p id="profile-fio" class="font-bold text-xl">ФИО: </p>
-                            <p id="profile-email" class="text-gray-600">Email: </p>
-                            <p id="profile-group" class="text-gray-600">Группа: </p>
-                        </div>
-                    </div>
-                    <h4 class="font-semibold text-lg mb-2">Курсы</h4>
-                    <ul id="profile-courses" class="list-disc list-inside text-gray-700">
-                        </ul>
-                </div>
-            </div>
-        </section>
-
-        <section id="admin-dashboard" class="hidden p-8">
-            <h2 class="text-3xl font-bold mb-6 text-ya_buxgalter">Админ панель</h2>
-            <div id="admin-nav" class="flex space-x-4 mb-6 border-b border-gray-300">
-                <button class="py-2 px-4 border-b-2 border-transparent hover:border-ya_buxgalter transition-colors duration-200" id="lessons-btn">Уроки</button>
-                <button class="py-2 px-4 border-b-2 border-transparent hover:border-ya_buxgalter transition-colors duration-200" id="students-btn">Студенты</button>
-                <button class="py-2 px-4 border-b-2 border-transparent hover:border-ya_buxgalter transition-colors duration-200" id="groups-btn">Группы</button>
-                <button class="py-2 px-4 border-b-2 border-transparent hover:border-ya_buxgalter transition-colors duration-200" id="applications-btn">Заявки</button>
-            </div>
-            
-            <div id="lessons-content" class="hidden p-4 bg-white rounded-lg shadow-lg">
-                <h3 class="text-2xl font-semibold mb-4">Управление уроками</h3>
-                <div class="admin-panel-grid">
-                    <div>
-                        <h4 class="font-bold text-xl mb-4">Список уроков</h4>
-                        <div id="lessons-table" class="overflow-x-auto">
-                            </div>
-                    </div>
-                    <div class="p-4 bg-gray-100 rounded-lg shadow-inner">
-                        <h4 class="font-bold text-xl mb-4">Добавить/Редактировать урок</h4>
-                        <form id="add-lesson-form" class="space-y-4">
-                            <input type="hidden" id="edit-lesson-id">
-                            <div>
-                                <label for="lesson-title" class="block text-gray-700">Название урока</label>
-                                <input type="text" id="lesson-title" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <div>
-                                <label for="lesson-description" class="block text-gray-700">Описание</label>
-                                <textarea id="lesson-description" rows="3" class="w-full px-3 py-2 border rounded-md"></textarea>
-                            </div>
-                            <div>
-                                <label for="lesson-video" class="block text-gray-700">URL видео (YouTube)</label>
-                                <input type="url" id="lesson-video" class="w-full px-3 py-2 border rounded-md">
-                            </div>
-                            <div>
-                                <label for="lesson-group" class="block text-gray-700">Группа</label>
-                                <select id="lesson-group" class="w-full px-3 py-2 border rounded-md">
-                                    </select>
-                            </div>
-                            <div>
-                                <label for="lesson-file" class="block text-gray-700">Файл урока (PDF/PPT)</label>
-                                <input type="file" id="lesson-file" class="w-full px-3 py-2 border rounded-md">
-                            </div>
-                            <button type="submit" class="w-full btn-primary text-white py-2 rounded-md">Сохранить урок</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div id="students-content" class="hidden p-4 bg-white rounded-lg shadow-lg">
-                <h3 class="text-2xl font-semibold mb-4">Управление студентами</h3>
-                <div class="admin-panel-grid">
-                    <div>
-                        <h4 class="font-bold text-xl mb-4">Список студентов</h4>
-                        <div id="students-list" class="overflow-x-auto">
-                            </div>
-                    </div>
-                    <div class="p-4 bg-gray-100 rounded-lg shadow-inner">
-                        <h4 class="font-bold text-xl mb-4">Добавить/Редактировать студента</h4>
-                        <form id="add-student-form" class="space-y-4">
-                            <div>
-                                <label for="student-fio" class="block text-gray-700">ФИО</label>
-                                <input type="text" id="student-fio" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <div>
-                                <label for="student-email" class="block text-gray-700">Email студента</label>
-                                <input type="email" id="student-email" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <div>
-                                <label for="student-password" class="block text-gray-700">Пароль</label>
-                                <input type="password" id="student-password" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <div>
-                                <label for="student-group-select" class="block text-gray-700">Группа</label>
-                                <select id="student-group-select" class="w-full px-3 py-2 border rounded-md">
-                                    </select>
-                            </div>
-                            <button type="submit" class="w-full btn-primary text-white py-2 rounded-md">Сохранить студента</button>
-                            <div id="add-student-message" class="mt-4 text-center"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="groups-content" class="hidden p-4 bg-white rounded-lg shadow-lg">
-                <h3 class="text-2xl font-semibold mb-4">Управление группами</h3>
-                <div class="admin-panel-grid">
-                    <div>
-                        <h4 class="font-bold text-xl mb-4">Список групп</h4>
-                        <div id="group-list" class="overflow-x-auto">
-                            </div>
-                    </div>
-                    <div class="p-4 bg-gray-100 rounded-lg shadow-inner">
-                        <h4 class="font-bold text-xl mb-4">Добавить/Редактировать группу</h4>
-                        <form id="add-group-form" class="space-y-4">
-                            <div>
-                                <label for="group-name" class="block text-gray-700">Название группы</label>
-                                <input type="text" id="group-name" class="w-full px-3 py-2 border rounded-md" required>
-                            </div>
-                            <button type="submit" class="w-full btn-primary text-white py-2 rounded-md">Добавить группу</button>
-                            <div id="add-group-message" class="mt-4 text-center"></div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="applications-content" class="hidden p-4 bg-white rounded-lg shadow-lg">
-                <h3 class="text-2xl font-semibold mb-4">Заявки на регистрацию</h3>
-                <div id="applications-list" class="overflow-x-auto">
-                    </div>
-            </div>
-        </section>
-
-        <div id="enroll-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
-            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-2xl font-bold">Записаться на курс</h3>
-                    <button id="close-enroll-modal" class="text-gray-500 hover:text-gray-700">&times;</button>
-                </div>
-                <form id="enroll-form">
-                    <div class="mb-4">
-                        <label for="enroll-course-type" class="block text-gray-700 font-bold mb-2">Тип курса</label>
-                        <select id="enroll-course-type" class="w-full px-3 py-2 border rounded-md" required>
-                            <option value="">Выберите тип курса</option>
-                            <option value="individual">Индивидуальный</option>
-                            <option value="group">Группа</option>
-                            <option value="online">Онлайн</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label for="enroll-name" class="block text-gray-700 font-bold mb-2">Имя</label>
-                        <input type="text" id="enroll-name" class="w-full px-3 py-2 border rounded-md" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="enroll-phone" class="block text-gray-700 font-bold mb-2">Номер телефона</label>
-                        <input type="tel" id="enroll-phone" class="w-full px-3 py-2 border rounded-md" required>
-                    </div>
-                    <button type="submit" class="w-full btn-primary text-white py-2 rounded-md font-semibold transition-colors duration-200">Отправить заявку</button>
-                    <div id="enroll-message" class="mt-4 text-center"></div>
-                </form>
+        <!-- Сетка с играми -->
+        <h2 class="text-3xl font-bold mb-6 text-center tracking-wide">Коллекция Игр</h2>
+        <div id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <!-- Карточки игр будут добавляться сюда через JavaScript -->
+             <div id="loading-spinner" class="col-span-full flex justify-center items-center h-64">
+                <i class="fas fa-spinner fa-spin text-4xl text-indigo-400"></i>
+                <span class="ml-4 text-xl">Загрузка игр...</span>
             </div>
         </div>
 
-        <div id="contact-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
-            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-2xl font-bold">Связаться с нами</h3>
-                    <button id="close-contact-modal" class="text-gray-500 hover:text-gray-700">&times;</button>
-                </div>
-                <p class="mb-4 text-center">Вы можете связаться с нами по номеру:</p>
-                <p class="text-2xl font-bold text-center text-ya_buxgalter mb-4">+998-94-800-00-68</p>
-                <a href="https://t.me/ya_buxgalter_bot" target="_blank" class="w-full btn-primary text-white py-2 rounded-md text-center block font-semibold transition-colors duration-200">Написать в Telegram</a>
-            </div>
-        </div>
     </main>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-functions-compat.js"></script>
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
-        import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js';
+    <!-- Модальное окно для уведомлений -->
+    <div id="notification-modal" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden opacity-0">
+        <div class="modal-content bg-gray-800 rounded-2xl shadow-xl p-8 max-w-sm text-center transform scale-95">
+            <p id="notification-message" class="text-lg"></p>
+            <button onclick="closeModal()" class="btn mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg">OK</button>
+        </div>
+    </div>
 
+
+    <!-- Подключение Firebase SDK -->
+    <script type="module">
+        // Импорт необходимых модулей Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ FIREBASE ---
+        
+        // Ваша конфигурация Firebase
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+          apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
+          authDomain: "asonik-ai.firebaseapp.com",
+          projectId: "asonik-ai",
+          storageBucket: "asonik-ai.firebasestorage.app",
+          messagingSenderId: "875716508614",
+          appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
+          measurementId: "G-HT5T20YPVE"
         };
+        
+        // ВАЖНО: Эти переменные нужны для корректной работы в среде. Не изменяйте их.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
+
+        // Инициализация Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
-        const appId = firebaseConfig.appId;
 
-        // Theme Toggle
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const moonIcon = document.getElementById('moon-icon');
-        const sunIcon = document.getElementById('sun-icon');
-        const body = document.body;
-
-        themeToggleBtn.addEventListener('click', () => {
-            body.classList.toggle('dark-theme');
-            if (body.classList.contains('dark-theme')) {
-                sunIcon.classList.add('hidden');
-                moonIcon.classList.remove('hidden');
-            } else {
-                sunIcon.classList.remove('hidden');
-                moonIcon.classList.add('hidden');
-            }
-        });
-
-        // Logo functionality
-        async function fetchLogoAndText() {
-            try {
-                const logoDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/logo/config`));
-                if (logoDoc.exists()) {
-                    const data = logoDoc.data();
-                    const logoImage = document.getElementById('logo-image');
-                    const logoText = document.getElementById('logo-text');
-                    if (logoImage && data.logoUrl) logoImage.src = data.logoUrl;
-                    if (logoText && data.text) logoText.textContent = data.text;
-                }
-            } catch (e) {
-                console.error("Ошибка загрузки логотипа:", e);
-            }
-        }
-        fetchLogoAndText();
-
-        // UI elements
-        const mainPageSection = document.getElementById('main-page-section');
-        const loginSection = document.getElementById('login-section');
-        const studentDashboard = document.getElementById('student-dashboard');
-        const adminDashboard = document.getElementById('admin-dashboard');
-
-        const loginBtnNav = document.getElementById('login-btn-nav');
-        const contactBtnNav = document.getElementById('contact-btn-nav');
-        const enrollNowBtn = document.getElementById('enroll-now-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        const enrollModal = document.getElementById('enroll-modal');
-        const closeEnrollModal = document.getElementById('close-enroll-modal');
-        const enrollForm = document.getElementById('enroll-form');
-        const enrollMessage = document.getElementById('enroll-message');
-
-        const contactModal = document.getElementById('contact-modal');
-        const closeContactModal = document.getElementById('close-contact-modal');
-
-        // Admin nav elements
-        const lessonsBtn = document.getElementById('lessons-btn');
-        const studentsBtn = document.getElementById('students-btn');
-        const groupsBtn = document.getElementById('groups-btn');
-        const applicationsBtn = document.getElementById('applications-btn');
-
-        const lessonsContent = document.getElementById('lessons-content');
-        const studentsContent = document.getElementById('students-content');
-        const groupsContent = document.getElementById('groups-content');
-        const applicationsContent = document.getElementById('applications-content');
-
-        // Student nav elements
-        const myLessonsBtn = document.getElementById('my-lessons-btn');
-        const myProfileBtn = document.getElementById('my-profile-btn');
-        const myLessonsContent = document.getElementById('my-lessons-content');
-        const myProfileContent = document.getElementById('my-profile-content');
-
+        // --- 2. ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ DOM ---
+        const authButton = document.getElementById('auth-button');
+        const addGameSection = document.getElementById('add-game-section');
+        const addGameForm = document.getElementById('add-game-form');
+        const gamesGrid = document.getElementById('games-grid');
         const userInfo = document.getElementById('user-info');
-        const guestInfo = document.getElementById('guest-info');
-        const userAvatar = document.getElementById('user-avatar');
         const userName = document.getElementById('user-name');
-        const userRole = document.getElementById('user-role');
-        const profileFio = document.getElementById('profile-fio');
-        const profileEmail = document.getElementById('profile-email');
-        const profileGroup = document.getElementById('profile-group');
-        const profileCourses = document.getElementById('profile-courses');
+        const userAvatar = document.getElementById('user-avatar');
+        const notificationModal = document.getElementById('notification-modal');
+        const notificationMessage = document.getElementById('notification-message');
+        const loadingSpinner = document.getElementById('loading-spinner');
 
-        // Show/hide sections
-        function showSection(sectionId) {
-            const sections = [mainPageSection, loginSection, studentDashboard, adminDashboard];
-            sections.forEach(sec => sec.classList.add('hidden'));
-            document.getElementById(sectionId).classList.remove('hidden');
-        }
+        // --- 3. ЛОГИКА АУТЕНТИФИКАЦИИ ---
 
-        // Show/hide modals
-        function showModal(modal) {
-            modal.classList.remove('hidden');
-        }
-        function hideModal(modal) {
-            modal.classList.add('hidden');
-        }
+        const provider = new GoogleAuthProvider();
 
-        // Event listeners for modals
-        enrollNowBtn.addEventListener('click', () => showModal(enrollModal));
-        closeEnrollModal.addEventListener('click', () => hideModal(enrollModal));
-        contactBtnNav.addEventListener('click', () => showModal(contactModal));
-        closeContactModal.addEventListener('click', () => hideModal(contactModal));
-        loginBtnNav.addEventListener('click', () => {
-            hideModal(contactModal);
-            showSection('login-section');
-        });
-
-        // Application form submission
-        enrollForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('enroll-name').value;
-            const phone = document.getElementById('enroll-phone').value;
-            const courseType = document.getElementById('enroll-course-type').value;
-
-            try {
-                await addDoc(collection(db, `artifacts/${appId}/public/data/applications`), {
-                    name: name,
-                    phone: phone,
-                    courseType: courseType,
-                    createdAt: new Date()
-                });
-                enrollMessage.textContent = 'Заявка успешно отправлена!';
-                enrollMessage.classList.remove('text-red-500');
-                enrollMessage.classList.add('text-green-500');
-                enrollForm.reset();
-                setTimeout(() => hideModal(enrollModal), 2000);
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                enrollMessage.textContent = 'Ошибка при отправке заявки.';
-                enrollMessage.classList.remove('text-green-500');
-                enrollMessage.classList.add('text-red-500');
-            }
-        });
-
-        // Auth state change listener
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                guestInfo.classList.add('hidden');
-                userInfo.classList.remove('hidden');
-                try {
-                    const userRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userRef);
-                    let userData;
-                    if (userSnap.exists()) {
-                        userData = userSnap.data();
-                    } else {
-                        // For new users who haven't been added by admin
-                        // This case should ideally not happen for non-admin users if we control registration
-                        userData = {
-                            fio: user.displayName || 'Пользователь',
-                            email: user.email,
-                            photoURL: user.photoURL,
-                            role: 'student'
-                        };
-                        // We do not auto-create users on login, they must be pre-created by admin
-                        // This part is for new Google logins, but we'll enforce the admin-only check below
-                    }
-                    
-                    if (userData && userData.role) {
-                         userName.textContent = userData.fio || 'Пользователь';
-                         userRole.textContent = userData.role || 'Студент';
-                         userAvatar.src = userData.photoURL || "https://via.placeholder.com/40";
-                    }
-
-                    if (userData && userData.role === 'admin') {
-                        showSection('admin-dashboard');
-                        loadAdminPanel();
-                    } else if (userData && userData.role === 'student') {
-                        showSection('student-dashboard');
-                        loadStudentDashboard(user.uid);
-                    } else {
-                        await signOut(auth); // Force logout if role is not found or not recognized
-                        showSection('login-section');
-                        const loginMessage = document.getElementById('login-message');
-                        loginMessage.textContent = 'Ошибка доступа. Ваш аккаунт не зарегистрирован как администратор.';
-                        loginMessage.classList.remove('text-green-500');
-                        loginMessage.classList.add('text-red-500');
-                    }
-                } catch (e) {
-                    console.error("Ошибка загрузки данных пользователя:", e);
-                    showSection('login-section');
-                    const loginMessage = document.getElementById('login-message');
-                    loginMessage.textContent = 'Ошибка загрузки данных пользователя. Пожалуйста, попробуйте еще раз.';
-                    loginMessage.classList.remove('text-green-500');
-                    loginMessage.classList.add('text-red-500');
-                }
-            } else {
-                guestInfo.classList.remove('hidden');
-                userInfo.classList.add('hidden');
-                showSection('main-page-section');
-            }
-        });
-
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                location.reload(); // Reload the page after logout
-            } catch (e) {
-                console.error("Ошибка выхода:", e);
-            }
-        });
-
-        const loginForm = document.getElementById('login-form');
-        const loginEmail = document.getElementById('login-email');
-        const loginPassword = document.getElementById('login-password');
-        const loginMessage = document.getElementById('login-message');
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = loginEmail.value;
-            const password = loginPassword.value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                loginMessage.textContent = 'Вход выполнен. Перенаправление...';
-                loginMessage.classList.remove('text-red-500');
-                loginMessage.classList.add('text-green-500');
-            } catch (error) {
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    loginMessage.textContent = 'Неверный Email или пароль.';
-                } else {
-                    loginMessage.textContent = `Ошибка входа: ${error.message}`;
-                }
-                loginMessage.classList.remove('text-green-500');
-                loginMessage.classList.add('text-red-500');
-                console.error("Ошибка входа:", error);
-            }
-        });
-
-        const googleLoginBtn = document.getElementById('google-login-btn');
-        googleLoginBtn.addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
+        // Функция для входа
+        const signIn = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
-                
-                // Check if user's email exists as an admin in Firestore
-                const userQuery = query(collection(db, "users"), where("email", "==", user.email));
-                const userSnap = await getDocs(userQuery);
-                
-                if (userSnap.empty) {
-                    await signOut(auth);
-                    loginMessage.textContent = 'Ошибка входа: Аккаунт Google не зарегистрирован как администратор.';
-                    loginMessage.classList.remove('text-green-500');
-                    loginMessage.classList.add('text-red-500');
-                    console.error('Аккаунт Google не зарегистрирован как администратор.');
-                } else {
-                    const userData = userSnap.docs[0].data();
-                    if (userData.role === 'admin') {
-                        // Successful admin login via Google
-                        loginMessage.textContent = 'Вход администратора выполнен. Перенаправление...';
-                        loginMessage.classList.remove('text-red-500');
-                        loginMessage.classList.add('text-green-500');
-                        // Update user data with Google info
-                        await setDoc(doc(db, "users", userSnap.docs[0].id), {
-                            photoURL: user.photoURL,
-                            fio: user.displayName,
-                        }, { merge: true });
-                    } else {
-                        await signOut(auth);
-                        loginMessage.textContent = 'Ошибка входа: Этот аккаунт Google не является администратором.';
-                        loginMessage.classList.remove('text-green-500');
-                        loginMessage.classList.add('text-red-500');
-                        console.error('Этот аккаунт Google не является администратором.');
-                    }
-                }
+                showNotification(`Добро пожаловать, ${user.displayName}!`);
             } catch (error) {
-                console.error("Ошибка входа через Google:", error);
-                loginMessage.textContent = `Ошибка входа через Google: ${error.message}`;
-                loginMessage.classList.remove('text-green-500');
-                loginMessage.classList.add('text-red-500');
+                console.error("Ошибка аутентификации:", error);
+                showNotification(`Ошибка входа: ${error.message}`);
+            }
+        };
+
+        // Функция для выхода
+        const logOut = async () => {
+            try {
+                await signOut(auth);
+                showNotification("Вы успешно вышли.");
+            } catch (error) {
+                console.error("Ошибка выхода:", error);
+                 showNotification(`Ошибка выхода: ${error.message}`);
+            }
+        };
+        
+        // Обработчик клика по кнопке аутентификации
+        authButton.addEventListener('click', () => {
+            if (auth.currentUser) {
+                logOut();
+            } else {
+                signIn();
             }
         });
 
-        // Student Dashboard Functions
-        function loadStudentDashboard(uid) {
-            myLessonsBtn.click();
-            loadStudentProfile(uid);
-        }
-
-        async function loadStudentProfile(uid) {
-            try {
-                const userRef = doc(db, "users", uid);
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    profileFio.textContent = `ФИО: ${userData.fio || 'Не указано'}`;
-                    profileEmail.textContent = `Email: ${userData.email || 'Не указан'}`;
-                    profileGroup.textContent = `Группа: ${userData.group || 'Не назначена'}`;
-                    userAvatar.src = userData.photoURL || "https://via.placeholder.com/100";
-                    profileAvatar.src = userData.photoURL || "https://via.placeholder.com/100";
-                    profileCourses.innerHTML = '';
-                    if (userData.courses && userData.courses.length > 0) {
-                        userData.courses.forEach(course => {
-                            const li = document.createElement('li');
-                            li.textContent = course;
-                            profileCourses.appendChild(li);
-                        });
-                    } else {
-                        profileCourses.textContent = 'Курсы не найдены.';
-                    }
-                }
-            } catch (e) {
-                console.error("Ошибка загрузки профиля:", e);
+        // Отслеживание состояния аутентификации
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                // Пользователь вошел в систему
+                updateUIForLoggedInUser(user);
+            } else {
+                // Пользователь вышел
+                updateUIForLoggedOutUser();
             }
-        }
-
-        async function loadStudentLessons() {
-            const user = auth.currentUser;
-            if (!user) return;
-
-            const lessonsList = document.getElementById('lessons-list');
-            lessonsList.innerHTML = 'Загрузка уроков...';
-
-            try {
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                const userData = userSnap.data();
-                if (!userData || !userData.group) {
-                    lessonsList.textContent = 'Вы не назначены в группу.';
-                    return;
-                }
-                const groupId = userData.group;
-                
-                const lessonsRef = collection(db, `artifacts/${appId}/public/data/groups/${groupId}/lessons`);
-                const lessonsSnap = await getDocs(lessonsRef);
-                
-                if (lessonsSnap.empty) {
-                    lessonsList.textContent = 'Уроки для вашей группы пока не добавлены.';
-                    return;
-                }
-
-                lessonsList.innerHTML = '';
-                lessonsSnap.forEach(lessonDoc => {
-                    const lesson = lessonDoc.data();
-                    const lessonCard = document.createElement('div');
-                    lessonCard.className = 'bg-white p-6 rounded-lg shadow-lg';
-                    lessonCard.innerHTML = `
-                        <h4 class="font-bold text-lg text-ya_buxgalter">${lesson.title}</h4>
-                        <p class="text-gray-600 mb-4">${lesson.description || ''}</p>
-                        ${lesson.videoUrl ? `<a href="${lesson.videoUrl}" target="_blank" class="text-blue-500 hover:underline block mb-2">Смотреть видео</a>` : ''}
-                        ${lesson.fileUrl ? `<a href="${lesson.fileUrl}" target="_blank" class="text-blue-500 hover:underline block">Скачать файл</a>` : ''}
-                    `;
-                    lessonsList.appendChild(lessonCard);
-                });
-            } catch (e) {
-                console.error("Ошибка загрузки уроков:", e);
-                lessonsList.textContent = 'Ошибка загрузки уроков.';
-            }
-        }
-
-        // Student nav logic
-        const studentNavButtons = document.querySelectorAll('#dashboard-nav button');
-        studentNavButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                studentNavButtons.forEach(b => b.classList.remove('border-ya_buxgalter'));
-                e.target.classList.add('border-ya_buxgalter');
-                myLessonsContent.classList.add('hidden');
-                myProfileContent.classList.add('hidden');
-                if (e.target.id === 'my-lessons-btn') {
-                    myLessonsContent.classList.remove('hidden');
-                    loadStudentLessons();
-                } else if (e.target.id === 'my-profile-btn') {
-                    myProfileContent.classList.remove('hidden');
-                    loadStudentProfile(auth.currentUser.uid);
-                }
-            });
         });
         
-        // Admin Panel Functions
-        function loadAdminPanel() {
-            lessonsBtn.click();
-        }
-
-        const adminNavButtons = document.querySelectorAll('#admin-nav button');
-        adminNavButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                adminNavButtons.forEach(b => b.classList.remove('border-ya_buxgalter'));
-                e.target.classList.add('border-ya_buxgalter');
-                lessonsContent.classList.add('hidden');
-                studentsContent.classList.add('hidden');
-                groupsContent.classList.add('hidden');
-                applicationsContent.classList.add('hidden');
-                
-                if (e.target.id === 'lessons-btn') {
-                    lessonsContent.classList.remove('hidden');
-                    loadLessonsTable();
-                    loadGroupOptions(document.getElementById('lesson-group'));
-                } else if (e.target.id === 'students-btn') {
-                    studentsContent.classList.remove('hidden');
-                    loadStudentsTable();
-                    loadGroupOptions(document.getElementById('student-group-select'));
-                } else if (e.target.id === 'groups-btn') {
-                    groupsContent.classList.remove('hidden');
-                    loadGroupsList();
-                } else if (e.target.id === 'applications-btn') {
-                    applicationsContent.classList.remove('hidden');
-                    loadApplications();
-                }
-            });
-        });
-        
-        async function loadGroupOptions(selectElement) {
-            selectElement.innerHTML = '<option value="">Выберите группу</option>';
-            try {
-                const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
-                const groupsSnap = await getDocs(groupsRef);
-                groupsSnap.forEach(groupDoc => {
-                    const group = groupDoc.data();
-                    const option = document.createElement('option');
-                    option.value = groupDoc.id;
-                    option.textContent = group.name;
-                    selectElement.appendChild(option);
-                });
-            } catch (e) {
-                console.error("Ошибка загрузки групп:", e);
-            }
-        }
-
-        // Lessons
-        const addLessonForm = document.getElementById('add-lesson-form');
-        const lessonTitleInput = document.getElementById('lesson-title');
-        const lessonDescriptionInput = document.getElementById('lesson-description');
-        const lessonVideoInput = document.getElementById('lesson-video');
-        const lessonGroupInput = document.getElementById('lesson-group');
-        const lessonFileInput = document.getElementById('lesson-file');
-        const editLessonIdInput = document.getElementById('edit-lesson-id');
-
-        addLessonForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const lessonTitle = lessonTitleInput.value;
-            const lessonDescription = lessonDescriptionInput.value;
-            const lessonVideo = lessonVideoInput.value;
-            const groupId = lessonGroupInput.value;
-            const lessonId = editLessonIdInput.value;
-            const file = lessonFileInput.files[0];
-
-            if (!groupId) {
-                alert('Пожалуйста, выберите группу.');
-                return;
-            }
-
-            let fileUrl = '';
-            if (file) {
-                try {
-                    const fileRef = ref(storage, `artifacts/${appId}/public/files/${file.name}`);
-                    await uploadBytes(fileRef, file);
-                    fileUrl = await getDownloadURL(fileRef);
-                } catch (e) {
-                    console.error("Ошибка загрузки файла:", e);
-                    alert("Ошибка загрузки файла.");
-                    return;
-                }
-            }
-
-            try {
-                if (lessonId) {
-                    await updateDoc(doc(db, `artifacts/${appId}/public/data/groups/${groupId}/lessons`, lessonId), {
-                        title: lessonTitle,
-                        description: lessonDescription,
-                        videoUrl: lessonVideo,
-                        fileUrl: fileUrl || undefined
-                    });
-                    alert('Урок успешно обновлен!');
-                } else {
-                    await addDoc(collection(db, `artifacts/${appId}/public/data/groups/${groupId}/lessons`), {
-                        title: lessonTitle,
-                        description: lessonDescription,
-                        videoUrl: lessonVideo,
-                        fileUrl: fileUrl || undefined,
-                        createdAt: new Date()
-                    });
-                    alert('Урок успешно добавлен!');
-                }
-                addLessonForm.reset();
-                editLessonIdInput.value = '';
-                loadLessonsTable();
-            } catch (e) {
-                console.error("Ошибка сохранения урока:", e);
-                alert("Ошибка сохранения урока.");
-            }
-        });
-
-        async function loadLessonsTable() {
-            const lessonsTable = document.getElementById('lessons-table');
-            lessonsTable.innerHTML = '<p>Загрузка уроков...</p>';
-
-            try {
-                const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
-                const groupsSnap = await getDocs(groupsRef);
-                let lessonsHtml = `<table class="min-w-full bg-white border border-gray-200">
-                                    <thead class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                                        <tr>
-                                            <th class="py-3 px-6 text-left">Название урока</th>
-                                            <th class="py-3 px-6 text-left">Группа</th>
-                                            <th class="py-3 px-6 text-left">Действия</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-gray-600 text-sm font-light">`;
-
-                for (const groupDoc of groupsSnap.docs) {
-                    const groupId = groupDoc.id;
-                    const groupName = groupDoc.data().name;
-                    const lessonsRef = collection(db, `artifacts/${appId}/public/data/groups/${groupId}/lessons`);
-                    const lessonsSnap = await getDocs(lessonsRef);
-                    lessonsSnap.forEach(lessonDoc => {
-                        const lesson = lessonDoc.data();
-                        lessonsHtml += `<tr class="border-b border-gray-200 hover:bg-gray-100">
-                                            <td class="py-3 px-6 text-left whitespace-nowrap">${lesson.title}</td>
-                                            <td class="py-3 px-6 text-left">${groupName}</td>
-                                            <td class="py-3 px-6 text-left">
-                                                <button data-id="${lessonDoc.id}" data-groupid="${groupId}" class="edit-lesson-btn text-blue-500 hover:text-blue-700 font-semibold mr-2">Редактировать</button>
-                                                <button data-id="${lessonDoc.id}" data-groupid="${groupId}" class="delete-lesson-btn text-red-500 hover:text-red-700 font-semibold">Удалить</button>
-                                            </td>
-                                        </tr>`;
-                    });
-                }
-                lessonsHtml += `</tbody></table>`;
-                lessonsTable.innerHTML = lessonsHtml;
-
-                lessonsTable.addEventListener('click', async (e) => {
-                    const target = e.target;
-                    if (target.classList.contains('delete-lesson-btn')) {
-                        const lessonId = target.dataset.id;
-                        const groupId = target.dataset.groupid;
-                        if (confirm('Вы уверены, что хотите удалить этот урок?')) {
-                            try {
-                                await deleteDoc(doc(db, `artifacts/${appId}/public/data/groups/${groupId}/lessons`, lessonId));
-                                alert('Урок успешно удален!');
-                                loadLessonsTable();
-                            } catch (e) {
-                                console.error("Ошибка удаления урока:", e);
-                                alert("Ошибка удаления урока.");
-                            }
-                        }
-                    }
-                    if (target.classList.contains('edit-lesson-btn')) {
-                        const lessonId = target.dataset.id;
-                        const groupId = target.dataset.groupid;
-                        try {
-                            const lessonDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/groups/${groupId}/lessons`, lessonId));
-                            if (lessonDoc.exists()) {
-                                const lessonData = lessonDoc.data();
-                                editLessonIdInput.value = lessonId;
-                                lessonTitleInput.value = lessonData.title;
-                                lessonDescriptionInput.value = lessonData.description || '';
-                                lessonVideoInput.value = lessonData.videoUrl || '';
-                                lessonGroupInput.value = groupId;
-                            }
-                        } catch (e) {
-                            console.error("Ошибка загрузки урока для редактирования:", e);
-                            alert("Ошибка загрузки урока для редактирования.");
-                        }
-                    }
-                });
-
-            } catch (e) {
-                console.error("Ошибка загрузки уроков:", e);
-                lessonsTable.innerHTML = '<p>Ошибка загрузки уроков.</p>';
-            }
-        }
-
-        // Students
-        const addStudentForm = document.getElementById('add-student-form');
-        const addStudentMessage = document.getElementById('add-student-message');
-        addStudentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fio = document.getElementById('student-fio').value;
-            const email = document.getElementById('student-email').value;
-            const password = document.getElementById('student-password').value;
-            const groupId = document.getElementById('student-group-select').value;
+        // Обновление интерфейса для вошедшего пользователя
+        function updateUIForLoggedInUser(user) {
+            userInfo.classList.remove('hidden');
+            userInfo.classList.add('flex');
+            userName.textContent = user.displayName;
+            userAvatar.src = user.photoURL;
             
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                
-                await setDoc(doc(db, "users", userCredential.user.uid), {
-                    fio: fio,
-                    email: email,
-                    group: groupId,
-                    role: 'student'
-                });
-                addStudentMessage.textContent = 'Студент успешно добавлен!';
-                addStudentMessage.classList.remove('text-red-500');
-                addStudentMessage.classList.add('text-green-500');
-                addStudentForm.reset();
-                loadStudentsTable();
-            } catch (e) {
-                console.error("Ошибка добавления студента:", e);
-                addStudentMessage.textContent = `Ошибка добавления студента: ${e.message}`;
-                addStudentMessage.classList.remove('text-green-500');
-                addStudentMessage.classList.add('text-red-500');
-            }
-        });
-
-        async function loadStudentsTable() {
-            const studentsList = document.getElementById('students-list');
-            studentsList.innerHTML = '<p>Загрузка студентов...</p>';
-            try {
-                const usersRef = collection(db, "users");
-                const usersSnap = await getDocs(query(usersRef, where("role", "==", "student")));
-                let studentsHtml = `<table class="min-w-full bg-white border border-gray-200">
-                                    <thead class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                                        <tr>
-                                            <th class="py-3 px-6 text-left">ФИО</th>
-                                            <th class="py-3 px-6 text-left">Email</th>
-                                            <th class="py-3 px-6 text-left">Группа</th>
-                                            <th class="py-3 px-6 text-left">Действия</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-gray-600 text-sm font-light">`;
-                for (const userDoc of usersSnap.docs) {
-                    const userData = userDoc.data();
-                    const groupName = userData.group ? (await getDoc(doc(db, `artifacts/${appId}/public/data/groups`, userData.group))).data()?.name || 'Не назначена' : 'Не назначена';
-                    studentsHtml += `<tr class="border-b border-gray-200 hover:bg-gray-100">
-                                        <td class="py-3 px-6 text-left whitespace-nowrap">${userData.fio || 'N/A'}</td>
-                                        <td class="py-3 px-6 text-left">${userData.email || 'N/A'}</td>
-                                        <td class="py-3 px-6 text-left">${groupName}</td>
-                                        <td class="py-3 px-6 text-left">
-                                            <button data-id="${userDoc.id}" class="edit-student-btn text-blue-500 hover:text-blue-700 font-semibold mr-2">Редактировать</button>
-                                            <button data-id="${userDoc.id}" class="delete-student-btn text-red-500 hover:text-red-700 font-semibold">Удалить</button>
-                                            <button data-id="${userDoc.id}" class="transfer-student-btn text-green-500 hover:text-green-700 font-semibold">Переместить</button>
-                                        </td>
-                                    </tr>`;
-                }
-                studentsHtml += `</tbody></table>`;
-                studentsList.innerHTML = studentsHtml;
-
-                studentsList.addEventListener('click', async (e) => {
-                    const target = e.target;
-                    const studentId = target.dataset.id;
-                    if (target.classList.contains('delete-student-btn')) {
-                        if (confirm('Вы уверены, что хотите удалить этого студента?')) {
-                            try {
-                                await deleteDoc(doc(db, "users", studentId));
-                                alert('Студент успешно удален!');
-                                loadStudentsTable();
-                            } catch (e) {
-                                console.error("Ошибка удаления студента:", e);
-                                alert("Ошибка удаления студента.");
-                            }
-                        }
-                    }
-                    if (target.classList.contains('transfer-student-btn')) {
-                        const newGroupId = prompt('Введите ID новой группы:');
-                        if (newGroupId) {
-                            try {
-                                await updateDoc(doc(db, "users", studentId), { group: newGroupId });
-                                alert('Студент успешно перемещен!');
-                                loadStudentsTable();
-                            } catch (e) {
-                                console.error("Ошибка перемещения студента:", e);
-                                alert("Ошибка перемещения студента.");
-                            }
-                        }
-                    }
-                });
-
-            } catch (e) {
-                console.error("Ошибка загрузки студентов:", e);
-                studentsList.innerHTML = '<p>Ошибка загрузки студентов.</p>';
-            }
+            authButton.innerHTML = `<i class="fas fa-sign-out-alt mr-2"></i><span>Выйти</span>`;
+            authButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            authButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            
+            addGameSection.classList.remove('hidden');
         }
 
-        // Groups
-        const addGroupForm = document.getElementById('add-group-form');
-        const addGroupMessage = document.getElementById('add-group-message');
-        addGroupForm.addEventListener('submit', async (e) => {
+        // Обновление интерфейса для вышедшего пользователя
+        function updateUIForLoggedOutUser() {
+            userInfo.classList.add('hidden');
+            userInfo.classList.remove('flex');
+            
+            authButton.innerHTML = `<i class="fab fa-google mr-2"></i><span>Войти через Google</span>`;
+            authButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            authButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+
+            addGameSection.classList.add('hidden');
+        }
+
+        // --- 4. ЛОГИКА РАБОТЫ С БАЗОЙ ДАННЫХ (FIRESTORE) ---
+
+        // Путь к коллекции игр. Используем публичную коллекцию, чтобы все видели игры.
+        const gamesCollectionPath = `/artifacts/${appId}/public/data/games`;
+        const gamesCollection = collection(db, gamesCollectionPath);
+
+        // Обработка отправки формы добавления игры
+        addGameForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const groupName = document.getElementById('group-name').value;
-            try {
-                await addDoc(collection(db, `artifacts/${appId}/public/data/groups`), { name: groupName, createdAt: new Date() });
-                addGroupMessage.textContent = 'Группа успешно добавлена!';
-                addGroupMessage.classList.remove('text-red-500');
-                addGroupMessage.classList.add('text-green-500');
-                addGroupForm.reset();
-                loadGroupsList();
-            } catch (e) {
-                console.error("Ошибка добавления группы:", e);
-                addGroupMessage.textContent = 'Ошибка добавления группы.';
-                addGroupMessage.classList.remove('text-green-500');
-                addGroupMessage.classList.add('text-red-500');
+            
+            const title = document.getElementById('game-title').value;
+            const description = document.getElementById('game-description').value;
+            const imageUrl = document.getElementById('game-image-url').value;
+            const gameUrl = document.getElementById('game-url').value;
+            
+            if (title && description && imageUrl && gameUrl) {
+                try {
+                    await addDoc(gamesCollection, {
+                        title: title,
+                        description: description,
+                        imageUrl: imageUrl,
+                        gameUrl: gameUrl,
+                        createdAt: new Date() // Добавляем временную метку
+                    });
+                    addGameForm.reset();
+                    showNotification("Игра успешно добавлена!");
+                } catch (error) {
+                    console.error("Ошибка добавления игры: ", error);
+                    showNotification(`Ошибка добавления игры: ${error.message}`);
+                }
             }
         });
 
-        async function loadGroupsList() {
-            const groupList = document.getElementById('group-list');
-            groupList.innerHTML = '<p>Загрузка групп...</p>';
-            try {
-                const groupsRef = collection(db, `artifacts/${appId}/public/data/groups`);
-                const groupsSnap = await getDocs(groupsRef);
-                let groupsHtml = `<ul class="list-disc pl-5 space-y-2">`;
-                for (const groupDoc of groupsSnap.docs) {
-                    const group = groupDoc.data();
-                    const studentsInGroupRef = collection(db, `users`);
-                    const studentsSnap = await getDocs(query(studentsInGroupRef, where('group', '==', groupDoc.id)));
-                    const studentCount = studentsSnap.size;
-                    groupsHtml += `<li class="p-2 border rounded-md hover:bg-gray-50">
-                                    <div class="flex justify-between items-center">
-                                        <span>${group.name} (${studentCount} студентов)</span>
-                                        <div>
-                                            <button data-id="${groupDoc.id}" class="delete-group-btn text-red-500 hover:text-red-700 font-semibold ml-2">Удалить</button>
-                                        </div>
-                                    </div>
-                                    <ul id="students-in-${groupDoc.id}" class="list-none pl-4 mt-2 hidden"></ul>
-                                </li>`;
-                }
-                groupsHtml += `</ul>`;
-                groupList.innerHTML = groupsHtml;
-            } catch (e) {
-                console.error("Ошибка загрузки групп:", e);
-                groupList.innerHTML = '<p>Ошибка загрузки групп.</p>';
+        // Прослушивание изменений в коллекции игр в реальном времени
+        const q = query(gamesCollection);
+        onSnapshot(q, (snapshot) => {
+            gamesGrid.innerHTML = ''; // Очищаем сетку перед отрисовкой
+            if (snapshot.empty) {
+                gamesGrid.innerHTML = `<p class="col-span-full text-center text-gray-400">Пока здесь нет ни одной игры. Добавьте первую!</p>`;
+            } else {
+                snapshot.docs.forEach(doc => {
+                    const game = doc.data();
+                    const gameElement = createGameCard(game);
+                    gamesGrid.appendChild(gameElement);
+                });
             }
+            loadingSpinner.classList.add('hidden');
+        });
+
+        // Функция для создания HTML-карточки игры
+        function createGameCard(game) {
+            const card = document.createElement('div');
+            card.className = 'game-card bg-gray-800 rounded-2xl overflow-hidden shadow-lg flex flex-col';
+            card.innerHTML = `
+                <div class="relative pb-[56.25%] h-0"> <!-- Aspect ratio 16:9 -->
+                    <img class="absolute top-0 left-0 w-full h-full object-cover" src="${game.imageUrl}" alt="${game.title}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/e5e7eb?text=Image+Not+Found';">
+                </div>
+                <div class="p-5 flex flex-col flex-grow">
+                    <h3 class="text-xl font-bold mb-2 truncate">${game.title}</h3>
+                    <p class="text-gray-400 text-sm mb-4 flex-grow">${game.description}</p>
+                    <a href="${game.gameUrl}" target="_blank" rel="noopener noreferrer" class="btn mt-auto text-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">
+                        Играть
+                    </a>
+                </div>
+            `;
+            return card;
         }
         
-        // Applications
-        async function loadApplications() {
-            const applicationsList = document.getElementById('applications-list');
-            applicationsList.innerHTML = '<p>Загрузка заявок...</p>';
-            try {
-                const applicationsRef = collection(db, `artifacts/${appId}/public/data/applications`);
-                const applicationsSnap = await getDocs(applicationsRef);
-                if (applicationsSnap.empty) {
-                    applicationsList.innerHTML = '<p>Заявок пока нет.</p>';
-                    return;
-                }
-                let appsHtml = `<table class="min-w-full bg-white border border-gray-200">
-                                <thead class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                                    <tr>
-                                        <th class="py-3 px-6 text-left">Имя</th>
-                                        <th class="py-3 px-6 text-left">Телефон</th>
-                                        <th class="py-3 px-6 text-left">Курс</th>
-                                        <th class="py-3 px-6 text-left">Дата</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-gray-600 text-sm font-light">`;
-                applicationsSnap.forEach(appDoc => {
-                    const appData = appDoc.data();
-                    appsHtml += `<tr class="border-b border-gray-200 hover:bg-gray-100">
-                                    <td class="py-3 px-6 text-left whitespace-nowrap">${appData.name}</td>
-                                    <td class="py-3 px-6 text-left">${appData.phone}</td>
-                                    <td class="py-3 px-6 text-left">${appData.courseType}</td>
-                                    <td class="py-3 px-6 text-left">${appData.createdAt.toDate().toLocaleString()}</td>
-                                </tr>`;
-                });
-                appsHtml += `</tbody></table>`;
-                applicationsList.innerHTML = appsHtml;
-            } catch (e) {
-                console.error("Ошибка загрузки заявок:", e);
-                applicationsList.innerHTML = '<p>Ошибка загрузки заявок.</p>';
-            }
+        // --- 5. УВЕДОМЛЕНИЯ (МОДАЛЬНОЕ ОКНО) ---
+        function showNotification(message) {
+            notificationMessage.textContent = message;
+            notificationModal.classList.remove('hidden');
+            setTimeout(() => {
+                notificationModal.classList.remove('opacity-0');
+                notificationModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
         }
+
+        window.closeModal = function() {
+            notificationModal.classList.add('opacity-0');
+            notificationModal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => {
+                notificationModal.classList.add('hidden');
+            }, 300);
+        }
+
     </script>
 </body>
 </html>
+
