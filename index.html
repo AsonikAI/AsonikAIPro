@@ -57,9 +57,9 @@
     <nav class="bg-gray-900/80 backdrop-blur-sm shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center">
-                    <i class="fas fa-gamepad text-3xl text-indigo-400"></i>
-                    <h1 class="text-2xl font-bold ml-3 tracking-wider">GameHub</h1>
+                <div class="flex flex-col items-start">
+                    <h1 class="text-2xl font-bold tracking-wider leading-none">GamesPortal</h1>
+                    <span class="text-xs font-light text-gray-400 -mt-1">By Asonik</span>
                 </div>
                 <div class="flex items-center">
                     <div id="user-info" class="hidden items-center mr-4">
@@ -78,7 +78,32 @@
     <!-- Основной контент -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        <!-- Секция для добавления новой игры (видна только администратору/авторизованному пользователю) -->
+        <!-- Админ-панель (видна только администраторам) -->
+        <div id="admin-panel" class="hidden mb-12 bg-gray-800 p-6 rounded-2xl shadow-xl">
+            <h2 class="text-2xl font-bold mb-4">Админ-панель</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Добавить нового администратора -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Добавить администратора</h3>
+                    <form id="add-admin-form" class="space-y-4">
+                        <input type="text" id="admin-uid" placeholder="UID пользователя" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <input type="email" id="admin-email" placeholder="Email для заметки" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <button type="submit" class="btn w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                            Назначить администратором
+                        </button>
+                    </form>
+                </div>
+                <!-- Список администраторов -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Текущие администраторы</h3>
+                    <ul id="admins-list" class="space-y-2 max-h-48 overflow-y-auto pr-2 bg-gray-900/50 p-3 rounded-lg">
+                        <!-- Админы будут добавлены сюда через JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция для добавления новой игры (видна только администратору) -->
         <div id="add-game-section" class="hidden mb-12 bg-gray-800 p-6 rounded-2xl shadow-xl">
             <h2 class="text-2xl font-bold mb-4">Добавить новую игру</h2>
             <form id="add-game-form" class="space-y-4">
@@ -95,7 +120,6 @@
         <!-- Сетка с играми -->
         <h2 class="text-3xl font-bold mb-6 text-center tracking-wide">Коллекция Игр</h2>
         <div id="games-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            <!-- Карточки игр будут добавляться сюда через JavaScript -->
              <div id="loading-spinner" class="col-span-full flex justify-center items-center h-64">
                 <i class="fas fa-spinner fa-spin text-4xl text-indigo-400"></i>
                 <span class="ml-4 text-xl">Загрузка игр...</span>
@@ -119,11 +143,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 1. КОНФИГУРАЦИЯ И ИНИЦИАЛИЗАЦИЯ FIREBASE ---
-        
-        // Ваша конфигурация Firebase
         const firebaseConfig = {
           apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
           authDomain: "asonik-ai.firebaseapp.com",
@@ -134,11 +156,8 @@
           measurementId: "G-HT5T20YPVE"
         };
         
-        // ВАЖНО: Эти переменные нужны для корректной работы в среде. Не изменяйте их.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : undefined;
-
-        // Инициализация Firebase
+        
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
@@ -146,144 +165,169 @@
 
         // --- 2. ПОЛУЧЕНИЕ ЭЛЕМЕНТОВ DOM ---
         const authButton = document.getElementById('auth-button');
-        const addGameSection = document.getElementById('add-game-section');
-        const addGameForm = document.getElementById('add-game-form');
-        const gamesGrid = document.getElementById('games-grid');
         const userInfo = document.getElementById('user-info');
         const userName = document.getElementById('user-name');
         const userAvatar = document.getElementById('user-avatar');
+        const gamesGrid = document.getElementById('games-grid');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        
+        // Элементы админ-панели и добавления игр
+        const adminPanel = document.getElementById('admin-panel');
+        const addGameSection = document.getElementById('add-game-section');
+        const addGameForm = document.getElementById('add-game-form');
+        const addAdminForm = document.getElementById('add-admin-form');
+        const adminsList = document.getElementById('admins-list');
+
+        // Элементы модального окна
         const notificationModal = document.getElementById('notification-modal');
         const notificationMessage = document.getElementById('notification-message');
-        const loadingSpinner = document.getElementById('loading-spinner');
+        
+        let currentUserIsAdmin = false;
 
-        // --- 3. ЛОГИКА АУТЕНТИФИКАЦИИ ---
+        // --- 3. КОЛЛЕКЦИИ FIREBASE ---
+        const gamesCollectionPath = `/artifacts/${appId}/public/data/games`;
+        const gamesCollection = collection(db, gamesCollectionPath);
+        const adminsCollectionPath = `/artifacts/${appId}/public/data/admins`;
+        const adminsCollection = collection(db, adminsCollectionPath);
 
+        // --- 4. ЛОГИКА АУТЕНТИФИКАЦИИ И РОЛЕЙ ---
         const provider = new GoogleAuthProvider();
 
-        // Функция для входа
-        const signIn = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                showNotification(`Добро пожаловать, ${user.displayName}!`);
-            } catch (error) {
-                console.error("Ошибка аутентификации:", error);
-                showNotification(`Ошибка входа: ${error.message}`);
-            }
-        };
-
-        // Функция для выхода
-        const logOut = async () => {
-            try {
-                await signOut(auth);
-                showNotification("Вы успешно вышли.");
-            } catch (error) {
-                console.error("Ошибка выхода:", error);
-                 showNotification(`Ошибка выхода: ${error.message}`);
-            }
-        };
-        
-        // Обработчик клика по кнопке аутентификации
-        authButton.addEventListener('click', () => {
-            if (auth.currentUser) {
-                logOut();
-            } else {
-                signIn();
-            }
-        });
-
-        // Отслеживание состояния аутентификации
         onAuthStateChanged(auth, user => {
             if (user) {
-                // Пользователь вошел в систему
-                updateUIForLoggedInUser(user);
+                checkAdminStatus(user);
             } else {
-                // Пользователь вышел
+                currentUserIsAdmin = false;
                 updateUIForLoggedOutUser();
             }
         });
+
+        async function checkAdminStatus(user) {
+            const adminDocRef = doc(db, adminsCollectionPath, user.uid);
+            
+            // Проверка: если нет ни одного админа, первый вошедший пользователь становится им
+            const adminsSnapshot = await getDocs(query(adminsCollection));
+            if (adminsSnapshot.empty) {
+                await setDoc(adminDocRef, { email: user.email, addedAt: new Date() });
+                currentUserIsAdmin = true;
+                showNotification("Вы назначены первым администратором. Добро пожаловать!");
+            } else {
+                const adminDocSnap = await getDoc(adminDocRef);
+                currentUserIsAdmin = adminDocSnap.exists();
+            }
+            updateUIForLoggedInUser(user, currentUserIsAdmin);
+        }
         
-        // Обновление интерфейса для вошедшего пользователя
-        function updateUIForLoggedInUser(user) {
+        authButton.addEventListener('click', () => {
+            auth.currentUser ? signOut(auth) : signInWithPopup(auth, provider);
+        });
+
+        function updateUIForLoggedInUser(user, isAdmin) {
             userInfo.classList.remove('hidden');
             userInfo.classList.add('flex');
             userName.textContent = user.displayName;
             userAvatar.src = user.photoURL;
             
             authButton.innerHTML = `<i class="fas fa-sign-out-alt mr-2"></i><span>Выйти</span>`;
-            authButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
-            authButton.classList.add('bg-red-600', 'hover:bg-red-700');
+            authButton.classList.replace('bg-indigo-600', 'bg-red-600');
+            authButton.classList.replace('hover:bg-indigo-700', 'hover:bg-red-700');
             
-            addGameSection.classList.remove('hidden');
+            if (isAdmin) {
+                adminPanel.classList.remove('hidden');
+                addGameSection.classList.remove('hidden');
+            }
         }
 
-        // Обновление интерфейса для вышедшего пользователя
         function updateUIForLoggedOutUser() {
             userInfo.classList.add('hidden');
             userInfo.classList.remove('flex');
             
             authButton.innerHTML = `<i class="fab fa-google mr-2"></i><span>Войти через Google</span>`;
-            authButton.classList.remove('bg-red-600', 'hover:bg-red-700');
-            authButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            authButton.classList.replace('bg-red-600', 'bg-indigo-600');
+            authButton.classList.replace('hover:bg-red-700', 'hover:bg-indigo-700');
 
+            adminPanel.classList.add('hidden');
             addGameSection.classList.add('hidden');
         }
 
-        // --- 4. ЛОГИКА РАБОТЫ С БАЗОЙ ДАННЫХ (FIRESTORE) ---
-
-        // Путь к коллекции игр. Используем публичную коллекцию, чтобы все видели игры.
-        const gamesCollectionPath = `/artifacts/${appId}/public/data/games`;
-        const gamesCollection = collection(db, gamesCollectionPath);
-
-        // Обработка отправки формы добавления игры
-        addGameForm.addEventListener('submit', async (e) => {
+        // --- 5. ЛОГИКА АДМИН-ПАНЕЛИ ---
+        addAdminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const title = document.getElementById('game-title').value;
-            const description = document.getElementById('game-description').value;
-            const imageUrl = document.getElementById('game-image-url').value;
-            const gameUrl = document.getElementById('game-url').value;
-            
-            if (title && description && imageUrl && gameUrl) {
+            const uid = document.getElementById('admin-uid').value;
+            const email = document.getElementById('admin-email').value;
+            if (uid && email) {
                 try {
-                    await addDoc(gamesCollection, {
-                        title: title,
-                        description: description,
-                        imageUrl: imageUrl,
-                        gameUrl: gameUrl,
-                        createdAt: new Date() // Добавляем временную метку
-                    });
-                    addGameForm.reset();
-                    showNotification("Игра успешно добавлена!");
+                    const newAdminRef = doc(db, adminsCollectionPath, uid);
+                    await setDoc(newAdminRef, { email: email, addedAt: new Date() });
+                    showNotification(`Пользователь ${email} успешно назначен администратором.`);
+                    addAdminForm.reset();
                 } catch (error) {
-                    console.error("Ошибка добавления игры: ", error);
-                    showNotification(`Ошибка добавления игры: ${error.message}`);
+                    console.error("Ошибка назначения администратора:", error);
+                    showNotification(`Ошибка: ${error.message}`);
                 }
             }
         });
 
-        // Прослушивание изменений в коллекции игр в реальном времени
-        const q = query(gamesCollection);
-        onSnapshot(q, (snapshot) => {
-            gamesGrid.innerHTML = ''; // Очищаем сетку перед отрисовкой
+        onSnapshot(query(adminsCollection), (snapshot) => {
+            adminsList.innerHTML = '';
             if (snapshot.empty) {
-                gamesGrid.innerHTML = `<p class="col-span-full text-center text-gray-400">Пока здесь нет ни одной игры. Добавьте первую!</p>`;
+                adminsList.innerHTML = `<li class="text-gray-400">Администраторы не найдены.</li>`;
             } else {
                 snapshot.docs.forEach(doc => {
-                    const game = doc.data();
-                    const gameElement = createGameCard(game);
-                    gamesGrid.appendChild(gameElement);
+                    const admin = doc.data();
+                    const li = document.createElement('li');
+                    li.className = 'text-sm text-gray-300 truncate';
+                    li.textContent = `${admin.email} (UID: ${doc.id})`;
+                    adminsList.appendChild(li);
                 });
             }
-            loadingSpinner.classList.add('hidden');
         });
 
-        // Функция для создания HTML-карточки игры
+        // --- 6. ЛОГИКА РАБОТЫ С ИГРАМИ ---
+        addGameForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const gameData = {
+                title: document.getElementById('game-title').value,
+                description: document.getElementById('game-description').value,
+                imageUrl: document.getElementById('game-image-url').value,
+                gameUrl: document.getElementById('game-url').value,
+                createdAt: new Date()
+            };
+            
+            try {
+                await addDoc(gamesCollection, gameData);
+                addGameForm.reset();
+                showNotification("Игра успешно добавлена!");
+            } catch (error) {
+                console.error("Ошибка добавления игры: ", error);
+                showNotification(`Ошибка: ${error.message}`);
+            }
+        });
+
+        onSnapshot(query(gamesCollection), 
+            (snapshot) => {
+                loadingSpinner.style.display = 'none';
+                gamesGrid.innerHTML = '';
+                if (snapshot.empty) {
+                    gamesGrid.innerHTML = `<p class="col-span-full text-center text-gray-400">Пока здесь нет ни одной игры. Администратор может добавить первую!</p>`;
+                } else {
+                    snapshot.docs.forEach(doc => {
+                        gamesGrid.appendChild(createGameCard(doc.data()));
+                    });
+                }
+            },
+            (error) => {
+                console.error("Ошибка загрузки игр из Firestore:", error);
+                loadingSpinner.style.display = 'none';
+                gamesGrid.innerHTML = `<p class="col-span-full text-center text-red-400">Не удалось загрузить игры. Проверьте правила безопасности Firestore или консоль на наличие ошибок.</p>`;
+            }
+        );
+
         function createGameCard(game) {
             const card = document.createElement('div');
             card.className = 'game-card bg-gray-800 rounded-2xl overflow-hidden shadow-lg flex flex-col';
             card.innerHTML = `
-                <div class="relative pb-[56.25%] h-0"> <!-- Aspect ratio 16:9 -->
+                <div class="relative pb-[56.25%] h-0">
                     <img class="absolute top-0 left-0 w-full h-full object-cover" src="${game.imageUrl}" alt="${game.title}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/111827/e5e7eb?text=Image+Not+Found';">
                 </div>
                 <div class="p-5 flex flex-col flex-grow">
@@ -297,7 +341,7 @@
             return card;
         }
         
-        // --- 5. УВЕДОМЛЕНИЯ (МОДАЛЬНОЕ ОКНО) ---
+        // --- 7. УВЕДОМЛЕНИЯ (МОДАЛЬНОЕ ОКНО) ---
         function showNotification(message) {
             notificationMessage.textContent = message;
             notificationModal.classList.remove('hidden');
@@ -314,7 +358,6 @@
                 notificationModal.classList.add('hidden');
             }, 300);
         }
-
     </script>
 </body>
 </html>
