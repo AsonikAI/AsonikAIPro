@@ -30,14 +30,39 @@
             height: 100vh;
             margin: 0;
             overflow: hidden; /* Предотвращаем прокрутку основного экрана */
-            background-color: #0f172a; /* Темный фон для "рабочего стола" */
+            background-color: #0f172a; /* Изначальный темный фон */
             font-family: 'Inter', sans-serif;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 0.5s ease;
         }
 
         /* Адаптивное центрирование для иконок рабочего стола */
         #desktop {
             height: 100%;
             padding-top: 56px; /* Отступ для верхней панели */
+        }
+        
+        /* Общий стиль для плиток приложений в меню Пуск */
+        .app-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            @apply p-3 text-sm font-semibold text-white bg-gray-700/50 rounded-lg hover:ring-2 hover:ring-accent-blue transition duration-150 text-center shadow-lg h-20;
+        }
+
+        /* Общий стиль для окон приложений */
+        .app-window {
+            min-width: 300px;
+            min-height: 200px;
+            max-width: 95vw;
+            max-height: 90vh;
+        }
+
+        /* Кастомный стиль для кнопок Калькулятора */
+        .calc-button {
+            @apply p-4 rounded-xl bg-gray-700 text-2xl text-white font-semibold hover:bg-gray-600 transition duration-100 shadow-md;
         }
     </style>
 </head>
@@ -50,7 +75,7 @@
             WebOS
         </div>
 
-        <!-- Центральная часть: Часы (Placeholder) -->
+        <!-- Центральная часть: Часы -->
         <div id="clock" class="text-text-light text-sm font-medium hidden sm:block">
             <!-- Время будет обновляться JS -->
         </div>
@@ -67,13 +92,14 @@
                 </svg>
             </button>
 
-            <!-- Кнопка Пуск (Меню) -->
+            <!-- Кнопка Пуск (Квадрат/Логотип) -->
             <button id="start-button" onclick="toggleStartMenu()" class="p-2 rounded-lg bg-accent-blue hover:bg-accent-blue/70 transition duration-150 shadow-md group">
-                <!-- Lucide Icon: Menu (Меню) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-white group-hover:rotate-12 transition duration-300">
-                    <line x1="4" y1="12" x2="20" y2="12"></line>
-                    <line x1="4" y1="6" x2="20" y2="6"></line>
-                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                <!-- Обновленная иконка - Квадрат, похожий на логотип Windows -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-white group-hover:scale-105 transition duration-300">
+                    <rect x="4" y="4" width="7" height="7" rx="1" fill="white"/>
+                    <rect x="13" y="4" width="7" height="7" rx="1" fill="white"/>
+                    <rect x="4" y="13" width="7" height="7" rx="1" fill="white"/>
+                    <rect x="13" y="13" width="7" height="7" rx="1" fill="white"/>
                 </svg>
             </button>
         </div>
@@ -81,27 +107,56 @@
 
     <!-- Основное пространство рабочего стола -->
     <main id="desktop" class="w-full h-full relative p-4">
-        <h1 class="text-4xl font-bold text-text-light/50 pt-16 text-center">Рабочий стол</h1>
-        <p class="text-text-light/30 text-center mt-2">Нажмите на иконки справа вверху, чтобы открыть меню.</p>
+        <h1 class="text-4xl font-bold text-text-light/50 pt-16 text-center" id="desktop-message">
+            WebOS: Приветствуем!
+        </h1>
+        <p class="text-text-light/30 text-center mt-2">Нажмите на иконку Пуск для запуска приложений.</p>
 
         <!-- 1. ПАНЕЛЬ "ПУСК" (Меню) -->
-        <div id="start-menu" class="hidden absolute top-14 right-4 w-64 max-h-[80vh] bg-gray-800 bg-opacity-95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-2xl p-4 overflow-y-auto z-40 origin-top-right transition-all duration-300 transform scale-95 opacity-0">
-            <div class="text-lg font-bold text-white mb-3 border-b border-gray-700 pb-2">
-                Меню Пуск
+        <div id="start-menu" class="hidden absolute top-14 right-4 w-72 max-h-[80vh] bg-gray-800 bg-opacity-95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-2xl p-4 overflow-y-auto z-40 origin-top-right transition-all duration-300 transform scale-95 opacity-0">
+            <div class="text-xl font-extrabold text-white mb-4 border-b border-gray-700 pb-2">
+                WebOS Приложения
             </div>
-            <ul class="space-y-2">
-                <li class="p-2 rounded-md text-text-light hover:bg-primary-dark cursor-pointer transition duration-100">Проводник</li>
-                <li class="p-2 rounded-md text-text-light hover:bg-primary-dark cursor-pointer transition duration-100">Настройки</li>
-                <li class="p-2 rounded-md text-text-light hover:bg-primary-dark cursor-pointer transition duration-100">Браузер (Web)</li>
-                <li class="p-2 rounded-md text-text-light hover:bg-primary-dark cursor-pointer transition duration-100">Калькулятор</li>
-                <li class="p-2 rounded-md text-text-light hover:bg-primary-dark cursor-pointer transition duration-100">Медиаплеер</li>
-                <li class="p-2 rounded-md text-text-light hover:bg-primary-dark cursor-pointer transition duration-100">О системе</li>
-            </ul>
+            
+            <div class="grid grid-cols-3 gap-3">
+                
+                <button onclick="launchApp('Explorer')" class="app-tile bg-blue-600">
+                    <!-- Icon: Folder -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.86 1.28a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2z"></path></svg>
+                    Проводник
+                </button>
+                <button onclick="launchApp('Settings')" class="app-tile bg-purple-600">
+                    <!-- Icon: Settings -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.44.25a2 2 0 0 0-2 0l-.16-.09a2 2 0 0 0-2 0l-.44.25A2 2 0 0 1 2 7.22v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 0 2l-.25.44a2 2 0 0 1-1.73 1H2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 2 0l.44-.25a2 2 0 0 1 1-1.73v-.18a2 2 0 0 0 2-2h.44a2 2 0 0 0 2 2v.18a2 2 0 0 1 1 1.73l.44.25a2 2 0 0 0 2 0l.16-.09a2 2 0 0 0 2 0l.44-.25A2 2 0 0 1 22 16.78v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0 0-2l.25-.44a2 2 0 0 1 1.73-1H22v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0-2 0l-.44.25a2 2 0 0 1-1 1.73v.18a2 2 0 0 0-2 2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    Настройки
+                </button>
+                <button onclick="launchApp('Calculator')" class="app-tile bg-green-600">
+                    <!-- Icon: Calculator -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="12" y2="18"></line></svg>
+                    Калькулятор
+                </button>
+                <button onclick="launchApp('Calendar')" class="app-tile bg-red-600">
+                    <!-- Icon: Calendar -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Календарь
+                </button>
+                <button onclick="launchApp('Browser')" class="app-tile bg-orange-600">
+                    <!-- Icon: Globe -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    Браузер
+                </button>
+                <button onclick="launchApp('Media')" class="app-tile bg-pink-600">
+                    <!-- Icon: Play -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Медиа
+                </button>
+            </div>
+
             <div class="mt-4 pt-3 border-t border-gray-700">
-                <button class="w-full text-left p-2 rounded-md text-red-400 hover:bg-red-900/50 transition duration-100 flex items-center space-x-2">
-                    <!-- Lucide Icon: Log Out -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span>Выход</span>
+                <button onclick="location.reload()" class="w-full text-left p-2 rounded-md text-red-400 hover:bg-red-900/50 transition duration-100 flex items-center space-x-2">
+                    <!-- Lucide Icon: Refresh/Reload -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M21.5 8a9.96 9.96 0 0 0-4-7.5l-2.4 2.4"/><path d="M2.5 16a9.96 9.96 0 0 0 4 7.5l2.4-2.4"/></svg>
+                    <span>Перезагрузить систему</span>
                 </button>
             </div>
         </div>
@@ -122,35 +177,199 @@
                 </div>
             </div>
         </div>
+
+        <!-- 3. ОКНО ПРИЛОЖЕНИЯ: НАСТРОЙКИ -->
+        <div id="app-settings" data-app-name="Настройки" class="app-window hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-55 flex flex-col">
+            <div class="app-title-bar flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab">
+                <span class="text-sm font-semibold text-white">Настройки</span>
+                <button onclick="closeApp('Settings')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
+                    <!-- Close icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light">
+                <h1 class="text-3xl font-bold mb-6 border-b border-gray-700 pb-2">Системные Настройки</h1>
+                
+                <!-- Секция смены фона -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold mb-4 text-accent-blue">Оформление: Фон Рабочего стола</h2>
+                    
+                    <h3 class="text-lg font-medium mb-3 text-gray-400">1. Галерея WebOS</h3>
+                    <div id="stock-backgrounds" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <!-- Stock 1: Deep Blue -->
+                        <div onclick="setDesktopBackground('url(https://placehold.co/1920x1080/0f172a/e9e9f1?text=WebOS)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-[#0f172a] flex items-center justify-center text-xs text-white/80 font-mono">Темный</div>
+                        <!-- Stock 2: Gradient -->
+                        <div onclick="setDesktopBackground('linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] flex items-center justify-center text-xs text-white/80 font-mono">Градиент</div>
+                        <!-- Stock 3: Abstract Blue -->
+                        <div onclick="setDesktopBackground('url(https://placehold.co/1920x1080/003366/ffffff?text=Abstract+Blue)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-[#003366] flex items-center justify-center text-xs text-white/80 font-mono">Синий Абстракт</div>
+                        <!-- Stock 4: Light Blue -->
+                        <div onclick="setDesktopBackground('url(https://placehold.co/1920x1080/5B9AFF/000000?text=Cloud+Sky)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-[#5B9AFF] flex items-center justify-center text-xs text-black/80 font-mono">Небо</div>
+                    </div>
+                </div>
+
+                <!-- Секция загрузки своего фона (IMGBB Placeholder) -->
+                <div class="p-4 border border-gray-700 rounded-lg">
+                    <h3 class="text-lg font-medium mb-3 text-gray-400">2. Ваш Собственный Фон</h3>
+                    <p class="text-sm text-gray-500 mb-4">Установка фонового изображения по прямой ссылке (URL).</p>
+
+                    <!-- URL Input -->
+                    <div class="mb-4">
+                        <label for="custom-url" class="block text-sm font-medium text-gray-400 mb-1">URL изображения:</label>
+                        <input type="text" id="custom-url" placeholder="https://example.com/image.jpg" class="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-text-light focus:outline-none focus:border-accent-blue">
+                        <button onclick="setCustomBackgroundFromUrl()" class="mt-2 w-full p-2 rounded-md bg-accent-blue hover:bg-accent-blue/80 transition duration-150 font-semibold">Установить фон по URL</button>
+                    </div>
+
+                    <!-- File Upload Placeholder (Simulated) -->
+                    <div class="mt-4 border-t border-gray-700 pt-4">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Загрузка файла (имитация IMGBB):</label>
+                        <input type="file" id="custom-file-input" accept="image/*" class="w-full text-text-light text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-dark file:text-white hover:file:bg-accent-blue cursor-pointer" onchange="previewCustomFile(event)">
+                        <p class="text-xs text-red-400 mt-2">API Key: V309d016341a7e78f0c92f98fc3e8a542. Фактическая загрузка на внешний сервис здесь не происходит; используется локальный предпросмотр для установки фона.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 4. ОКНО ПРИЛОЖЕНИЯ: КАЛЬКУЛЯТОР -->
+        <div id="app-calculator" data-app-name="Калькулятор" class="app-window hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-sm h-auto bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-55 flex flex-col">
+            <div class="app-title-bar flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab">
+                <span class="text-sm font-semibold text-white">Калькулятор</span>
+                <button onclick="closeApp('Calculator')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="app-content p-4 text-text-light">
+                <div id="calc-display" class="bg-gray-900 text-white text-right p-4 mb-4 rounded-xl text-3xl h-20 overflow-hidden">0</div>
+                <div class="grid grid-cols-4 gap-3">
+                    <button class="calc-button col-span-2 bg-red-800 hover:bg-red-700" onclick="alert('Функционал очистки')">AC</button>
+                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="alert('Функционал операции')">/</button>
+                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="alert('Функционал операции')">x</button>
+
+                    <button class="calc-button" onclick="alert('Функционал числа')">7</button>
+                    <button class="calc-button" onclick="alert('Функционал числа')">8</button>
+                    <button class="calc-button" onclick="alert('Функционал числа')">9</button>
+                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="alert('Функционал операции')">-</button>
+
+                    <button class="calc-button" onclick="alert('Функционал числа')">4</button>
+                    <button class="calc-button" onclick="alert('Функционал числа')">5</button>
+                    <button class="calc-button" onclick="alert('Функционал числа')">6</button>
+                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="alert('Функционал операции')">+</button>
+
+                    <button class="calc-button col-span-3" onclick="alert('Функционал числа')">0</button>
+                    <button class="calc-button bg-accent-blue hover:bg-accent-blue/80" onclick="alert('Функционал равно')">=</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. ОКНО ПРИЛОЖЕНИЯ: КАЛЕНДАРЬ -->
+        <div id="app-calendar" data-app-name="Календарь" class="app-window hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-xl h-96 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-55 flex flex-col">
+            <div class="app-title-bar flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab">
+                <span class="text-sm font-semibold text-white">Календарь</span>
+                <button onclick="closeApp('Calendar')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
+                <h2 class="text-2xl font-bold mb-4">Текущий Месяц</h2>
+                <div class="text-6xl font-extralight text-accent-blue mb-4" id="current-month-display">Октябрь</div>
+                <div class="grid grid-cols-7 gap-1 text-sm font-semibold text-gray-400 border-b border-gray-700 pb-2 mb-2">
+                    <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span class="text-red-400">Сб</span><span class="text-red-400">Вс</span>
+                </div>
+                <!-- Placeholder grid for dates -->
+                <div class="grid grid-cols-7 gap-1 text-lg">
+                    <!-- Dates will be generated here in a real app -->
+                    <span class="p-2"></span><span class="p-2"></span><span class="p-2">1</span><span class="p-2">2</span><span class="p-2">3</span><span class="p-2 text-red-400">4</span><span class="p-2 text-red-400">5</span>
+                    <span class="p-2">6</span><span class="p-2">7</span><span class="p-2 bg-accent-blue rounded-full">8</span><span class="p-2">9</span><span class="p-2">10</span><span class="p-2 text-red-400">11</span><span class="p-2 text-red-400">12</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Placeholder for other apps (Explorer, Browser, Media) -->
+        <div id="app-explorer" data-app-name="Проводник" class="app-window hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-55 flex flex-col">
+            <div class="app-title-bar flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab">
+                <span class="text-sm font-semibold text-white">Проводник</span>
+                <button onclick="closeApp('Explorer')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
+                <h2 class="text-2xl font-bold mb-4">Проводник Файлов (В Разработке)</h2>
+                <p class="text-gray-400">Здесь будет файловая система WebOS.</p>
+            </div>
+        </div>
+        <div id="app-browser" data-app-name="Браузер" class="app-window hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-55 flex flex-col">
+            <div class="app-title-bar flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab">
+                <span class="text-sm font-semibold text-white">Браузер (Web)</span>
+                <button onclick="closeApp('Browser')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
+                <h2 class="text-2xl font-bold mb-4">Web-браузер (В Разработке)</h2>
+                <p class="text-gray-400">Здесь можно будет открывать веб-страницы в iframe.</p>
+            </div>
+        </div>
+        <div id="app-media" data-app-name="Медиаплеер" class="app-window hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-55 flex flex-col">
+            <div class="app-title-bar flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab">
+                <span class="text-sm font-semibold text-white">Медиаплеер</span>
+                <button onclick="closeApp('Media')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
+                <h2 class="text-2xl font-bold mb-4">Медиаплеер (В Разработке)</h2>
+                <p class="text-gray-400">Для просмотра видео и прослушивания музыки.</p>
+            </div>
+        </div>
+
+
     </main>
 
 
     <script>
+        // Глобальные переменные состояния
         let isStartMenuOpen = false;
         let isSearchOpen = false;
+        let activeAppName = null; // Для отслеживания открытого приложения
+
         const startMenu = document.getElementById('start-menu');
         const searchPanel = document.getElementById('search-panel');
         const clockElement = document.getElementById('clock');
+        const desktopElement = document.body; // Фон рабочего стола
+        const desktopMessage = document.getElementById('desktop-message');
 
-        // Функция для обновления часов
+        // Список всех окон приложений для удобства управления
+        const appWindows = document.querySelectorAll('.app-window');
+
+
+        // --- UI/STATE MANAGEMENT FUNCTIONS ---
+
+        // Обновление часов
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
             const dateString = now.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
             clockElement.textContent = `${timeString} | ${dateString}`;
+            
+            // Обновление Календаря (placeholder)
+            if (document.getElementById('current-month-display')) {
+                document.getElementById('current-month-display').textContent = now.toLocaleDateString('ru-RU', { month: 'long' });
+            }
         }
         
-        // Запускаем часы и обновляем каждую секунду
         setInterval(updateClock, 1000);
-        updateClock(); // Первоначальный запуск
+        updateClock();
 
 
-        // Функция для открытия/закрытия Меню Пуск
+        // Закрывает все всплывающие панели (Пуск, Поиск)
+        function closeAllPopups() {
+            if (isStartMenuOpen) closeStartMenu();
+            if (isSearchOpen) closeSearch();
+        }
+
+        // Открытие/закрытие Меню Пуск
         function toggleStartMenu() {
-            // Если открыт Поиск, сначала закрываем его
-            if (isSearchOpen) {
-                closeSearch();
-            }
+            closeAllPopups(); // Закрываем все, чтобы избежать наложений
 
             isStartMenuOpen = !isStartMenuOpen;
             
@@ -168,12 +387,9 @@
             }
         }
 
-        // Функция для открытия/закрытия Поиска
+        // Открытие/закрытие Поиска
         function toggleSearch() {
-            // Если открыто Меню Пуск, сначала закрываем его
-            if (isStartMenuOpen) {
-                closeStartMenu();
-            }
+            closeAllPopups(); // Закрываем все
 
             isSearchOpen = !isSearchOpen;
             
@@ -195,31 +411,103 @@
         function closeStartMenu() {
             isStartMenuOpen = false;
             startMenu.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                startMenu.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { startMenu.classList.add('hidden'); }, 300);
         }
 
         function closeSearch() {
             isSearchOpen = false;
             searchPanel.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                searchPanel.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { searchPanel.classList.add('hidden'); }, 300);
         }
+
+        // Запуск приложения (открытие окна)
+        function launchApp(appName) {
+            closeAllPopups(); // Закрываем меню/поиск перед открытием приложения
+
+            // Скрываем все окна и сообщения
+            appWindows.forEach(window => window.classList.add('hidden'));
+            desktopMessage.classList.add('hidden');
+            
+            // Открываем нужное окно
+            const appElement = document.getElementById(`app-${appName.toLowerCase()}`);
+            if (appElement) {
+                appElement.classList.remove('hidden');
+                activeAppName = appName;
+            } else {
+                // Если приложение не найдено, выводим сообщение
+                desktopMessage.textContent = `Приложение "${appName}" еще не установлено.`;
+                desktopMessage.classList.remove('hidden');
+                activeAppName = null;
+            }
+        }
+
+        // Закрытие приложения (окна)
+        function closeApp(appName) {
+            const appElement = document.getElementById(`app-${appName.toLowerCase()}`);
+            if (appElement) {
+                appElement.classList.add('hidden');
+                activeAppName = null;
+                // Возвращаем стандартное сообщение на рабочий стол
+                desktopMessage.textContent = 'WebOS: Приветствуем!';
+                desktopMessage.classList.remove('hidden');
+            }
+        }
+
+
+        // --- BACKGROUND MANAGEMENT FUNCTIONS ---
+
+        // Устанавливает фон рабочего стола
+        function setDesktopBackground(value) {
+            if (value.startsWith('url') || value.startsWith('linear-gradient')) {
+                desktopElement.style.backgroundImage = value;
+                // Сохраняем в localStorage, чтобы фон оставался после перезагрузки
+                localStorage.setItem('webos_background', value);
+                // Закрываем настройки после смены фона (опционально)
+                closeApp('Settings');
+            }
+        }
+
+        // Установка фона по URL (введенному пользователем)
+        function setCustomBackgroundFromUrl() {
+            const urlInput = document.getElementById('custom-url');
+            const url = urlInput.value.trim();
+            if (url) {
+                setDesktopBackground(`url(${url})`);
+            }
+        }
+
+        // Предпросмотр локально выбранного файла (имитация IMGBB)
+        function previewCustomFile(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    setDesktopBackground(`url(${e.target.result})`);
+                }
+                reader.readAsDataURL(file); // Читаем файл как Base64 для установки фона
+            }
+        }
+
+        // Загрузка сохраненного фона при старте
+        window.onload = function() {
+            const savedBackground = localStorage.getItem('webos_background');
+            if (savedBackground) {
+                desktopElement.style.backgroundImage = savedBackground;
+            }
+        }
+
+
+        // --- GLOBAL EVENT LISTENERS ---
 
         // Закрытие панелей при клике вне их области
         document.addEventListener('click', function(event) {
-            const taskbar = document.getElementById('taskbar');
             const startButton = document.getElementById('start-button');
             const searchButton = document.getElementById('search-button');
             
-            // Проверяем, был ли клик вне панели задач и кнопок управления
-            const clickedInsideTaskbar = taskbar.contains(event.target);
             const clickedStartButton = startButton.contains(event.target);
             const clickedSearchButton = searchButton.contains(event.target);
 
-            // Если клик был не по кнопкам и не внутри панелей, закрываем их
+            // Если клик был не по кнопкам и не внутри открытых панелей
             if (!clickedStartButton && !clickedSearchButton) {
                  if (isStartMenuOpen && !startMenu.contains(event.target)) {
                     closeStartMenu();
@@ -233,4 +521,3 @@
     </script>
 </body>
 </html>
-
