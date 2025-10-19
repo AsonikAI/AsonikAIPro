@@ -162,6 +162,9 @@
                     </div>
 
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">История Транзакций</h2>
+                    <!-- ДОБАВЛЕН ПОИСК ДЛЯ ТРАНЗАКЦИЙ -->
+                    <input type="text" id="transaction-search" placeholder="Поиск по товару или описанию..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 mb-6">
+                    
                     <div class="overflow-x-auto bg-white rounded-xl card border border-gray-100">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -282,6 +285,7 @@
         let auth = null;
         let currentUserId = null;
         let currentClientDetailsId = null; // ID клиента, для которого отображаются детали
+        let currentTransactionFilter = ''; // Фильтр поиска для транзакций клиента
 
         // Кэш для агрегированных данных о клиентах
         let clientAggregates = {};
@@ -445,11 +449,15 @@
                 
                 // Рендеринг KPI и списка клиентов
                 renderGlobalKPI(totalSalesGlobal, totalPaidGlobal);
+                // Применяем фильтр поиска клиентов
                 renderClientsList(clientAggregates, document.getElementById('client-search').value);
                 
-                // Если мы находились на странице деталей, обновить ее
+                // Если мы находились на странице деталей, обновить ее и применить фильтр транзакций
                 if (currentClientDetailsId) {
-                    showClientDetails(currentClientDetailsId);
+                    // Обновляем сводку KPI для клиента
+                    updateClientDetailsKPI();
+                    // Рендерим транзакции с текущим фильтром
+                    filterAndRenderTransactions();
                 }
 
             }, (error) => {
@@ -511,42 +519,51 @@
                 `;
             });
         }
-
+        
         /**
-         * Отображает детали транзакций для выбранного клиента.
-         * @param {string} clientId
+         * Обновляет сводные KPI клиента на странице деталей.
          */
-        function showClientDetails(clientId) {
-            currentClientDetailsId = clientId;
-            showView('details');
-
-            const clientAgg = clientAggregates[clientId];
-            const clientTransactions = allTransactions.filter(t => t.clientId === clientId)
-                                                       .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)); // Сортировка по дате
-
-            if (!clientAgg) {
-                document.getElementById('details-client-name').textContent = 'Неизвестный Клиент';
-                document.getElementById('transactions-table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Данные не найдены.</td></tr>';
-                return;
-            }
-
-            // Обновление сводки
+        function updateClientDetailsKPI() {
+            const clientAgg = clientAggregates[currentClientDetailsId];
+            if (!clientAgg) return;
+            
             const remaining = clientAgg.totalSales - clientAgg.totalPaid;
             document.getElementById('details-client-name').textContent = clientAgg.name;
-            document.getElementById('details-client-id').textContent = `ID: ${clientId}`;
+            document.getElementById('details-client-id').textContent = `ID: ${currentClientDetailsId}`;
             document.getElementById('details-total-sales').textContent = formatCurrency(clientAgg.totalSales);
             document.getElementById('details-total-paid').textContent = formatCurrency(clientAgg.totalPaid);
             document.getElementById('details-remaining').textContent = formatCurrency(remaining);
             document.getElementById('details-remaining').classList.toggle('text-red-700', remaining > 0);
             document.getElementById('details-remaining').classList.toggle('text-green-700', remaining <= 0);
+        }
 
+        /**
+         * Рендерит таблицу транзакций для текущего выбранного клиента, применяя фильтр.
+         */
+        function filterAndRenderTransactions() {
+            if (!currentClientDetailsId) return;
 
-            // Рендеринг таблицы транзакций
+            const clientAgg = clientAggregates[currentClientDetailsId];
+            if (!clientAgg) return;
+            
+            const filter = currentTransactionFilter.toLowerCase();
+
+            let clientTransactions = allTransactions
+                .filter(t => t.clientId === currentClientDetailsId)
+                .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)); // Сортировка по дате (новейшие сверху)
+
+            // Применяем фильтр поиска по товару/описанию
+            if (filter) {
+                clientTransactions = clientTransactions.filter(t => 
+                    t.itemName.toLowerCase().includes(filter)
+                );
+            }
+            
             const tbody = document.getElementById('transactions-table-body');
             tbody.innerHTML = '';
 
             if (clientTransactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Нет транзакций для этого клиента.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Нет транзакций, соответствующих фильтру.</td></tr>';
                 return;
             }
 
@@ -555,6 +572,10 @@
                 row.className = 'hover:bg-gray-50';
 
                 const remainingInTransaction = t.totalAmount - t.paymentReceived;
+                
+                // Экранирование для безопасной передачи в inline JS
+                const escapedClientName = t.clientName.replace(/'/g, "\\'");
+                const escapedItemName = t.itemName.replace(/'/g, "\\'");
                 
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.transactionDate}</td>
@@ -569,8 +590,8 @@
                         <button class="text-blue-600 hover:text-blue-900 mr-2" onclick="openTransactionModal(
                             '${t.id}', 
                             '${t.clientId}', 
-                            '${t.clientName.replace(/'/g, "\\'")}', 
-                            '${t.itemName.replace(/'/g, "\\'")}', 
+                            '${escapedClientName}', 
+                            '${escapedItemName}', 
                             ${t.unitPrice}, 
                             ${t.quantity}, 
                             ${t.paymentReceived}, 
@@ -584,6 +605,34 @@
                     </td>
                 `;
             });
+        }
+
+
+        /**
+         * Отображает детали транзакций для выбранного клиента.
+         * @param {string} clientId
+         */
+        function showClientDetails(clientId) {
+            currentClientDetailsId = clientId;
+            showView('details');
+            
+            // Сброс фильтра поиска транзакций при переходе на нового клиента
+            currentTransactionFilter = '';
+            document.getElementById('transaction-search').value = '';
+
+            const clientAgg = clientAggregates[clientId];
+
+            if (!clientAgg) {
+                document.getElementById('details-client-name').textContent = 'Неизвестный Клиент';
+                document.getElementById('transactions-table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Данные не найдены.</td></tr>';
+                return;
+            }
+
+            // Обновление сводки KPI и имени
+            updateClientDetailsKPI();
+
+            // Рендеринг таблицы транзакций
+            filterAndRenderTransactions();
         }
         
         // Глобальная функция для использования в инлайн-обработчиках
@@ -610,14 +659,15 @@
             document.getElementById('transaction-doc-id').value = docId || '';
             document.getElementById('transaction-client-id').value = clientId || crypto.randomUUID(); // Генерируем новый ClientId, если это новый клиент
             document.getElementById('modal-client-name').value = clientName;
-            document.getElementById('modal-client-name').disabled = !!docId; // Запретить менять имя клиента при редактировании транзакции
+            // Разрешаем менять имя только при добавлении новой транзакции (docId === null)
+            document.getElementById('modal-client-name').disabled = !!docId; 
             document.getElementById('modal-item-name').value = itemName;
             document.getElementById('modal-unit-price').value = unitPrice;
             document.getElementById('modal-quantity').value = quantity;
             document.getElementById('modal-payment-received').value = paymentReceived;
             document.getElementById('modal-transaction-date').value = transactionDate;
 
-            // Если открыто из списка клиентов, то имя клиента заполняем и блокируем
+            // Если открыто из списка клиентов (Детали), заполняем имя и блокируем его
             if (currentClientDetailsId && !docId) {
                 const clientAgg = clientAggregates[currentClientDetailsId];
                 if (clientAgg) {
@@ -757,9 +807,15 @@
                 showView('clients');
             });
             
-            // Обработчик поиска
+            // Обработчик поиска клиентов
             document.getElementById('client-search').addEventListener('input', (e) => {
                 renderClientsList(clientAggregates, e.target.value);
+            });
+            
+            // НОВЫЙ Обработчик поиска транзакций
+            document.getElementById('transaction-search').addEventListener('input', (e) => {
+                currentTransactionFilter = e.target.value;
+                filterAndRenderTransactions();
             });
 
             // Установим текущую дату в форме
