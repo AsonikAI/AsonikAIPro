@@ -732,30 +732,45 @@
             document.getElementById('modal-title').textContent = docId ? 'Редактировать Транзакцию' : 'Добавить Новую Транзакцию';
             document.getElementById('transaction-doc-id').value = docId || '';
             
-            // Если это добавление новой транзакции НЕ из деталей клиента, генерируем новый ID
-            const newClientId = clientId || crypto.randomUUID();
-            document.getElementById('transaction-client-id').value = newClientId; 
+            // === ИСПРАВЛЕНИЕ #1: Гарантируем уникальный ID для нового клиента ===
+            let finalClientId = clientId;
+            const isAddingNewFromClientsList = !docId && !currentClientDetailsId;
+            
+            if (isAddingNewFromClientsList) {
+                // Если мы добавляем НОВУЮ транзакцию И не выбран активный клиент,
+                // это новый клиент, и ему нужен новый UUID.
+                finalClientId = crypto.randomUUID();
+            } else if (!docId && currentClientDetailsId) {
+                // Если мы добавляем НОВУЮ транзакцию к выбранному клиенту (из деталей), используем его ID.
+                finalClientId = currentClientDetailsId;
+            } else if (docId) {
+                // Редактирование существующей транзакции
+                finalClientId = clientId;
+            }
+            
+            document.getElementById('transaction-client-id').value = finalClientId; 
             document.getElementById('modal-client-name').value = clientName;
             
-            // Логика блокировки имени:
-            const isEditing = !!docId;
-            const isAddingToExistingClient = currentClientDetailsId && !docId;
-            const isNewClient = !isEditing && !currentClientDetailsId && !clientId;
-
-            if (isEditing || isAddingToExistingClient) {
+            
+            // === ИСПРАВЛЕНИЕ #2: Логика блокировки имени ===
+            const modalClientNameInput = document.getElementById('modal-client-name');
+            
+            if (docId || currentClientDetailsId) {
                  // Редактирование или добавление транзакции к существующему клиенту -> имя заблокировано
-                 document.getElementById('modal-client-name').disabled = true; 
-                 if (isAddingToExistingClient) {
+                 modalClientNameInput.disabled = true; 
+                 
+                 // Если добавляем транзакцию к существующему, убеждаемся, что имя клиента подтянуто
+                 if (!docId && currentClientDetailsId) {
                      const clientAgg = clientAggregates[currentClientDetailsId];
                      if (clientAgg) {
-                        document.getElementById('modal-client-name').value = clientAgg.name;
-                        document.getElementById('transaction-client-id').value = currentClientDetailsId;
+                        modalClientNameInput.value = clientAgg.name;
                      }
                  }
-            } else if (isNewClient) {
-                 // Добавление новой транзакции и нового клиента -> имя разблокировано
-                 document.getElementById('modal-client-name').disabled = false;
-                 document.getElementById('modal-client-name').value = ''; 
+                 
+            } else {
+                 // Добавление новой транзакции/клиента -> имя разблокировано
+                 modalClientNameInput.disabled = false;
+                 modalClientNameInput.value = ''; 
             }
 
 
