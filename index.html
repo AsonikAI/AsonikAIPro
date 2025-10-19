@@ -26,6 +26,11 @@
         #transaction-modal, #edit-client-modal {
             z-index: 50;
         }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -264,8 +269,8 @@
                 add_new_client_btn: "Добавить нового клиента",
                 back_to_list_btn: "Вернуться к списку",
                 item_name: "Товар / Описание",
-                unit_price: "Цена за единицу ($)",
-                quantity: "Количество (шт)",
+                unit_price: "Цена за ед.",
+                quantity: "Кол-во",
                 payment_received: "Касса ($)",
                 initial_balance: "Начальный остаток ($)",
                 transaction_date: "Дата Транзакции",
@@ -286,10 +291,9 @@
                 details_btn: "Подробнее",
                 back_to_clients: "Назад к списку клиентов",
                 date: "Дата",
-                item_q: "Товар (Кол-во)",
+                item: "Товар",
                 amount: "Сумма",
                 paid: "Касса",
-                remaining: "Остаток (Транз.)",
                 running_balance: "Итоговый Остаток",
                 actions: "Действия",
                 confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?",
@@ -322,8 +326,8 @@
                 add_new_client_btn: "Yeni müşteri ekle",
                 back_to_list_btn: "Listeye dön",
                 item_name: "Ürün / Açıklama",
-                unit_price: "Birim Fiyat ($)",
-                quantity: "Miktar (adet)",
+                unit_price: "Birim Fiyat",
+                quantity: "Miktar",
                 payment_received: "Kasa ($)",
                 initial_balance: "Başlangıç Bakiyesi ($)",
                 transaction_date: "İşlem Tarihi",
@@ -344,10 +348,9 @@
                 details_btn: "Detaylar",
                 back_to_clients: "Müşteri listesine geri dön",
                 date: "Tarih",
-                item_q: "Ürün (Miktar)",
+                item: "Ürün",
                 amount: "Tutar",
                 paid: "Kasa",
-                remaining: "Kalan (İşlem)",
                 running_balance: "Genel Bakiye",
                 actions: "Eylemler",
                 confirm_delete_transaction: "Bu işlemi silmek istediğinizden emin misiniz?",
@@ -528,10 +531,11 @@
                 `).join('');
 
                 clientCard.innerHTML = `
-                    <div class="flex justify-between items-center mb-3">
+                    <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleClientDetails('${clientId}')">
                         <div class="flex items-center space-x-3">
+                            <svg id="arrow-${clientId}" class="w-5 h-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             <h3 class="text-xl font-bold text-gray-800">${client.name}</h3>
-                            <button class="text-gray-400 hover:text-yellow-600" onclick="window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
+                            <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
                             </button>
                         </div>
@@ -540,10 +544,12 @@
                                 <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
                                 <span class="text-xs text-gray-500 block" data-lang-key="total_remaining">Полный остаток</span>
                              </div>
-                             <button class="text-sm text-blue-600 hover:underline font-semibold" data-lang-key="details_btn" onclick="window.viewClientDetails('${clientId}')">Подробнее</button>
+                             <button class="text-sm text-blue-600 hover:underline font-semibold" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewClientDetails('${clientId}')">Подробнее</button>
                         </div>
                     </div>
-                    <div>${transactionsHtml}</div>
+                    <div id="details-${clientId}" class="collapsible-content">
+                        <div class="pt-2 border-t">${transactionsHtml}</div>
+                    </div>
                 `;
                 container.appendChild(clientCard);
             });
@@ -599,22 +605,21 @@
                 return { ...t, runningBalance };
             }).reverse();
             
-            const transactionsHtml = transactionsWithRunningBalance.map(t => {
-                const remainingInTrans = ((t.unitPrice || 0) * (t.quantity || 0)) - (t.paymentReceived || 0);
-                return `
+            const transactionsHtml = transactionsWithRunningBalance.map(t => `
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 text-sm text-gray-700">${formatDate(t.transactionDate)}</td>
-                    <td class="px-4 py-3 text-sm text-gray-900">${t.itemName} (x${t.quantity || 0})</td>
-                    <td class="px-4 py-3 text-right text-sm font-medium text-blue-600">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</td>
-                    <td class="px-4 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
-                    <td class="px-4 py-3 text-right text-sm font-bold ${remainingInTrans > 0 ? 'text-red-600' : 'text-gray-600'}">${formatCurrency(remainingInTrans)}</td>
-                    <td class="px-4 py-3 text-right text-sm font-bold ${t.runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(t.runningBalance)}</td>
-                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                    <td class="px-2 py-3 text-sm text-gray-700">${formatDate(t.transactionDate)}</td>
+                    <td class="px-2 py-3 text-sm text-gray-900">${t.itemName}</td>
+                    <td class="px-2 py-3 text-center text-sm">${t.quantity || 0}</td>
+                    <td class="px-2 py-3 text-right text-sm">${formatCurrency(t.unitPrice)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium text-blue-600">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${t.runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(t.runningBalance)}</td>
+                    <td class="px-2 py-3 text-center whitespace-nowrap">
                         <button class="text-blue-600 hover:text-blue-900 mr-2 text-sm" data-lang-key="edit" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
                         <button class="text-red-600 hover:text-red-900 text-sm" data-lang-key="delete" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
                     </td>
-                </tr>`;
-            }).join('');
+                </tr>
+            `).join('');
 
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
@@ -643,13 +648,14 @@
                      <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase">
-                                <th class="px-4 py-3 text-left" data-lang-key="date">Дата</th>
-                                <th class="px-4 py-3 text-left" data-lang-key="item_q">Товар (Кол-во)</th>
-                                <th class="px-4 py-3 text-right" data-lang-key="amount">Сумма</th>
-                                <th class="px-4 py-3 text-right" data-lang-key="paid">Касса</th>
-                                <th class="px-4 py-3 text-right" data-lang-key="remaining">Остаток (Транз.)</th>
-                                <th class="px-4 py-3 text-right" data-lang-key="running_balance">Итоговый Остаток</th>
-                                <th class="px-4 py-3 text-center" data-lang-key="actions">Действия</th>
+                                <th class="px-2 py-3 text-left" data-lang-key="date">Дата</th>
+                                <th class="px-2 py-3 text-left" data-lang-key="item">Товар</th>
+                                <th class="px-2 py-3 text-center" data-lang-key="quantity">Кол-во</th>
+                                <th class="px-2 py-3 text-right" data-lang-key="unit_price">Цена за ед.</th>
+                                <th class="px-2 py-3 text-right" data-lang-key="amount">Сумма</th>
+                                <th class="px-2 py-3 text-right" data-lang-key="paid">Касса</th>
+                                <th class="px-2 py-3 text-right" data-lang-key="running_balance">Итоговый Остаток</th>
+                                <th class="px-2 py-3 text-center" data-lang-key="actions">Действия</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">${transactionsHtml}</tbody>
@@ -756,7 +762,7 @@
                         unitPrice: initialBalance,
                         quantity: 1,
                         paymentReceived: 0,
-                        transactionDate: new Date(form['modal-transaction-date'].value)
+                        transactionDate: new Date() // Use current date for balance record
                     };
                     batch.set(doc(salesRef), initialBalanceData);
                 }
@@ -863,6 +869,17 @@
         };
         window.deleteTransaction = deleteTransaction;
         window.deleteClient = deleteClient;
+        window.toggleClientDetails = (clientId) => {
+            const detailsDiv = document.getElementById(`details-${clientId}`);
+            const arrow = document.getElementById(`arrow-${clientId}`);
+            if (detailsDiv.style.maxHeight) {
+                detailsDiv.style.maxHeight = null;
+                arrow.classList.remove('rotate-180');
+            } else {
+                detailsDiv.style.maxHeight = detailsDiv.scrollHeight + "px";
+                arrow.classList.add('rotate-180');
+            } 
+        };
 
 
         // === ИНИЦИАЛИЗАЦИЯ ===
@@ -879,7 +896,7 @@
                 const isHidingNew = newClientContainer.classList.toggle('hidden');
                 clientSelectionContainer.classList.toggle('hidden');
                 e.target.dataset.langKey = isHidingNew ? 'add_new_client_btn' : 'back_to_list_btn';
-                document.getElementById('main-transaction-fields').style.display = isHidingNew ? 'block' : 'none';
+                document.getElementById('main-transaction-fields').style.display = 'block'; // Always visible now
                 setLanguage(currentLang);
             });
 
@@ -916,4 +933,5 @@
     </script>
 </body>
 </html>
+"
 
