@@ -35,7 +35,7 @@
 
         <!-- 0. Экран Загрузки/Инициализации Firebase -->
         <div id="loading-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center transition-all duration-300">
-            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -136,8 +136,8 @@
 
     <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300 scale-95 opacity-0" id="transaction-modal-content">
-            <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4" data-lang-key="modal_add_trans_title">Добавить Новую Транзакцию</h2>
+        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4">Добавить Новую Транзакцию</h2>
             <form id="transaction-form" class="space-y-4">
                 <input type="hidden" id="transaction-doc-id">
                 
@@ -147,14 +147,14 @@
                         <select id="modal-client-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></select>
                     </div>
                     <div id="new-client-container" class="hidden mt-2">
-                        <input type="text" id="modal-new-client-name" placeholder="Введите имя нового клиента" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" data-lang-key="new_client_placeholder">
+                        <input type="text" id="modal-new-client-name" placeholder="Введите имя нового клиента" class="w-full px-4 py-2 border border-gray-300 rounded-lg" data-lang-key="new_client_placeholder">
                     </div>
                     <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2" data-lang-key="add_new_client_btn">Добавить нового клиента</button>
                 </div>
                 
                 <div>
                     <label for="modal-item-name" class="block text-sm font-medium text-gray-700" data-lang-key="item_name">Товар / Описание</label>
-                    <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="Товар">
+                    <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="Товар">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -179,8 +179,8 @@
                 </div>
 
                 <div class="flex justify-between pt-4">
-                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300" data-lang-key="cancel">Отмена</button>
-                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700" data-lang-key="save">Сохранить</button>
+                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
                 </div>
             </form>
         </div>
@@ -238,6 +238,7 @@
                 nav_settings: "НАСТРОЙКИ",
                 main_header: "ОСНОВА (Обзор Клиентов)",
                 edit_client: "Редактировать Клиента",
+                delete_client: "Удалить Клиента",
                 search_placeholder: "Поиск по имени клиента...",
                 add_transaction: "Добавить Транзакцию/Клиента",
                 details_placeholder_title: "Клиент не выбран",
@@ -274,6 +275,7 @@
                 total_remaining: "Полный Остаток",
                 transaction_history: "История Транзакций",
                 edit: "Ред.",
+                delete: "Удал.",
                 details_btn: "Подробнее",
                 back_to_clients: "Назад к списку клиентов",
                 date: "Дата",
@@ -282,6 +284,8 @@
                 paid: "Внесено",
                 remaining: "Остаток",
                 actions: "Действия",
+                confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?",
+                confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.",
             },
             tr: {
                 loading: "Sistem yükleniyor...",
@@ -290,6 +294,7 @@
                 nav_settings: "AYARLAR",
                 main_header: "ANA SAYFA (Müşteri Genel Bakış)",
                 edit_client: "Müşteriyi Düzenle",
+                delete_client: "Müşteriyi Sil",
                 search_placeholder: "Müşteri adına göre ara...",
                 add_transaction: "İşlem/Müşteri Ekle",
                 details_placeholder_title: "Müşteri Seçilmedi",
@@ -326,6 +331,7 @@
                 total_remaining: "Toplam Kalan",
                 transaction_history: "İşlem Geçmişi",
                 edit: "Düz.",
+                delete: "Sil",
                 details_btn: "Detaylar",
                 back_to_clients: "Müşteri listesine geri dön",
                 date: "Tarih",
@@ -334,6 +340,8 @@
                 paid: "Ödenen",
                 remaining: "Kalan",
                 actions: "Eylemler",
+                confirm_delete_transaction: "Bu işlemi silmek istediğinizden emin misiniz?",
+                confirm_delete_client: "DİKKAT! Müşteriyi ve TÜM işlemlerini gerçekten silmek istiyor musunuz? Bu işlem geri alınamaz.",
             }
         };
 
@@ -571,6 +579,10 @@
                     <td class="px-4 py-3 text-right text-sm font-medium text-blue-600">${formatCurrency(t.unitPrice * t.quantity)}</td>
                     <td class="px-4 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
                     <td class="px-4 py-3 text-right text-sm font-bold ${remainingInTrans > 0 ? 'text-red-600' : 'text-gray-600'}">${formatCurrency(remainingInTrans)}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2 text-sm" data-lang-key="edit" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
+                        <button class="text-red-600 hover:text-red-900 text-sm" data-lang-key="delete" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
+                    </td>
                 </tr>`;
             }).join('');
 
@@ -582,9 +594,14 @@
                         </button>
                         <h2 class="text-3xl font-bold text-gray-900">${client.name}</h2>
                     </div>
-                    <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
-                        <span data-lang-key="edit_client">Редактировать Клиента</span>
-                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
+                            <span data-lang-key="edit_client">Редактировать Клиента</span>
+                        </button>
+                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${clientId}')">
+                            <span data-lang-key="delete_client">Удалить Клиента</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-blue-50 p-4 rounded-lg"><p class="text-sm text-blue-800" data-lang-key="total_sales">Всего Продано</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(client.totalSales)}</p></div>
@@ -601,6 +618,7 @@
                                 <th class="px-4 py-3 text-right" data-lang-key="amount">Сумма</th>
                                 <th class="px-4 py-3 text-right" data-lang-key="paid">Внесено</th>
                                 <th class="px-4 py-3 text-right" data-lang-key="remaining">Остаток</th>
+                                <th class="px-4 py-3 text-center" data-lang-key="actions">Действия</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">${transactionsHtml}</tbody>
@@ -611,7 +629,7 @@
         }
         
         // === MODAL FUNCTIONS ===
-        function openTransactionModal(docId = null, transaction = null) {
+        function openTransactionModal(docId = null, transactionData = null) {
             const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
             const modalTitle = document.getElementById('modal-title');
@@ -624,34 +642,50 @@
             const newClientContainer = document.getElementById('new-client-container');
             const toggleButton = document.getElementById('toggle-new-client-button');
             const clientSelectionContainer = document.getElementById('client-selection-container');
+            const newClientNameInput = document.getElementById('modal-new-client-name');
 
             clientSelect.innerHTML = `<option value="" disabled selected>Выберите клиента</option>`;
             Object.keys(clientAggregates).forEach(id => {
                 clientSelect.innerHTML += `<option value="${id}">${clientAggregates[id].name}</option>`;
             });
             
-            if (transaction) {
-                // Logic for editing an existing transaction (can be added later if needed)
+            if (transactionData) {
+                modalTitle.dataset.langKey = "modal_edit_trans_title";
+                clientSelect.value = transactionData.clientId;
+                document.getElementById('modal-item-name').value = transactionData.itemName;
+                document.getElementById('modal-unit-price').value = transactionData.unitPrice;
+                document.getElementById('modal-quantity').value = transactionData.quantity;
+                document.getElementById('modal-payment-received').value = transactionData.paymentReceived;
+                document.getElementById('modal-transaction-date').value = transactionData.transactionDate.toISOString().split('T')[0];
+                clientSelect.disabled = true;
+                toggleButton.classList.add('hidden');
+                newClientContainer.classList.add('hidden');
+                clientSelectionContainer.classList.remove('hidden');
             } else {
                 modalTitle.dataset.langKey = "modal_add_trans_title";
                 clientSelect.disabled = false;
                 toggleButton.classList.remove('hidden');
                 newClientContainer.classList.add('hidden');
                 clientSelectionContainer.classList.remove('hidden');
+                newClientNameInput.value = '';
+                clientSelect.value = '';
             }
             
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
             }, 10);
             setLanguage(currentLang);
         }
         
         function closeTransactionModal() {
+            const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
+            modalContent.classList.remove('scale-100', 'opacity-100');
             modalContent.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
-                document.getElementById('transaction-modal').classList.add('hidden');
+                modal.classList.add('hidden');
             }, 300);
         }
         
@@ -732,6 +766,34 @@
                 console.error("Ошибка обновления имени клиента:", error);
             }
         }
+        
+        async function deleteTransaction(transactionId) {
+            if (confirm(translations[currentLang].confirm_delete_transaction)) {
+                try {
+                    await deleteDoc(doc(getSalesCollectionRef(), transactionId));
+                } catch (error) {
+                    console.error("Ошибка удаления транзакции:", error);
+                }
+            }
+        }
+
+        async function deleteClient(clientId) {
+            if (confirm(translations[currentLang].confirm_delete_client)) {
+                const transactionsToDelete = allTransactions.filter(t => t.clientId === clientId);
+                const salesRef = getSalesCollectionRef();
+                const batch = writeBatch(db);
+                transactionsToDelete.forEach(t => {
+                    batch.delete(doc(salesRef, t.id));
+                });
+                try {
+                    await batch.commit();
+                    currentClientDetailsId = null;
+                    renderDetailsView(); // Вернуться к списку
+                } catch (error) {
+                    console.error("Ошибка удаления клиента:", error);
+                }
+            }
+        }
 
         // === ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK ===
         window.viewClientDetails = (clientId) => {
@@ -742,7 +804,16 @@
         window.backToDetailsList = () => {
             currentClientDetailsId = null;
             renderDetailsView();
-        }
+        };
+        window.openTransactionModalForEdit = (transactionId) => {
+            const transaction = allTransactions.find(t => t.id === transactionId);
+            if (transaction) {
+                openTransactionModal(transaction.id, transaction);
+            }
+        };
+        window.deleteTransaction = deleteTransaction;
+        window.deleteClient = deleteClient;
+
 
         // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = () => {
@@ -755,9 +826,9 @@
             document.getElementById('toggle-new-client-button').addEventListener('click', (e) => {
                 const newClientContainer = document.getElementById('new-client-container');
                 const clientSelectionContainer = document.getElementById('client-selection-container');
-                const isAddingNew = newClientContainer.classList.toggle('hidden');
+                const isHidingNew = newClientContainer.classList.toggle('hidden');
                 clientSelectionContainer.classList.toggle('hidden');
-                e.target.dataset.langKey = !isAddingNew ? 'add_new_client_btn' : 'back_to_list_btn';
+                e.target.dataset.langKey = isHidingNew ? 'add_new_client_btn' : 'back_to_list_btn';
                 setLanguage(currentLang);
             });
 
@@ -772,7 +843,6 @@
 
             document.querySelectorAll('.language-option').forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.lang)));
             
-            // Language menu click logic
             const langButton = document.getElementById('language-menu-button');
             const langDropdown = document.getElementById('language-dropdown');
             langButton.addEventListener('click', (e) => {
@@ -784,7 +854,6 @@
                     langDropdown.classList.add('hidden');
                 }
             });
-
             
             const savedLang = localStorage.getItem('appLanguage') || 'ru';
             setLanguage(savedLang);
