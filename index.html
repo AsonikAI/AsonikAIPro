@@ -26,14 +26,14 @@
             cursor: pointer;
             transition: background-color 0.15s;
         }
+        /* Активация только цветом, без рамки на мобильных */
         .client-link.active {
             background-color: #e0f2fe; /* blue-100 */
-            border-left: 4px solid #3b82f6; /* blue-500 */
-            padding-left: calc(1rem - 4px); 
         }
         @media (min-width: 768px) {
             .client-link.active {
-                border-left: none; 
+                border-left: 4px solid #3b82f6; /* blue-500 */
+                padding-left: calc(1rem - 4px);
                 background-color: #e0f2fe;
             }
         }
@@ -60,11 +60,11 @@
             <header class="flex items-center justify-between border-b pb-4 mb-4">
                 <h1 class="text-3xl font-bold text-blue-700">CYTC.COM SYSTEM</h1>
                 <div class="flex items-center space-x-4">
-                    <!-- Навигация, теперь как вкладки. Все кнопки видимы. -->
+                    <!-- Навигация, теперь как вкладки. Все кнопки видимы и независимы. -->
                     <button data-view="clients" class="header-nav-item text-lg font-semibold text-gray-900 border-b-2 border-blue-600 pb-1 px-2 transition duration-150">
                         ОСНОВА
                     </button>
-                    <!-- Кнопка "ПОДРОБНО" теперь всегда видима -->
+                    <!-- Кнопка "ПОДРОБНО" теперь всегда видима и является отдельным пунктом -->
                     <button data-view="details" id="details-nav-button" class="header-nav-item text-lg font-semibold text-gray-500 hover:text-gray-900 pb-1 px-2 transition duration-150">
                         ПОДРОБНО
                     </button>
@@ -91,19 +91,15 @@
                     </button>
                 </div>
                 
-                <!-- Общая сводка (KPI) -->
-                <div class="bg-white p-3 rounded-lg shadow-sm mb-4 border border-gray-100">
-                    <p class="text-sm font-medium text-gray-600">Общий Остаток Долга:</p>
-                    <p id="kpi-total-remaining" class="text-2xl font-extrabold text-red-700 mt-1">$0.00</p>
-                </div>
+                <!-- Блок "Общий Остаток Долга" удален по запросу -->
 
                 <!-- Таблица Клиентов: Усовершенствованный макет -->
                 <div class="overflow-y-auto flex-grow bg-white rounded-xl border border-gray-100 divide-y divide-gray-100">
                     <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase grid grid-cols-12">
                         <span class="col-span-3">Клиент / Дата</span>
-                        <span class="col-span-4">Товар / Сумма</span>
+                        <span class="col-span-4">Товары (Кол-во) / Сумма</span>
                         <span class="col-span-2 text-center">Касса</span>
-                        <span class="col-span-3 text-right">Остаток</span>
+                        <span class="col-span-3 text-right">Полный Остаток</span>
                     </div>
                     <div id="clients-list-container">
                         <!-- Здесь будет список клиентов -->
@@ -457,6 +453,7 @@
                             totalSales: 0,
                             totalPaid: 0,
                             transactionCount: 0,
+                            totalQuantity: 0, // Добавлено: Общее количество товаров
                             lastTransactionDate: data.transactionDate ? data.transactionDate.toDate() : null
                         };
                     }
@@ -465,6 +462,7 @@
                     agg.totalSales += transaction.totalAmount;
                     agg.totalPaid += transaction.paymentReceived;
                     agg.transactionCount++;
+                    agg.totalQuantity += transaction.quantity; // Обновляем общее количество
                     
                     // Обновляем дату последней транзакции
                     const currentTransDate = data.transactionDate.toDate();
@@ -510,11 +508,9 @@
          * @param {number} totalPaid
          */
         function renderGlobalKPI(totalSales, totalPaid) {
-            const remaining = totalSales - totalPaid;
-            // Обновляем только общий остаток, так как он в колонке ОСНОВА
-            document.getElementById('kpi-total-remaining').textContent = formatCurrency(remaining);
-            document.getElementById('kpi-total-remaining').classList.toggle('text-red-700', remaining > 0);
-            document.getElementById('kpi-total-remaining').classList.toggle('text-green-700', remaining <= 0);
+            // Этот блок удален по запросу: document.getElementById('kpi-total-remaining').textContent = formatCurrency(remaining);
+            // document.getElementById('kpi-total-remaining').classList.toggle('text-red-700', remaining > 0);
+            // document.getElementById('kpi-total-remaining').classList.toggle('text-green-700', remaining <= 0);
         }
 
         /**
@@ -546,14 +542,22 @@
                 const remaining = client.totalSales - client.totalPaid;
                 const lastTrans = client.lastTransaction || {};
                 const lastDate = lastTrans.transactionDate || 'Нет данных';
-                const transactionRemaining = lastTrans.totalAmount - lastTrans.paymentReceived;
                 
                 const clientCard = document.createElement('div');
                 // Используем grid-cols-12 для правильного отображения колонок, как определено в заголовке
                 clientCard.className = `client-link grid grid-cols-12 items-center p-4 hover:bg-gray-100 ${client.id === currentClientDetailsId ? 'active' : ''}`;
                 clientCard.setAttribute('data-client-id', client.id);
-                // При клике переходим на страницу деталей
-                clientCard.onclick = () => showClientDetails(client.id);
+                
+                // *** ИЗМЕНЕНИЕ: Убран showClientDetails(client.id) из onclick ***
+                // Теперь клик только устанавливает ID и подсвечивает элемент
+                clientCard.onclick = () => {
+                    currentClientDetailsId = client.id;
+                    document.querySelectorAll('.client-link').forEach(link => link.classList.remove('active'));
+                    clientCard.classList.add('active');
+                    // Добавлено: Обновление деталей в фоновом режиме, чтобы ПОДРОБНО было готово
+                    updateClientDetailsKPI();
+                    filterAndRenderTransactions();
+                };
 
                 clientCard.innerHTML = `
                     <div class="col-span-3 flex flex-col">
@@ -561,17 +565,18 @@
                         <span class="text-xs text-gray-500 mt-0.5">${lastDate}</span>
                     </div>
                     <div class="col-span-4 flex flex-col">
-                        <span class="text-sm font-medium text-gray-800 truncate">${lastTrans.itemName || 'N/A'} (x${lastTrans.quantity || 0})</span>
-                        <span class="text-xs text-blue-600">Сумма: ${formatCurrency(lastTrans.totalAmount || 0)}</span>
+                        <span class="text-sm font-medium text-gray-800 truncate">${lastTrans.itemName || 'N/A'}</span>
+                        <span class="text-xs text-blue-600">Кол-во: ${lastTrans.quantity || 0} / Сумма: ${formatCurrency(lastTrans.totalAmount || 0)}</span>
                     </div>
-                    <div class="col-span-2 text-center text-sm font-medium text-green-600">
-                        ${formatCurrency(lastTrans.paymentReceived || 0)}
+                    <div class="col-span-2 text-center flex flex-col text-sm font-medium">
+                        <span class="text-green-600">${formatCurrency(lastTrans.paymentReceived || 0)}</span>
+                        <span class="text-xs text-gray-500">Касса</span>
                     </div>
                     <div class="col-span-3 text-right flex flex-col items-end">
                         <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">
                             ${formatCurrency(remaining)}
                         </span>
-                        <span class="block text-xs text-gray-400">(${client.transactionCount} транз.)</span>
+                        <span class="block text-xs text-gray-400">Полный Остаток</span>
                     </div>
                 `;
                 container.appendChild(clientCard);
@@ -587,7 +592,7 @@
             const clientAgg = clientAggregates[currentClientDetailsId];
             
             if (!clientAgg) {
-                // Если данные клиента не найдены, возвращаемся на ОСНОВУ
+                // Если данные клиента не найдены, сбрасываем выбор
                 currentClientDetailsId = null;
                 showView('clients'); 
                 return;
@@ -684,7 +689,8 @@
 
 
         /**
-         * Отображает детали транзакций для выбранного клиента и переключает на экран деталей.
+         * Отображает детали транзакций для выбранного клиента.
+         * *** ВАЖНО: Эта функция больше НЕ переключает экран. Она только устанавливает active client ID. ***
          * @param {string} clientId
          */
         function showClientDetails(clientId) {
@@ -698,16 +704,19 @@
                 }
             });
 
-            // Обновление сводки KPI и имени
+            // Обновление сводки KPI и имени (готовит данные для вкладки ПОДРОБНО)
             updateClientDetailsKPI();
 
-            // Рендеринг таблицы транзакций
+            // Рендеринг таблицы транзакций (готовит данные для вкладки ПОДРОБНО)
             currentTransactionFilter = '';
             document.getElementById('transaction-search').value = '';
             filterAndRenderTransactions();
             
-            // Переключаемся на экран деталей
-            showView('details');
+            // Если текущая вкладка - ПОДРОБНО, обновляем ее.
+            const currentView = document.querySelector('.header-nav-item.border-blue-600').getAttribute('data-view');
+            if (currentView === 'details') {
+                showView('details'); // Вызывает обновление деталей
+            }
         }
         
         // Глобальная функция для использования в инлайн-обработчиках
@@ -816,8 +825,7 @@
             if (!salesRef) return;
 
             const isNewTransaction = !docId;
-            const wasClientSelected = !!currentClientDetailsId;
-            const savedClientId = clientId; // Сохраняем ID, так как он может быть новым
+            const savedClientId = clientId; 
 
             try {
                 if (docId) {
@@ -832,20 +840,17 @@
 
                 closeTransactionModal();
                 
-                // === ЛОГИКА ПЕРЕКЛЮЧЕНИЯ ===
-                if (isNewTransaction || docId) {
-                    // После добавления или редактирования, обновляем детали, 
-                    // чтобы onSnapshot обновил данные, а затем переключаемся
-                    
-                    // Если это новая транзакция, делаем этого клиента активным,
-                    // даже если он был выбран до этого
-                    currentClientDetailsId = savedClientId; 
-                    
-                    // Переключаемся на детали (это обновит детали и таблицу)
-                    showView('details');
-                } else if (wasClientSelected) {
-                    showView('details'); 
-                }
+                // *** ИЗМЕНЕНИЕ: Установка активного клиента после добавления/редактирования ***
+                // Это гарантирует, что при переходе на ПОДРОБНО, данные будут готовы.
+                currentClientDetailsId = savedClientId; 
+                
+                // Обновляем список клиентов (onSnapshot сделает это) и подсвечиваем активного
+                document.querySelectorAll('.client-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-client-id') === savedClientId) {
+                        link.classList.add('active');
+                    }
+                });
 
             } catch (error) {
                 console.error("Ошибка при сохранении транзакции:", error);
