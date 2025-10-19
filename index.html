@@ -550,6 +550,159 @@
                 console.error("Ошибка при получении данных Firestore:", error);
             });
         }
+        
+        // =========================================================================
+        // === ГЛОБАЛЬНЫЕ ФУНКЦИИ (ДЛЯ HTML ONCLICK) - ИСПРАВЛЕНИЕ ОШИБКИ REFERENCEERROR ===
+        // =========================================================================
+
+        /**
+         * Устанавливает выбранного клиента, не меняя экран.
+         * @param {string} clientId
+         */
+        function showClientDetails(clientId) {
+            currentClientDetailsId = clientId;
+            
+            // Обновляем состояние списка клиентов (активный класс)
+            document.querySelectorAll('.client-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-client-id') === clientId) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Обновление сводки KPI и имени (готовит данные для вкладки ПОДРОБНО)
+            updateClientDetailsModalKPI();
+
+            // Рендеринг таблицы транзакций (готовит данные для вкладки ПОДРОБНО)
+            modalTransactionFilter = '';
+            document.getElementById('modal-transaction-search').value = '';
+            filterAndRenderModalTransactions();
+            
+            // Если текущая вкладка - ПОДРОБНО, обновляем ее.
+            const currentView = document.querySelector('.header-nav-item.border-blue-600').getAttribute('data-view');
+            if (currentView === 'details') {
+                showView('details'); // Вызывает обновление деталей
+            }
+        }
+        
+        /**
+         * Удаляет транзакцию.
+         * @param {string} docId - ID документа для удаления.
+         */
+        async function deleteTransaction(docId) {
+            const salesRef = getSalesCollectionRef();
+            if (!salesRef) return;
+
+            const isConfirmed = window.confirm('Вы уверены, что хотите удалить эту транзакцию?'); 
+
+            if (isConfirmed) {
+                try {
+                    await deleteDoc(doc(salesRef, docId));
+                } catch (error) {
+                    console.error("Ошибка при удалении транзакции:", error);
+                }
+            }
+        }
+        
+        /**
+         * Открывает модальное окно с полной историей транзакций.
+         * @param {string} clientId
+         */
+        function openClientDetailsModal(clientId) {
+            currentClientDetailsId = clientId;
+            
+            // Устанавливаем активный класс в списке "ПОДРОБНО"
+            document.querySelectorAll('#details-clients-list-container .client-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const selectedLink = document.querySelector(`#details-clients-list-container [data-client-id="${clientId}"]`);
+            if (selectedLink) selectedLink.classList.add('active');
+
+            // Обновляем данные в модальном окне
+            updateClientDetailsModalKPI();
+            filterAndRenderModalTransactions();
+            
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('details-modal-content');
+            
+            // Показать модальное окно
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        
+        /**
+         * Открывает модальное окно для добавления или редактирования.
+         */
+        function openTransactionModal(docId = null, clientId = null, clientName = '', itemName = 'Товар', unitPrice = 100, quantity = 1, paymentReceived = 0, transactionDate = new Date().toISOString().split('T')[0]) {
+            const modal = document.getElementById('transaction-modal');
+            const modalContent = document.getElementById('transaction-modal-content');
+            
+            document.getElementById('modal-title').textContent = docId ? 'Редактировать Транзакцию' : 'Добавить Новую Транзакцию';
+            document.getElementById('transaction-doc-id').value = docId || '';
+            
+            // === ЛОГИКА ID КЛИЕНТА ===
+            let finalClientId = clientId;
+            const isAddingNewFromClientsList = !docId && !currentClientDetailsId;
+            
+            if (isAddingNewFromClientsList) {
+                finalClientId = crypto.randomUUID();
+            } else if (!docId && currentClientDetailsId) {
+                finalClientId = currentClientDetailsId;
+            } else if (docId && !clientId) {
+                 // Если редактируем старый док, но почему-то потеряли clientId, 
+                 // пытаемся найти его через allTransactions (защита)
+                 const oldTrans = allTransactions.find(t => t.id === docId);
+                 finalClientId = oldTrans ? oldTrans.clientId : crypto.randomUUID();
+            } else if (!finalClientId) {
+                 finalClientId = crypto.randomUUID(); // Последняя защита
+            }
+            
+            document.getElementById('transaction-client-id').value = finalClientId; 
+            document.getElementById('modal-client-name').value = clientName;
+            
+            
+            // === ЛОГИКА БЛОКИРОВКИ ИМЕНИ ===
+            const modalClientNameInput = document.getElementById('modal-client-name');
+            
+            if (docId || currentClientDetailsId) {
+                 // Редактирование или добавление транзакции к существующему клиенту -> имя заблокировано
+                 modalClientNameInput.disabled = true; 
+                 
+                 // Если добавляем транзакцию к существующему, убеждаемся, что имя клиента подтянуто
+                 if (!docId && currentClientDetailsId) {
+                     const clientAgg = clientAggregates[currentClientDetailsId];
+                     if (clientAgg) {
+                        modalClientNameInput.value = clientAgg.name;
+                     }
+                 }
+                 
+            } else {
+                 // Добавление новой транзакции/клиента -> имя разблокировано
+                 modalClientNameInput.disabled = false;
+                 modalClientNameInput.value = ''; 
+            }
+
+
+            document.getElementById('modal-item-name').value = itemName;
+            document.getElementById('modal-unit-price').value = unitPrice;
+            document.getElementById('modal-quantity').value = quantity;
+            document.getElementById('modal-payment-received').value = paymentReceived;
+            document.getElementById('modal-transaction-date').value = transactionDate;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        
+        // =========================================================================
+        // === КОНЕЦ ГЛОБАЛЬНЫХ ФУНКЦИЙ ===
+        // =========================================================================
+
 
         /**
          * Рендерит список клиентов для вкладки ОСНОВА.
@@ -675,40 +828,6 @@
              });
         }
 
-        // Глобальная функция для использования в инлайн-обработчиках
-        window.openTransactionModal = openTransactionModal;
-        window.deleteTransaction = deleteTransaction;
-        window.showClientDetails = showClientDetails; // Оставлено для совместимости, но не меняет вкладку
-        window.openClientDetailsModal = openClientDetailsModal; // Новая функция для модального окна деталей
-
-        /**
-         * Открывает модальное окно с полной историей транзакций.
-         * @param {string} clientId
-         */
-        function openClientDetailsModal(clientId) {
-            currentClientDetailsId = clientId;
-            
-            // Устанавливаем активный класс в списке "ПОДРОБНО"
-            document.querySelectorAll('#details-clients-list-container .client-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            const selectedLink = document.querySelector(`#details-clients-list-container [data-client-id="${clientId}"]`);
-            if (selectedLink) selectedLink.classList.add('active');
-
-            // Обновляем данные в модальном окне
-            updateClientDetailsModalKPI();
-            filterAndRenderModalTransactions();
-            
-            const modal = document.getElementById('details-modal');
-            const modalContent = document.getElementById('details-modal-content');
-            
-            // Показать модальное окно
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
 
         /**
          * Обновляет сводные KPI клиента в модальном окне деталей.
@@ -792,68 +911,7 @@
         /**
          * Открывает модальное окно для добавления или редактирования.
          */
-        function openTransactionModal(docId = null, clientId = null, clientName = '', itemName = 'Товар', unitPrice = 100, quantity = 1, paymentReceived = 0, transactionDate = new Date().toISOString().split('T')[0]) {
-            const modal = document.getElementById('transaction-modal');
-            const modalContent = document.getElementById('transaction-modal-content');
-            
-            document.getElementById('modal-title').textContent = docId ? 'Редактировать Транзакцию' : 'Добавить Новую Транзакцию';
-            document.getElementById('transaction-doc-id').value = docId || '';
-            
-            // === ЛОГИКА ID КЛИЕНТА ===
-            let finalClientId = clientId;
-            const isAddingNewFromClientsList = !docId && !currentClientDetailsId;
-            
-            if (isAddingNewFromClientsList) {
-                finalClientId = crypto.randomUUID();
-            } else if (!docId && currentClientDetailsId) {
-                finalClientId = currentClientDetailsId;
-            } else if (docId && !clientId) {
-                 // Если редактируем старый док, но почему-то потеряли clientId, 
-                 // пытаемся найти его через allTransactions (защита)
-                 const oldTrans = allTransactions.find(t => t.id === docId);
-                 finalClientId = oldTrans ? oldTrans.clientId : crypto.randomUUID();
-            } else if (!finalClientId) {
-                 finalClientId = crypto.randomUUID(); // Последняя защита
-            }
-            
-            document.getElementById('transaction-client-id').value = finalClientId; 
-            document.getElementById('modal-client-name').value = clientName;
-            
-            
-            // === ЛОГИКА БЛОКИРОВКИ ИМЕНИ ===
-            const modalClientNameInput = document.getElementById('modal-client-name');
-            
-            if (docId || currentClientDetailsId) {
-                 // Редактирование или добавление транзакции к существующему клиенту -> имя заблокировано
-                 modalClientNameInput.disabled = true; 
-                 
-                 // Если добавляем транзакцию к существующему, убеждаемся, что имя клиента подтянуто
-                 if (!docId && currentClientDetailsId) {
-                     const clientAgg = clientAggregates[currentClientDetailsId];
-                     if (clientAgg) {
-                        modalClientNameInput.value = clientAgg.name;
-                     }
-                 }
-                 
-            } else {
-                 // Добавление новой транзакции/клиента -> имя разблокировано
-                 modalClientNameInput.disabled = false;
-                 modalClientNameInput.value = ''; 
-            }
-
-
-            document.getElementById('modal-item-name').value = itemName;
-            document.getElementById('modal-unit-price').value = unitPrice;
-            document.getElementById('modal-quantity').value = quantity;
-            document.getElementById('modal-payment-received').value = paymentReceived;
-            document.getElementById('modal-transaction-date').value = transactionDate;
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
+        // function openTransactionModal(...) { ... } - уже глобальная
 
         /**
          * Скрывает модальное окно.
@@ -951,25 +1009,6 @@
             }
         }
 
-        /**
-         * Удаляет транзакцию.
-         * @param {string} docId - ID документа для удаления.
-         */
-        async function deleteTransaction(docId) {
-            const salesRef = getSalesCollectionRef();
-            if (!salesRef) return;
-
-            const isConfirmed = window.confirm('Вы уверены, что хотите удалить эту транзакцию?'); 
-
-            if (isConfirmed) {
-                try {
-                    await deleteDoc(doc(salesRef, docId));
-                } catch (error) {
-                    console.error("Ошибка при удалении транзакции:", error);
-                }
-            }
-        }
-        
         /**
          * Удаляет все транзакции для данного клиента и возвращает на главный экран.
          * @param {string} clientId - ID клиента.
