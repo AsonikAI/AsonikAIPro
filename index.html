@@ -9,19 +9,48 @@
     <!-- Настройка шрифта Inter для современного вида -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        :root {
+            --bg-main: #f7f7f9;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --header-brand: #2563eb;
+            --bg-hover: #f3f4f6;
+        }
+
+        .theme-dark {
+            --bg-main: #111827;
+            --bg-card: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: #374151;
+            --header-brand: #60a5fa;
+            --bg-hover: #374151;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7f9;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
         }
-        .card {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px -5px rgba(0, 0, 0, 0.04);
+        .card, .bg-white, .bg-gray-50 {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
         }
+        .text-gray-900 { color: var(--text-primary); }
+        .text-gray-700, .text-gray-800 { color: var(--text-primary); }
+        .text-gray-600, .text-gray-500, .text-gray-400 { color: var(--text-secondary); }
+        .border-b, .border { border-color: var(--border-color); }
+        .hover\:bg-gray-100:hover, .hover\:bg-gray-50:hover { background-color: var(--bg-hover); }
+
         .min-h-h-screen {
-            min-height: calc(100vh - 32px); /* Учитываем padding 4 */
+            min-height: calc(100vh - 32px);
         }
         .modal-overlay {
             background-color: rgba(0, 0, 0, 0.6);
-            z-index: 40; /* z-index ниже, чем у модального окна */
+            z-index: 40;
         }
         #transaction-modal, #edit-client-modal {
             z-index: 50;
@@ -30,6 +59,13 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-in-out;
+        }
+        .theme-btn.active {
+            background-color: #2563eb;
+            color: white;
+        }
+        .theme-dark .theme-btn.active {
+             background-color: #60a5fa;
         }
     </style>
 </head>
@@ -44,7 +80,7 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="mt-4 text-lg font-medium text-gray-700" data-lang-key="loading">Загрузка системы...</p>
+            <p class="mt-4 text-lg font-medium" data-lang-key="loading">Загрузка системы...</p>
         </div>
 
         <!-- 1. Главный Экран Приложения (Скрыт по умолчанию) -->
@@ -52,32 +88,33 @@
 
             <!-- Заголовок и навигация -->
             <header class="flex items-center justify-between border-b pb-4 mb-4">
-                <h1 class="text-3xl font-bold text-blue-700" id="site-title-display">CYTC.COM SYSTEM</h1>
+                <div class="flex items-center space-x-3">
+                    <img id="site-logo" src="" alt="Logo" class="h-10 hidden">
+                    <h1 class="text-3xl font-bold" id="site-title-display" style="color: var(--header-brand);">CYTC.COM SYSTEM</h1>
+                </div>
                 <div class="flex items-center space-x-4">
                     
-                    <!-- Кнопка выбора языка -->
                     <div class="relative">
                         <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150" id="language-menu-button">
                             <span id="current-lang-flag" class="text-xl">🇷🇺</span>
                         </button>
-                        <div id="language-dropdown" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl hidden z-20 p-2">
-                            <p class="text-sm font-semibold text-gray-700 mb-1 px-3 py-1" data-lang-key="language_select">Смена языка:</p>
-                            <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                            <p class="text-sm font-semibold mb-1 px-3 py-1" data-lang-key="language_select">Смена языка:</p>
+                            <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
                                 <span>🇷🇺</span><span data-lang-key="russian">Русский</span>
                             </button>
-                            <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+                            <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
                                 <span>🇹🇷</span><span data-lang-key="turkish">Türkçe</span>
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Навигация -->
-                    <button data-view="clients" class="header-nav-item text-lg font-semibold text-gray-900 border-b-2 border-blue-600 pb-1 px-2 transition duration-150" data-lang-key="nav_main">ОСНОВА</button>
-                    <button data-view="details" id="details-nav-button" class="header-nav-item text-lg font-semibold text-gray-500 hover:text-gray-900 pb-1 px-2 transition duration-150" data-lang-key="nav_details">ПОДРОБНО</button>
-                    <button data-view="settings" class="header-nav-item text-lg font-semibold text-gray-500 hover:text-gray-900 pb-1 px-2 transition duration-150" data-lang-key="nav_settings">НАСТРОЙКИ</button>
+                    <button data-view="clients" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150" data-lang-key="nav_main">ОСНОВА</button>
+                    <button data-view="details" id="details-nav-button" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150" data-lang-key="nav_details">ПОДРОБНО</button>
+                    <button data-view="settings" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150" data-lang-key="nav_settings">НАСТРОЙКИ</button>
 
                     <button id="logout-button-desktop" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </button>
                 </div>
             </header>
@@ -85,52 +122,57 @@
             <!-- 1.1 ЭКРАН: ОБЗОР КЛИЕНТОВ (ОСНОВА) -->
             <section id="view-clients" class="view-content flex flex-col flex-grow pt-4">
                 <div class="flex justify-between items-center mb-4">
-                     <h2 class="text-2xl font-bold text-gray-900" data-lang-key="main_header">ОСНОВА (Обзор Клиентов)</h2>
+                     <h2 class="text-2xl font-bold" data-lang-key="main_header">ОСНОВА (Обзор Клиентов)</h2>
                 </div>
                 
                 <div class="flex flex-col md:flex-row gap-3 mb-4">
-                    <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" data-lang-key="search_placeholder">
+                    <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent" data-lang-key="search_placeholder">
                     <button id="add-transaction-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         <span data-lang-key="add_transaction">Добавить Транзакцию/Клиента</span>
                     </button>
                 </div>
                 
-                <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4">
-                    <!-- Здесь будет список клиентов -->
-                </div>
+                <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4"></div>
             </section>
 
             <!-- 1.2 ЭКРАН: ДЕТАЛИ КЛИЕНТА (ПОДРОБНО) -->
             <section id="view-details" class="view-content hidden flex-col flex-grow pt-4">
-                 <div id="details-view-container">
-                     <!-- Сюда будет рендериться либо список клиентов, либо детали одного клиента -->
-                 </div>
+                 <div id="details-view-container"></div>
             </section>
-
 
             <!-- 1.3 ЭКРАН: НАСТРОЙКИ -->
             <section id="view-settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
-                <h1 class="text-3xl font-bold text-gray-900 mb-6" data-lang-key="settings_title">Настройки Системы</h1>
-
+                <h1 class="text-3xl font-bold mb-6" data-lang-key="settings_title">Настройки Системы</h1>
                 <div class="space-y-8 max-w-2xl">
-                    
-                    <div class="bg-white p-6 rounded-xl border border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-4" data-lang-key="settings_app_name_title">Название Приложения</h3>
-                        <label for="app-name-input" class="block text-sm font-medium text-gray-700" data-lang-key="settings_app_name_label">Изменить название</label>
-                        <input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="CYTC.COM SYSTEM"/>
+                    <div class="p-6 rounded-xl border card">
+                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_theme_title">Тема оформления</h3>
+                        <div class="flex space-x-2">
+                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="light" data-lang-key="theme_light">Светлая</button>
+                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="dark" data-lang-key="theme_dark">Темная</button>
+                        </div>
                     </div>
-
-                    <div class="bg-white p-6 rounded-xl border border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-4" data-lang-key="settings_account_title">Ваша Учётная Запись</h3>
+                    <div class="p-6 rounded-xl border card">
+                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_logo_title">Логотип</h3>
+                        <div id="logo-preview-container" class="mb-4 flex items-center justify-center h-16"></div>
+                        <input type="file" id="logo-upload-input" accept="image/*" class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                        <p id="logo-upload-status" class="text-sm mt-2 text-center"></p>
+                    </div>
+                    <div class="p-6 rounded-xl border card">
+                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_app_name_title">Название Приложения</h3>
+                        <label for="app-name-input" class="block text-sm font-medium" data-lang-key="settings_app_name_label">Изменить название</label>
+                        <input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent" placeholder="CYTC.COM SYSTEM"/>
+                    </div>
+                    <div class="p-6 rounded-xl border card">
+                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_account_title">Ваша Учётная Запись</h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700" data-lang-key="status">Статус</label>
-                                <input type="text" value="Анонимный/Токеновый Вход" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none" />
+                                <label class="block text-sm font-medium" data-lang-key="status">Статус</label>
+                                <input type="text" value="Анонимный/Токеновый Вход" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg shadow-sm focus:outline-none" />
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700" data-lang-key="user_id">ID Пользователя</label>
-                                <code id="user-id-display-settings" class="block bg-gray-100 p-2 rounded text-sm text-gray-700 break-all">...</code>
+                                <label class="block text-sm font-medium" data-lang-key="user_id">ID Пользователя</label>
+                                <code id="user-id-display-settings" class="block bg-gray-100 p-2 rounded text-sm break-all">...</code>
                             </div>
                         </div>
                     </div>
@@ -142,55 +184,49 @@
     <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
-            <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4">Добавить Новую Транзакцию</h2>
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Транзакцию</h2>
             <form id="transaction-form" class="space-y-4">
                 <input type="hidden" id="transaction-doc-id">
-                
                 <div>
-                    <label class="block text-sm font-medium text-gray-700" data-lang-key="client_name">Имя Клиента</label>
+                    <label class="block text-sm font-medium" data-lang-key="client_name">Имя Клиента</label>
                     <div id="client-selection-container">
-                        <select id="modal-client-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></select>
+                        <select id="modal-client-select" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent"></select>
                     </div>
                     <div id="new-client-container" class="hidden mt-2 space-y-2">
-                        <input type="text" id="modal-new-client-name" placeholder="Введите имя нового клиента" class="w-full px-4 py-2 border border-gray-300 rounded-lg" data-lang-key="new_client_placeholder">
+                        <input type="text" id="modal-new-client-name" placeholder="Введите имя нового клиента" class="w-full px-4 py-2 border rounded-lg bg-transparent" data-lang-key="new_client_placeholder">
                         <div>
-                            <label for="modal-initial-balance" class="block text-sm font-medium text-gray-700" data-lang-key="initial_balance">Начальный остаток ($)</label>
-                            <input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="0">
+                            <label for="modal-initial-balance" class="block text-sm font-medium" data-lang-key="initial_balance">Начальный остаток ($)</label>
+                            <input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
                         </div>
                     </div>
                     <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2" data-lang-key="add_new_client_btn">Добавить нового клиента</button>
                 </div>
-                
                 <div id="main-transaction-fields">
                     <div>
-                        <label for="modal-item-name" class="block text-sm font-medium text-gray-700" data-lang-key="item_name">Товар / Описание</label>
-                        <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="Товар">
+                        <label for="modal-item-name" class="block text-sm font-medium" data-lang-key="item_name">Товар / Описание</label>
+                        <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Товар">
                     </div>
-
                     <div class="grid grid-cols-2 gap-4 mt-4">
                         <div>
-                            <label for="modal-unit-price" class="block text-sm font-medium text-gray-700" data-lang-key="unit_price">Цена за единицу ($)</label>
-                            <input type="number" step="0.01" id="modal-unit-price" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="100">
+                            <label for="modal-unit-price" class="block text-sm font-medium" data-lang-key="unit_price">Цена за единицу ($)</label>
+                            <input type="number" step="0.01" id="modal-unit-price" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
                         </div>
                         <div>
-                            <label for="modal-quantity" class="block text-sm font-medium text-gray-700" data-lang-key="quantity">Количество (шт)</label>
-                            <input type="number" step="1" id="modal-quantity" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="1">
+                            <label for="modal-quantity" class="block text-sm font-medium" data-lang-key="quantity">Количество (шт)</label>
+                            <input type="number" step="1" id="modal-quantity" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="1">
                         </div>
                     </div>
-
                     <div class="mt-4">
-                        <label for="modal-payment-received" class="block text-sm font-medium text-gray-700" data-lang-key="payment_received">Касса ($)</label>
-                        <input type="number" step="0.01" id="modal-payment-received" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="100">
+                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса ($)</label>
+                        <input type="number" step="0.01" id="modal-payment-received" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
                     </div>
                 </div>
-                
                 <div class="mt-4">
-                    <label for="modal-transaction-date" class="block text-sm font-medium text-gray-700" data-lang-key="transaction_date">Дата Транзакции</label>
-                    <input type="date" id="modal-transaction-date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    <label for="modal-transaction-date" class="block text-sm font-medium" data-lang-key="transaction_date">Дата Транзакции</label>
+                    <input type="date" id="modal-transaction-date" required class="w-full px-4 py-2 border rounded-lg bg-transparent">
                 </div>
-
                 <div class="flex justify-between pt-4">
-                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
                     <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
                 </div>
             </form>
@@ -199,23 +235,21 @@
     
     <div id="edit-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
          <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all" id="edit-client-modal-content">
-              <h2 class="text-2xl font-bold text-gray-900 mb-4" data-lang-key="edit_client_title">Редактировать имя клиента</h2>
+              <h2 class="text-2xl font-bold mb-4" data-lang-key="edit_client_title">Редактировать имя клиента</h2>
               <form id="edit-client-form">
                    <input type="hidden" id="edit-client-id">
                    <div>
-                        <label for="edit-client-name-input" class="block text-sm font-medium text-gray-700" data-lang-key="new_name_label">Новое имя клиента</label>
-                        <input type="text" id="edit-client-name-input" required class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg">
+                        <label for="edit-client-name-input" class="block text-sm font-medium" data-lang-key="new_name_label">Новое имя клиента</label>
+                        <input type="text" id="edit-client-name-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent">
                    </div>
                    <div class="flex justify-between pt-6">
-                        <button type="button" id="edit-modal-close-button" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                        <button type="button" id="edit-modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
                         <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
                    </div>
               </form>
          </div>
     </div>
 
-
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -257,6 +291,14 @@
                 details_list_title: "ПОДРОБНО (Выбор Клиента)",
                 details_list_text: "Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.",
                 settings_title: "Настройки Системы",
+                settings_theme_title: "Тема оформления",
+                theme_light: "Светлая",
+                theme_dark: "Темная",
+                settings_logo_title: "Логотип",
+                logo_upload_placeholder: "Загрузить логотип",
+                logo_uploading: "Загрузка...",
+                logo_upload_success: "Логотип успешно загружен!",
+                logo_upload_error: "Ошибка загрузки.",
                 settings_app_name_title: "Название Приложения",
                 settings_app_name_label: "Изменить название",
                 settings_account_title: "Ваша Учётная Запись",
@@ -286,6 +328,7 @@
                 total_paid: "Всего (Касса)",
                 total_remaining: "Полный Остаток",
                 transaction_history: "История Транзакций",
+                search_item_placeholder: "Поиск по товару...",
                 edit: "Ред.",
                 delete: "Удал.",
                 details_btn: "Подробнее",
@@ -314,6 +357,14 @@
                 details_list_title: "DETAYLAR (Müşteri Seçimi)",
                 details_list_text: "Tüm işlem geçmişini görüntülemek için aşağıdaki listeden bir müşteri seçin.",
                 settings_title: "Sistem Ayarları",
+                settings_theme_title: "Tema",
+                theme_light: "Açık",
+                theme_dark: "Koyu",
+                settings_logo_title: "Logo",
+                logo_upload_placeholder: "Logo yükle",
+                logo_uploading: "Yükleniyor...",
+                logo_upload_success: "Logo başarıyla yüklendi!",
+                logo_upload_error: "Yükleme hatası.",
                 settings_app_name_title: "Uygulama Adı",
                 settings_app_name_label: "Adı değiştir",
                 settings_account_title: "Hesabınız",
@@ -343,6 +394,7 @@
                 total_paid: "Toplam (Kasa)",
                 total_remaining: "Toplam Kalan",
                 transaction_history: "İşlem Geçmişi",
+                search_item_placeholder: "Ürüne göre ara...",
                 edit: "Düz.",
                 delete: "Sil",
                 details_btn: "Detaylar",
@@ -380,12 +432,11 @@
         }
 
         // === УТИЛИТЫ ===
-        const formatDate = (isoDate) => {
-            if (!isoDate || isoDate === 'N/A') return 'N/A';
-            const date = new Date(isoDate);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
+        const formatDate = (dateObj) => {
+            if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = dateObj.getFullYear();
             return `${day}.${month}.${year}`;
         };
 
@@ -452,25 +503,18 @@
                 }));
 
                 clientAggregates = {};
-                // Group transactions by client
                 allTransactions.forEach(t => {
                     if (!clientAggregates[t.clientId]) {
-                        clientAggregates[t.clientId] = {
-                            name: t.clientName,
-                            transactions: []
-                        };
+                        clientAggregates[t.clientId] = { name: t.clientName, transactions: [] };
                     }
                     clientAggregates[t.clientId].transactions.push(t);
                 });
 
-                // Sort transactions within each client chronologically and calculate totals
                 Object.keys(clientAggregates).forEach(clientId => {
                     const client = clientAggregates[clientId];
-                    // Sort from oldest to newest for calculation
                     client.transactions.sort((a, b) => a.transactionDate - b.transactionDate);
                     
-                    let totalSales = 0;
-                    let totalPaid = 0;
+                    let totalSales = 0, totalPaid = 0;
                     client.transactions.forEach(t => {
                         totalSales += (t.unitPrice || 0) * (t.quantity || 0);
                         totalPaid += t.paymentReceived || 0;
@@ -479,7 +523,7 @@
                     client.totalPaid = totalPaid;
                 });
                 
-                renderClientsList(clientAggregates, document.getElementById('client-search').value);
+                renderClientsList();
                 const currentView = document.querySelector('.header-nav-item.border-blue-600')?.dataset.view;
                 if (currentView === 'details') {
                     renderDetailsView();
@@ -488,44 +532,42 @@
         }
 
         // === РЕНДЕР ФУНКЦИИ ===
-        function renderClientsList(aggregates, filter = '') {
+        function renderClientsList() {
             const container = document.getElementById('clients-list-container');
+            const filter = document.getElementById('client-search').value.toLowerCase();
             container.innerHTML = '';
-            const lowerCaseFilter = filter.toLowerCase();
 
-            const clientIds = Object.keys(aggregates).sort((a, b) => {
-                const lastA = aggregates[a].transactions.at(-1)?.transactionDate || 0;
-                const lastB = aggregates[b].transactions.at(-1)?.transactionDate || 0;
+            const clientIds = Object.keys(clientAggregates).sort((a, b) => {
+                const lastA = clientAggregates[a].transactions.at(-1)?.transactionDate || 0;
+                const lastB = clientAggregates[b].transactions.at(-1)?.transactionDate || 0;
                 return lastB - lastA;
             });
 
             if (clientIds.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center text-gray-500">Нет клиентов.</div>`;
+                container.innerHTML = `<div class="p-4 text-center">Нет клиентов.</div>`;
                 return;
             }
 
             clientIds.forEach(clientId => {
-                const client = aggregates[clientId];
-                if (filter && !client.name.toLowerCase().includes(lowerCaseFilter)) return;
+                const client = clientAggregates[clientId];
+                if (filter && !client.name.toLowerCase().includes(filter)) return;
 
                 const remaining = client.totalSales - client.totalPaid;
-                
                 const clientCard = document.createElement('div');
-                clientCard.className = `p-4 bg-white border border-gray-200 rounded-lg shadow-sm`;
+                clientCard.className = `p-4 border rounded-lg shadow-sm card`;
                 
                 const lastFiveTransactions = [...client.transactions].reverse().slice(0, 5);
-                
                 const transactionsHtml = lastFiveTransactions.map(t => `
                     <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
-                        <div class="col-span-3 text-gray-600">${formatDate(t.transactionDate)}</div>
-                        <div class="col-span-5 text-gray-800 font-medium">${t.itemName} (x${t.quantity || 0})</div>
+                        <div class="col-span-3">${formatDate(t.transactionDate)}</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity || 0})</div>
                         <div class="col-span-2 text-right">
                             <span class="text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</span>
-                            <span class="text-xs text-gray-500 block" data-lang-key="paid">Касса</span>
+                            <span class="text-xs block" data-lang-key="paid">Касса</span>
                         </div>
                         <div class="col-span-2 text-right">
                             <span class="text-blue-600 font-semibold">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</span>
-                             <span class="text-xs text-gray-500 block" data-lang-key="amount">Сумма</span>
+                             <span class="text-xs block" data-lang-key="amount">Сумма</span>
                         </div>
                     </div>
                 `).join('');
@@ -533,8 +575,8 @@
                 clientCard.innerHTML = `
                     <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleClientDetails('${clientId}')">
                         <div class="flex items-center space-x-3">
-                            <svg id="arrow-${clientId}" class="w-5 h-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            <h3 class="text-xl font-bold text-gray-800">${client.name}</h3>
+                            <svg id="arrow-${clientId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <h3 class="text-xl font-bold">${client.name}</h3>
                             <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
                             </button>
@@ -542,14 +584,12 @@
                         <div class="flex items-center space-x-4">
                              <div class="text-right">
                                 <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
-                                <span class="text-xs text-gray-500 block" data-lang-key="total_remaining">Полный остаток</span>
+                                <span class="text-xs block" data-lang-key="total_remaining">Полный остаток</span>
                              </div>
                              <button class="text-sm text-blue-600 hover:underline font-semibold" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewClientDetails('${clientId}')">Подробнее</button>
                         </div>
                     </div>
-                    <div id="details-${clientId}" class="collapsible-content">
-                        <div class="pt-2 border-t">${transactionsHtml}</div>
-                    </div>
+                    <div id="details-${clientId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>
                 `;
                 container.appendChild(clientCard);
             });
@@ -567,8 +607,8 @@
 
         function renderDetailsClientList(container) {
             container.innerHTML = `
-                <h2 class="text-2xl font-bold text-gray-900 mb-2" data-lang-key="details_list_title">ПОДРОБНО (Выбор Клиента)</h2>
-                <p class="text-gray-600 mb-4" data-lang-key="details_list_text">Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.</p>
+                <h2 class="text-2xl font-bold mb-2" data-lang-key="details_list_title">ПОДРОБНО (Выбор Клиента)</h2>
+                <p class="mb-4" data-lang-key="details_list_text">Выберите клиента из списка ниже...</p>
                 <div id="details-client-list" class="space-y-2"></div>
             `;
             const listContainer = document.getElementById('details-client-list');
@@ -577,16 +617,10 @@
                 const client = clientAggregates[clientId];
                 const remaining = client.totalSales - client.totalPaid;
                 const clientItem = document.createElement('div');
-                clientItem.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer';
-                clientItem.onclick = () => {
-                    currentClientDetailsId = clientId;
-                    renderDetailsView();
-                };
+                clientItem.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                clientItem.onclick = () => { currentClientDetailsId = clientId; renderDetailsView(); };
                 clientItem.innerHTML = `
-                    <div>
-                        <p class="font-semibold">${client.name}</p>
-                        <p class="text-sm text-gray-600">Остаток: ${formatCurrency(remaining)}</p>
-                    </div>
+                    <div><p class="font-semibold">${client.name}</p><p class="text-sm">Остаток: ${formatCurrency(remaining)}</p></div>
                     <span class="text-blue-600 font-semibold" data-lang-key="details_btn">Подробнее</span>
                 `;
                 listContainer.appendChild(clientItem);
@@ -599,16 +633,21 @@
             const remaining = client.totalSales - client.totalPaid;
             
             let runningBalance = 0;
-            const transactionsWithRunningBalance = client.transactions.map(t => {
+            const transactionsWithRunningBalance = [...client.transactions].map(t => {
                 const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
                 runningBalance += transactionTotal - (t.paymentReceived || 0);
                 return { ...t, runningBalance };
             }).reverse();
-            
-            const transactionsHtml = transactionsWithRunningBalance.map(t => `
+
+            const searchTerm = document.getElementById('details-transaction-search')?.value.toLowerCase() || '';
+            const filteredTransactions = searchTerm 
+                ? transactionsWithRunningBalance.filter(t => t.itemName.toLowerCase().includes(searchTerm))
+                : transactionsWithRunningBalance;
+
+            const transactionsHtml = filteredTransactions.map(t => `
                 <tr class="hover:bg-gray-50">
-                    <td class="px-2 py-3 text-sm text-gray-700">${formatDate(t.transactionDate)}</td>
-                    <td class="px-2 py-3 text-sm text-gray-900">${t.itemName}</td>
+                    <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName}</td>
                     <td class="px-2 py-3 text-center text-sm">${t.quantity || 0}</td>
                     <td class="px-2 py-3 text-right text-sm">${formatCurrency(t.unitPrice)}</td>
                     <td class="px-2 py-3 text-right text-sm font-medium text-blue-600">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</td>
@@ -624,30 +663,27 @@
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center space-x-4">
-                        <button class="text-blue-600 hover:underline" onclick="window.backToDetailsList()">
-                           <span data-lang-key="back_to_clients">&larr; Назад к списку клиентов</span>
-                        </button>
-                        <h2 class="text-3xl font-bold text-gray-900">${client.name}</h2>
+                        <button class="text-blue-600 hover:underline" onclick="window.backToDetailsList()"><span data-lang-key="back_to_clients">&larr; Назад к списку клиентов</span></button>
+                        <h2 class="text-3xl font-bold">${client.name}</h2>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
-                            <span data-lang-key="edit_client">Редактировать Клиента</span>
-                        </button>
-                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${clientId}')">
-                            <span data-lang-key="delete_client">Удалить Клиента</span>
-                        </button>
+                        <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')"><span data-lang-key="edit_client">Редактировать</span></button>
+                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${clientId}')"><span data-lang-key="delete_client">Удалить</span></button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-blue-50 p-4 rounded-lg"><p class="text-sm text-blue-800" data-lang-key="total_sales">Всего Продано</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(client.totalSales)}</p></div>
-                    <div class="bg-green-50 p-4 rounded-lg"><p class="text-sm text-green-800" data-lang-key="total_paid">Всего (Касса)</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
-                    <div class="bg-red-50 p-4 rounded-lg"><p class="text-sm text-red-800" data-lang-key="total_remaining">Полный Остаток</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
+                    <div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales">Всего Продано</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(client.totalSales)}</p></div>
+                    <div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid">Всего (Касса)</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
+                    <div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining">Полный Остаток</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-800 mb-3" data-lang-key="transaction_history">История Транзакций</h3>
-                <div class="bg-white rounded-lg border border-gray-100 overflow-x-auto">
-                     <table class="min-w-full divide-y divide-gray-200">
+                <div class="flex items-center space-x-4 mb-3">
+                    <h3 class="text-xl font-semibold" data-lang-key="transaction_history">История Транзакций</h3>
+                    <input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" placeholder="Поиск по товару..." data-lang-key="search_item_placeholder">
+                </div>
+                <div class="rounded-lg border overflow-x-auto card">
+                     <table class="min-w-full divide-y">
                         <thead>
-                            <tr class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase">
+                            <tr class="bg-gray-50 text-xs font-semibold uppercase">
                                 <th class="px-2 py-3 text-left" data-lang-key="date">Дата</th>
                                 <th class="px-2 py-3 text-left" data-lang-key="item">Товар</th>
                                 <th class="px-2 py-3 text-center" data-lang-key="quantity">Кол-во</th>
@@ -658,10 +694,9 @@
                                 <th class="px-2 py-3 text-center" data-lang-key="actions">Действия</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">${transactionsHtml}</tbody>
+                        <tbody class="divide-y">${transactionsHtml}</tbody>
                     </table>
-                </div>
-            `;
+                </div>`;
             setLanguage(currentLang);
         }
         
@@ -669,26 +704,25 @@
         function openTransactionModal(docId = null, transactionData = null) {
             const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
-            const modalTitle = document.getElementById('modal-title');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
             const form = document.getElementById('transaction-form');
             form.reset();
-            
+            document.getElementById('modal-transaction-date').valueAsDate = new Date();
             document.getElementById('transaction-doc-id').value = docId || '';
             
             const clientSelect = document.getElementById('modal-client-select');
-            const newClientContainer = document.getElementById('new-client-container');
-            const toggleButton = document.getElementById('toggle-new-client-button');
-            const clientSelectionContainer = document.getElementById('client-selection-container');
-            const newClientNameInput = document.getElementById('modal-new-client-name');
-            const initialBalanceInput = document.getElementById('modal-initial-balance');
-
             clientSelect.innerHTML = `<option value="" disabled selected>Выберите клиента</option>`;
             Object.keys(clientAggregates).forEach(id => {
                 clientSelect.innerHTML += `<option value="${id}">${clientAggregates[id].name}</option>`;
             });
             
             if (transactionData) {
-                modalTitle.dataset.langKey = "modal_edit_trans_title";
+                document.getElementById('modal-title').dataset.langKey = "modal_edit_trans_title";
                 clientSelect.value = transactionData.clientId;
                 document.getElementById('modal-item-name').value = transactionData.itemName;
                 document.getElementById('modal-unit-price').value = transactionData.unitPrice;
@@ -696,36 +730,21 @@
                 document.getElementById('modal-payment-received').value = transactionData.paymentReceived;
                 document.getElementById('modal-transaction-date').value = transactionData.transactionDate.toISOString().split('T')[0];
                 clientSelect.disabled = true;
-                toggleButton.classList.add('hidden');
-                newClientContainer.classList.add('hidden');
-                clientSelectionContainer.classList.remove('hidden');
+                document.getElementById('toggle-new-client-button').classList.add('hidden');
+                document.getElementById('new-client-container').classList.add('hidden');
+                document.getElementById('client-selection-container').classList.remove('hidden');
             } else {
-                modalTitle.dataset.langKey = "modal_add_trans_title";
+                document.getElementById('modal-title').dataset.langKey = "modal_add_trans_title";
                 clientSelect.disabled = false;
-                toggleButton.classList.remove('hidden');
-                newClientContainer.classList.add('hidden');
-                clientSelectionContainer.classList.remove('hidden');
-                newClientNameInput.value = '';
-                initialBalanceInput.value = 0;
-                clientSelect.value = '';
+                document.getElementById('toggle-new-client-button').classList.remove('hidden');
             }
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
             setLanguage(currentLang);
         }
         
         function closeTransactionModal() {
-            const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
-            modalContent.classList.remove('scale-100', 'opacity-100');
             modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => document.getElementById('transaction-modal').classList.add('hidden'), 300);
         }
         
         function openEditClientNameModal(clientId, currentName) {
@@ -734,45 +753,37 @@
             document.getElementById('edit-client-modal').classList.remove('hidden');
         }
         
-        function closeEditClientModal() {
-             document.getElementById('edit-client-modal').classList.add('hidden');
-        }
+        function closeEditClientModal() { document.getElementById('edit-client-modal').classList.add('hidden'); }
 
         async function handleTransactionSubmit(e) {
             e.preventDefault();
             const form = e.target;
             const docId = form['transaction-doc-id'].value;
             const isNewClient = !document.getElementById('new-client-container').classList.contains('hidden');
-            const clientSelect = form['modal-client-select'];
             const salesRef = getSalesCollectionRef();
             const batch = writeBatch(db);
-
             let clientId, clientName;
             
             if (isNewClient) {
                 clientName = form['modal-new-client-name'].value.trim();
                 if (!clientName) { alert('Имя нового клиента не может быть пустым.'); return; }
                 clientId = crypto.randomUUID();
-                
                 const initialBalance = parseFloat(form['modal-initial-balance'].value) || 0;
                 if (initialBalance !== 0) {
-                    const initialBalanceData = {
-                        clientId, clientName,
-                        itemName: "Начальный остаток",
-                        unitPrice: initialBalance,
-                        quantity: 1,
-                        paymentReceived: 0,
-                        transactionDate: new Date() // Use current date for balance record
-                    };
-                    batch.set(doc(salesRef), initialBalanceData);
+                    batch.set(doc(salesRef), {
+                        clientId, clientName, itemName: "Начальный остаток",
+                        unitPrice: initialBalance, quantity: 1, paymentReceived: 0,
+                        transactionDate: new Date()
+                    });
                 }
             } else {
-                clientId = clientSelect.value;
+                clientId = form['modal-client-select'].value;
                 if (!clientId) { alert('Пожалуйста, выберите клиента.'); return; }
-                clientName = clientSelect.options[clientSelect.selectedIndex].text;
+                clientName = clientAggregates[clientId].name;
             }
-
-            const mainTransactionData = {
+            
+            const mainDocRef = docId ? doc(salesRef, docId) : doc(salesRef);
+            const data = {
                 clientId, clientName,
                 itemName: form['modal-item-name'].value.trim(),
                 unitPrice: parseFloat(form['modal-unit-price'].value),
@@ -780,20 +791,10 @@
                 paymentReceived: parseFloat(form['modal-payment-received'].value),
                 transactionDate: new Date(form['modal-transaction-date'].value)
             };
-            
-            const mainDocRef = docId ? doc(salesRef, docId) : doc(salesRef);
-            if (docId) {
-                batch.update(mainDocRef, mainTransactionData);
-            } else {
-                batch.set(mainDocRef, mainTransactionData);
-            }
+            docId ? batch.update(mainDocRef, data) : batch.set(mainDocRef, data);
 
-            try {
-                await batch.commit();
-                closeTransactionModal();
-            } catch (error) {
-                console.error("Ошибка сохранения транзакции:", error);
-            }
+            try { await batch.commit(); closeTransactionModal(); } 
+            catch (error) { console.error("Ошибка сохранения транзакции:", error); }
         }
         
         async function handleUpdateClientName(e) {
@@ -802,71 +803,38 @@
             const newName = document.getElementById('edit-client-name-input').value.trim();
             if (!newName) return;
             
-            const transactionsToUpdate = allTransactions.filter(t => t.clientId === clientId);
-            if (transactionsToUpdate.length === 0) {
-                closeEditClientModal();
-                return;
-            }
-            
-            const salesRef = getSalesCollectionRef();
             const batch = writeBatch(db);
-            transactionsToUpdate.forEach(t => {
-                const docRef = doc(salesRef, t.id);
-                batch.update(docRef, { clientName: newName });
+            allTransactions.filter(t => t.clientId === clientId).forEach(t => {
+                batch.update(doc(getSalesCollectionRef(), t.id), { clientName: newName });
             });
             
-            try {
-                await batch.commit();
-                closeEditClientModal();
-            } catch (error) {
-                console.error("Ошибка обновления имени клиента:", error);
-            }
+            try { await batch.commit(); closeEditClientModal(); } 
+            catch (error) { console.error("Ошибка обновления имени клиента:", error); }
         }
         
         async function deleteTransaction(transactionId) {
             if (confirm(translations[currentLang].confirm_delete_transaction)) {
-                try {
-                    await deleteDoc(doc(getSalesCollectionRef(), transactionId));
-                } catch (error) {
-                    console.error("Ошибка удаления транзакции:", error);
-                }
+                try { await deleteDoc(doc(getSalesCollectionRef(), transactionId)); } 
+                catch (error) { console.error("Ошибка удаления транзакции:", error); }
             }
         }
 
         async function deleteClient(clientId) {
             if (confirm(translations[currentLang].confirm_delete_client)) {
-                const transactionsToDelete = allTransactions.filter(t => t.clientId === clientId);
-                const salesRef = getSalesCollectionRef();
                 const batch = writeBatch(db);
-                transactionsToDelete.forEach(t => {
-                    batch.delete(doc(salesRef, t.id));
+                allTransactions.filter(t => t.clientId === clientId).forEach(t => {
+                    batch.delete(doc(getSalesCollectionRef(), t.id));
                 });
-                try {
-                    await batch.commit();
-                    currentClientDetailsId = null;
-                    renderDetailsView(); // Вернуться к списку
-                } catch (error) {
-                    console.error("Ошибка удаления клиента:", error);
-                }
+                try { await batch.commit(); currentClientDetailsId = null; renderDetailsView(); } 
+                catch (error) { console.error("Ошибка удаления клиента:", error); }
             }
         }
 
         // === ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK ===
-        window.viewClientDetails = (clientId) => {
-            currentClientDetailsId = clientId;
-            showView('details');
-        };
+        window.viewClientDetails = (clientId) => { currentClientDetailsId = clientId; showView('details'); };
         window.openEditClientNameModal = openEditClientNameModal;
-        window.backToDetailsList = () => {
-            currentClientDetailsId = null;
-            renderDetailsView();
-        };
-        window.openTransactionModalForEdit = (transactionId) => {
-            const transaction = allTransactions.find(t => t.id === transactionId);
-            if (transaction) {
-                openTransactionModal(transaction.id, transaction);
-            }
-        };
+        window.backToDetailsList = () => { currentClientDetailsId = null; renderDetailsView(); };
+        window.openTransactionModalForEdit = (id) => openTransactionModal(id, allTransactions.find(t => t.id === id));
         window.deleteTransaction = deleteTransaction;
         window.deleteClient = deleteClient;
         window.toggleClientDetails = (clientId) => {
@@ -881,57 +849,113 @@
             } 
         };
 
-
         // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = () => {
+            // Event Listeners
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
             document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
             document.getElementById('edit-client-form').addEventListener('submit', handleUpdateClientName);
             document.getElementById('edit-modal-close-button').addEventListener('click', closeEditClientModal);
+            document.querySelectorAll('.header-nav-item').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
+            document.getElementById('logout-button-desktop').addEventListener('click', () => signOut(auth));
+            document.getElementById('client-search').addEventListener('input', renderClientsList);
+            document.body.addEventListener('input', e => { if (e.target.id === 'details-transaction-search') renderDetailsView(); });
             
+            // Language Switcher
+            const langButton = document.getElementById('language-menu-button');
+            const langDropdown = document.getElementById('language-dropdown');
+            langButton.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); });
+            document.addEventListener('click', () => langDropdown.classList.add('hidden'));
+            document.querySelectorAll('.language-option').forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.lang)));
+
+            // New Client Toggle
             document.getElementById('toggle-new-client-button').addEventListener('click', (e) => {
-                const newClientContainer = document.getElementById('new-client-container');
-                const clientSelectionContainer = document.getElementById('client-selection-container');
-                const isHidingNew = newClientContainer.classList.toggle('hidden');
-                clientSelectionContainer.classList.toggle('hidden');
+                const isHidingNew = document.getElementById('new-client-container').classList.toggle('hidden');
+                document.getElementById('client-selection-container').classList.toggle('hidden');
                 e.target.dataset.langKey = isHidingNew ? 'add_new_client_btn' : 'back_to_list_btn';
-                document.getElementById('main-transaction-fields').style.display = 'block'; // Always visible now
                 setLanguage(currentLang);
             });
 
-            document.querySelectorAll('.header-nav-item').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
-            document.getElementById('logout-button-desktop').addEventListener('click', () => signOut(auth));
+            // Settings: App Name
             document.getElementById('app-name-input').addEventListener('input', e => {
                 const title = e.target.value.trim() || "Система Учёта Продаж";
                 document.getElementById('site-title-display').textContent = title;
                 document.getElementById('site-title-tag').textContent = title;
+                localStorage.setItem('siteTitle', title);
             });
-            document.getElementById('client-search').addEventListener('input', e => renderClientsList(clientAggregates, e.target.value));
 
-            document.querySelectorAll('.language-option').forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.lang)));
+            // Settings: Theme
+            const applyTheme = (theme) => {
+                document.body.classList.remove('theme-dark');
+                if (theme === 'dark') document.body.classList.add('theme-dark');
+                localStorage.setItem('siteTheme', theme);
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`.theme-btn[data-theme="${theme}"]`).classList.add('active');
+            };
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
+            applyTheme(localStorage.getItem('siteTheme') || 'light');
             
-            const langButton = document.getElementById('language-menu-button');
-            const langDropdown = document.getElementById('language-dropdown');
-            langButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                langDropdown.classList.toggle('hidden');
-            });
-            document.addEventListener('click', () => {
-                if (!langDropdown.classList.contains('hidden')) {
-                    langDropdown.classList.add('hidden');
+            // Settings: Logo
+            const updateLogo = (url) => {
+                const logoImg = document.getElementById('site-logo');
+                const title = document.getElementById('site-title-display');
+                if (url) {
+                    logoImg.src = url;
+                    logoImg.classList.remove('hidden');
+                    title.classList.add('hidden');
+                    document.getElementById('logo-preview-container').innerHTML = `<img src="${url}" class="h-10 mx-auto">`;
+                } else {
+                    logoImg.classList.add('hidden');
+                    title.classList.remove('hidden');
+                }
+            };
+            const logoUploadInput = document.getElementById('logo-upload-input');
+            logoUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const statusEl = document.getElementById('logo-upload-status');
+                statusEl.textContent = translations[currentLang].logo_uploading;
+                const formData = new FormData();
+                formData.append('image', file);
+                try {
+                    const res = await fetch('https://api.imgbb.com/1/upload?key=ef55a2f580a19821cd96845bc3f3cee1', { method: 'POST', body: formData });
+                    const result = await res.json();
+                    if (result.success) {
+                        const logoUrl = result.data.url;
+                        localStorage.setItem('siteLogo', logoUrl);
+                        updateLogo(logoUrl);
+                        statusEl.textContent = translations[currentLang].logo_upload_success;
+                    } else { throw new Error(result.error.message); }
+                } catch (err) {
+                    console.error('Logo upload error:', err);
+                    statusEl.textContent = translations[currentLang].logo_upload_error;
                 }
             });
-            
-            const savedLang = localStorage.getItem('appLanguage') || 'ru';
-            setLanguage(savedLang);
+            updateLogo(localStorage.getItem('siteLogo'));
+            const savedTitle = localStorage.getItem('siteTitle');
+            if (savedTitle) {
+                document.getElementById('site-title-display').textContent = savedTitle;
+                document.getElementById('site-title-tag').textContent = savedTitle;
+                document.getElementById('app-name-input').value = savedTitle;
+            }
 
+
+            // Initialization
+            setLanguage(localStorage.getItem('appLanguage') || 'ru');
             document.getElementById('modal-transaction-date').valueAsDate = new Date();
-            
             setupFirebase();
         };
     </script>
 </body>
 </html>
-"
+" selected in the document "Система Учёта Продаж"
+1. Вкладку подробно надо переделать обратно как она и была типа ты во вкладке основа выбираешь клиента и смотришь подробно а то что ты сделал это не то 
+
+2. А также надо добавить новый пункт называется он архив там типа когда ты нажимаешь на кнопку архивировать собственно клиент попадает в архив и его не видно в основном списке а только в архиве и с возможностью разархивировать 
+
+
+3. Добавь калькулятор и блокнот тоже как отдельный пункт 
+
+4. Надо сделать так чтобы можно было менять валюту тоже в настройках
 
