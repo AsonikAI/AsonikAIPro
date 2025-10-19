@@ -3,870 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asonik OS — Ваш Браузерный Рабочий Стол</title>
+    <title>Система Учёта Продаж</title>
     <!-- Подключение Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Конфигурация Tailwind для использования шрифта Inter и кастомного стиля -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-dark': '#1a1a2e',
-                        'secondary-dark': '#16213e',
-                        'accent-blue': '#0f3460',
-                        'text-light': '#e9e9f1',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- Настройка шрифта Inter для современного вида -->
     <style>
-        /* Стилизация для имитации рабочего стола */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
-            height: 100vh;
-            margin: 0;
-            overflow: hidden; /* Предотвращаем прокрутку основного экрана */
-            background-color: #0f172a; /* Изначальный темный фон */
             font-family: 'Inter', sans-serif;
-            background-size: cover;
-            background-position: center;
-            transition: background-image 0.5s ease;
+            background-color: #f7f7f9;
         }
-
-        /* Адаптивное центрирование для иконок рабочего стола */
-        #desktop {
-            height: 100%;
-            padding-top: 56px; /* Отступ для верхней панели */
-            /* Сетка для иконок рабочего стола */
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            grid-auto-rows: 80px;
-            gap: 1rem;
-            padding: 1rem;
-            align-content: start; /* Выравнивание сверху */
+        /* Стили для центрирования и теней */
+        .card {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px -5px rgba(0, 0, 0, 0.04);
         }
-        
-        /* Общий стиль для плиток приложений в меню Пуск */
-        .app-tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            @apply p-3 text-sm font-semibold text-white bg-gray-700/50 rounded-lg hover:ring-2 hover:ring-accent-blue transition duration-150 text-center shadow-lg h-20;
-        }
-
-        /* Общий стиль для окон приложений */
-        .app-window {
-            position: absolute; /* Делает окна подвижными */
-            min-width: 300px;
-            min-height: 200px;
-            max-width: 95vw;
-            max-height: 90vh;
-            @apply shadow-2xl flex flex-col border border-gray-700 rounded-lg overflow-hidden bg-gray-800;
-        }
-        
-        /* Заголовок окна для перетаскивания */
-        .app-title-bar {
-            @apply flex justify-between items-center p-2 bg-gray-900 rounded-t-lg cursor-grab;
-            z-index: 10; /* Обеспечиваем, что он выше контента */
-        }
-
-        /* Кастомный стиль для кнопок Калькулятора */
-        .calc-button {
-            @apply p-4 rounded-xl bg-gray-700 text-2xl text-white font-semibold hover:bg-gray-600 transition duration-100 shadow-md;
-        }
-
-        /* Стиль для активной иконки в Панели задач (зеленая полоска) */
-        .taskbar-icon-active {
-            box-shadow: 0 4px 0 0 #10b981; /* Tailwind green-500 shadow */
-        }
-
-        /* Стиль для иконок рабочего стола */
-        .desktop-icon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: start;
-            cursor: pointer;
-            text-align: center;
-            @apply p-2 rounded-lg text-white hover:bg-white/10 transition duration-100;
-        }
-        .desktop-icon-label {
-            @apply text-xs mt-1 bg-gray-900/50 p-0.5 rounded-sm;
-            max-width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
 
-    <!-- Имитация верхней панели / Панели задач -->
-    <header id="taskbar" class="fixed top-0 left-0 w-full h-14 bg-gray-900 bg-opacity-80 backdrop-blur-md z-[1000] shadow-lg flex items-center justify-between px-4">
-        <!-- Левая часть: Название ОС -->
-        <div class="text-text-light text-lg font-semibold tracking-wide">
-            Asonik OS
-        </div>
+    <!-- Главный контейнер для всего приложения -->
+    <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4">
 
-        <!-- Контейнер для активных приложений (Multitasking) -->
-        <div id="active-apps" class="flex flex-grow justify-start mx-4 space-x-2 h-full items-center overflow-x-auto">
-            <!-- Здесь будут иконки открытых приложений -->
-        </div>
+        <!-- 1. Экран Входа (Скрыт по умолчанию) -->
+        <div id="login-screen" class="w-full max-w-md bg-white p-8 rounded-xl card transition-all duration-300">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Вход в систему</h1>
+            <p class="text-center text-sm text-gray-500 mb-8">Используйте логин: <code class="bg-gray-100 p-1 rounded">admin</code> и пароль: <code class="bg-gray-100 p-1 rounded">admin</code></p>
 
-        <!-- Правая часть: Часы, Поиск, Пуск -->
-        <div class="flex items-center space-x-2">
-            <!-- Центральная часть: Часы (перенесены немного левее от края) -->
-            <div id="clock" class="text-text-light text-sm font-medium hidden sm:block px-2">
-                <!-- Время будет обновляться JS -->
-            </div>
-
-            <!-- Кнопка Поиск (Лупа) -->
-            <button id="search-button" onclick="toggleSearch()" class="p-2 rounded-lg hover:bg-accent-blue/50 transition duration-150 group">
-                <!-- Lucide Icon: Search (Поиск) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-text-light group-hover:text-white">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-            </button>
-
-            <!-- Кнопка Пуск (Квадрат/Логотип) -->
-            <button id="start-button" onclick="toggleStartMenu()" class="p-2 rounded-lg bg-accent-blue hover:bg-accent-blue/70 transition duration-150 shadow-md group">
-                <!-- Обновленная иконка - Квадрат -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-white group-hover:scale-105 transition duration-300">
-                    <rect x="4" y="4" width="7" height="7" rx="1" fill="white"/>
-                    <rect x="13" y="4" width="7" height="7" rx="1" fill="white"/>
-                    <rect x="4" y="13" width="7" height="7" rx="1" fill="white"/>
-                    <rect x="13" y="13" width="7" height="7" rx="1" fill="white"/>
-                </svg>
-            </button>
-        </div>
-    </header>
-
-    <!-- Основное пространство рабочего стола -->
-    <main id="desktop" class="w-full h-full relative">
-
-        <!-- ЯРЛЫКИ РАБОЧЕГО СТОЛА -->
-        <div id="desktop-icons" class="absolute top-0 left-0 p-4 pt-16 grid grid-cols-1 gap-4">
-            <!-- Ярлык: Настройки -->
-            <div class="desktop-icon" onclick="launchApp('Settings', 'Настройки')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.44.25a2 2 0 0 0-2 0l-.16-.09a2 2 0 0 0-2 0l-.44.25A2 2 0 0 1 2 7.22v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 0 2l-.25.44a2 2 0 0 1-1.73 1H2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 2 0l.44-.25a2 2 0 0 1 1-1.73v-.18a2 2 0 0 0 2-2h.44a2 2 0 0 0 2 2v.18a2 2 0 0 1 1 1.73l.44.25a2 2 0 0 0 2 0l.16-.09a2 2 0 0 0 2 0l.44-.25A2 2 0 0 1 22 16.78v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0 0-2l.25-.44a2 2 0 0 1 1.73-1H22v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0-2 0l-.44.25a2 2 0 0 1-1 1.73v.18a2 2 0 0 0-2 2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <span class="desktop-icon-label">Настройки</span>
-            </div>
-            <!-- Ярлык: Калькулятор -->
-            <div class="desktop-icon" onclick="launchApp('Calculator', 'Калькулятор')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="12" y2="18"></line></svg>
-                <span class="desktop-icon-label">Калькулятор</span>
-            </div>
-             <!-- Ярлык: Проводник -->
-            <div class="desktop-icon" onclick="launchApp('Explorer', 'Проводник')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.86 1.28a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2z"></path></svg>
-                <span class="desktop-icon-label">Проводник</span>
-            </div>
-        </div>
-        
-        <!-- 1. ПАНЕЛЬ "ПУСК" (Меню) -->
-        <div id="start-menu" class="hidden absolute top-14 right-4 w-72 max-h-[80vh] bg-gray-800 bg-opacity-95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-2xl p-4 overflow-y-auto z-[900] origin-top-right transition-all duration-300 transform scale-95 opacity-0">
-            <div class="text-xl font-extrabold text-white mb-4 border-b border-gray-700 pb-2">
-                Asonik OS Приложения
-            </div>
-            
-            <div class="grid grid-cols-3 gap-3">
-                
-                <button onclick="launchApp('Explorer', 'Проводник')" class="app-tile bg-blue-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.86 1.28a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2z"></path></svg>
-                    Проводник
-                </button>
-                <button onclick="launchApp('Settings', 'Настройки')" class="app-tile bg-purple-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.44.25a2 2 0 0 0-2 0l-.16-.09a2 2 0 0 0-2 0l-.44.25A2 2 0 0 1 2 7.22v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 0 2l-.25.44a2 2 0 0 1-1.73 1H2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 2 0l.44-.25a2 2 0 0 1 1-1.73v-.18a2 2 0 0 0 2-2h.44a2 2 0 0 0 2 2v.18a2 2 0 0 1 1 1.73l.44.25a2 2 0 0 0 2 0l.16-.09a2 2 0 0 0 2 0l.44-.25A2 2 0 0 1 22 16.78v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0 0-2l.25-.44a2 2 0 0 1 1.73-1H22v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0-2 0l-.44.25a2 2 0 0 1-1 1.73v.18a2 2 0 0 0-2 2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    Настройки
-                </button>
-                <button onclick="launchApp('Calculator', 'Калькулятор')" class="app-tile bg-green-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="12" y2="18"></line></svg>
-                    Калькулятор
-                </button>
-                <button onclick="launchApp('Calendar', 'Календарь')" class="app-tile bg-red-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    Календарь
-                </button>
-                <button onclick="launchApp('Browser', 'Браузер')" class="app-tile bg-orange-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                    Браузер
-                </button>
-                <button onclick="launchApp('Media', 'Медиа')" class="app-tile bg-pink-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    Медиа
-                </button>
-            </div>
-
-            <div class="mt-4 pt-3 border-t border-gray-700">
-                <button onclick="location.reload()" class="w-full text-left p-2 rounded-md text-red-400 hover:bg-red-900/50 transition duration-100 flex items-center space-x-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M21.5 8a9.96 9.96 0 0 0-4-7.5l-2.4 2.4"/><path d="M2.5 16a9.96 9.96 0 0 0 4 7.5l2.4-2.4"/></svg>
-                    <span>Перезагрузить систему</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 2. ПАНЕЛЬ "ПОИСК" (Поиск) -->
-        <div id="search-panel" class="hidden absolute top-14 right-4 w-80 max-h-96 bg-gray-800 bg-opacity-95 backdrop-blur-lg border border-gray-700 rounded-lg shadow-2xl p-4 z-[900] origin-top-right transition-all duration-300 transform scale-95 opacity-0">
-            <div class="text-lg font-bold text-white mb-3">
-                Поиск по системе
-            </div>
-            <input type="text" placeholder="Введите запрос..." class="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-text-light focus:outline-none focus:border-accent-blue transition duration-150">
-
-            <div class="mt-4 space-y-2">
-                <p class="text-sm text-gray-400">Популярные запросы:</p>
-                <div class="flex flex-wrap gap-2">
-                    <span class="text-xs text-text-light bg-primary-dark px-3 py-1 rounded-full cursor-pointer hover:bg-accent-blue transition duration-100">Файлы</span>
-                    <span class="text-xs text-text-light bg-primary-dark px-3 py-1 rounded-full cursor-pointer hover:bg-accent-blue transition duration-100">Помощь</span>
-                    <span class="text-xs text-text-light bg-primary-dark px-3 py-1 rounded-full cursor-pointer hover:bg-accent-blue transition duration-100">Настройки</span>
+            <form id="login-form">
+                <div class="mb-5">
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Логин</label>
+                    <input type="text" id="username" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="admin">
                 </div>
-            </div>
-        </div>
-
-        <!-- 3. ОКНО ПРИЛОЖЕНИЯ: НАСТРОЙКИ -->
-        <div id="app-settings" data-app-name="Настройки" data-icon="Settings" class="app-window hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4" style="z-index: 100;">
-            <div class="app-title-bar" onmousedown="startDrag(event, 'app-settings')" onclick="bringToFront('app-settings')">
-                <span class="text-sm font-semibold text-white">Настройки</span>
-                <button onclick="closeApp('Settings')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light">
-                <h1 class="text-3xl font-bold mb-6 border-b border-gray-700 pb-2">Системные Настройки</h1>
-                
-                <div class="mb-8">
-                    <h2 class="text-2xl font-semibold mb-4 text-accent-blue">Оформление: Фон Рабочего стола</h2>
-                    
-                    <h3 class="text-lg font-medium mb-3 text-gray-400">1. Галерея Asonik OS</h3>
-                    <div id="stock-backgrounds" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <!-- Stock 1: Deep Blue -->
-                        <div onclick="setDesktopBackground('url(https://placehold.co/1920x1080/0f172a/e9e9f1?text=Asonik+OS)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-[#0f172a] flex items-center justify-center text-xs text-white/80 font-mono">Темный</div>
-                        <!-- Stock 2: Gradient -->
-                        <div onclick="setDesktopBackground('linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] flex items-center justify-center text-xs text-white/80 font-mono">Градиент</div>
-                        <!-- Stock 3: Abstract Blue -->
-                        <div onclick="setDesktopBackground('url(https://placehold.co/1920x1080/003366/ffffff?text=Abstract+Blue)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-[#003366] flex items-center justify-center text-xs text-white/80 font-mono">Синий Абстракт</div>
-                        <!-- Stock 4: Light Blue -->
-                        <div onclick="setDesktopBackground('url(https://placehold.co/1920x1080/5B9AFF/000000?text=Cloud+Sky)')" class="h-20 rounded-lg shadow-lg cursor-pointer border-2 border-transparent hover:border-accent-blue transition duration-150 bg-[#5B9AFF] flex items-center justify-center text-xs text-black/80 font-mono">Небо</div>
-                    </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="••••••••">
                 </div>
 
-                <!-- Секция загрузки своего фона (IMGBB Placeholder) -->
-                <div class="p-4 border border-gray-700 rounded-lg">
-                    <h3 class="text-lg font-medium mb-3 text-gray-400">2. Ваш Собственный Фон</h3>
-                    <p class="text-sm text-gray-500 mb-4">Установка фонового изображения по прямой ссылке (URL).</p>
-
-                    <!-- URL Input -->
-                    <div class="mb-4">
-                        <label for="custom-url" class="block text-sm font-medium text-gray-400 mb-1">URL изображения:</label>
-                        <input type="text" id="custom-url" placeholder="https://example.com/image.jpg" class="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-text-light focus:outline-none focus:border-accent-blue">
-                        <button onclick="setCustomBackgroundFromUrl()" class="mt-2 w-full p-2 rounded-md bg-accent-blue hover:bg-accent-blue/80 transition duration-150 font-semibold">Установить фон по URL</button>
-                    </div>
-
-                    <!-- File Upload Placeholder (Simulated) -->
-                    <div class="mt-4 border-t border-gray-700 pt-4">
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Загрузка файла (имитация IMGBB):</label>
-                        <input type="file" id="custom-file-input" accept="image/*" class="w-full text-text-light text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-dark file:text-white hover:file:bg-accent-blue cursor-pointer" onchange="previewCustomFile(event)">
-                        <p class="text-xs text-red-400 mt-2">API Key: V309d016341a7e78f0c92f98fc3e8a542. Фактическая загрузка на внешний сервис здесь не происходит; используется локальный предпросмотр для установки фона.</p>
-                    </div>
+                <div id="error-message" class="text-red-600 text-sm mb-4 text-center hidden">
+                    Неверный логин или пароль.
                 </div>
 
-            </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    Войти
+                </button>
+            </form>
         </div>
 
-        <!-- 4. ОКНО ПРИЛОЖЕНИЯ: КАЛЬКУЛЯТОР (Рабочий) -->
-        <div id="app-calculator" data-app-name="Калькулятор" data-icon="Calculator" class="app-window hidden top-1/3 left-1/4 w-full max-w-xs h-auto" style="z-index: 100;">
-            <div class="app-title-bar" onmousedown="startDrag(event, 'app-calculator')" onclick="bringToFront('app-calculator')">
-                <span class="text-sm font-semibold text-white">Калькулятор</span>
-                <button onclick="closeApp('Calculator')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="app-content p-4 text-text-light">
-                <div id="calc-display" class="bg-gray-900 text-white text-right p-4 mb-4 rounded-xl text-3xl h-20 overflow-hidden">0</div>
-                <div class="grid grid-cols-4 gap-3">
-                    <button class="calc-button col-span-2 bg-red-800 hover:bg-red-700" onclick="calculator.clear()">AC</button>
-                    <button class="calc-button bg-gray-600 hover:bg-gray-500" onclick="calculator.delete()">DEL</button>
-                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="calculator.appendOperator('/')">/</button>
+        <!-- 2. Главный Экран Приложения (Скрыт по умолчанию) -->
+        <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col md:flex-row min-h-screen bg-white rounded-xl card transition-all duration-300">
 
-                    <button class="calc-button" onclick="calculator.appendNumber('7')">7</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('8')">8</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('9')">9</button>
-                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="calculator.appendOperator('*')">x</button>
-
-                    <button class="calc-button" onclick="calculator.appendNumber('4')">4</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('5')">5</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('6')">6</button>
-                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="calculator.appendOperator('-')">-</button>
-
-                    <button class="calc-button" onclick="calculator.appendNumber('1')">1</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('2')">2</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('3')">3</button>
-                    <button class="calc-button bg-orange-600 hover:bg-orange-500" onclick="calculator.appendOperator('+')">+</button>
-
-                    <button class="calc-button col-span-2" onclick="calculator.appendNumber('0')">0</button>
-                    <button class="calc-button" onclick="calculator.appendNumber('.')">.</button>
-                    <button class="calc-button bg-accent-blue hover:bg-accent-blue/80" onclick="calculator.compute()">=</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. ОКНО ПРИЛОЖЕНИЯ: КАЛЕНДАРЬ (Улучшенный) -->
-        <div id="app-calendar" data-app-name="Календарь" data-icon="Calendar" class="app-window hidden top-1/4 left-1/3 w-full max-w-xl h-96" style="z-index: 100;">
-            <div class="app-title-bar" onmousedown="startDrag(event, 'app-calendar')" onclick="bringToFront('app-calendar')">
-                <span class="text-sm font-semibold text-white">Календарь</span>
-                <button onclick="closeApp('Calendar')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
-                <div class="flex justify-between items-center mb-4">
-                    <button id="prev-month" onclick="calendar.changeMonth(-1)" class="text-accent-blue hover:text-white transition duration-150 p-1 rounded-full"><</button>
-                    <h2 class="text-2xl font-bold" id="current-month-display">Текущий Месяц</h2>
-                    <button id="next-month" onclick="calendar.changeMonth(1)" class="text-accent-blue hover:text-white transition duration-150 p-1 rounded-full">></button>
+            <!-- Боковое меню (Навигация) -->
+            <aside class="md:w-64 bg-gray-50 p-6 md:p-4 border-r border-gray-200 flex-shrink-0">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-xl font-bold text-blue-700">Продажи PRO</h2>
+                    <button id="logout-button-mobile" class="md:hidden text-gray-500 hover:text-gray-900 focus:outline-none">
+                        <!-- Иконка выхода (SVG) -->
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
                 </div>
                 
-                <div class="grid grid-cols-7 gap-1 text-sm font-semibold text-gray-400 border-b border-gray-700 pb-2 mb-2">
-                    <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span class="text-red-400">Сб</span><span class="text-red-400">Вс</span>
+                <nav>
+                    <a href="#" data-view="dashboard" class="nav-item flex items-center p-3 text-lg font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-lg mb-2 active-view">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0V9a2 2 0 00-2-2m2 4v2a2 2 0 01-2 2M5 11V9a2 2 0 012-2m-2 4v2a2 2 0 002 2m7-10V5a2 2 0 00-2-2H7a2 2 0 00-2 2v4m10 0v2m2-10a2 2 0 012 2v4m-2 4v2a2 2 0 002 2H7a2 2 0 01-2-2v-2m4-10H7m4 0h6m-10 4h6m-10 4h6"></path></svg>
+                        Обзор Продаж
+                    </a>
+                    <a href="#" data-view="settings" class="nav-item flex items-center p-3 text-lg font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-lg mb-2">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35-.426.426-.99.704-1.066 2.573-.94 1.543.826 3.31 2.37 2.37a1.724 1.724 0 002.572 1.065c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 001.066-2.573c.94-1.543-.826-3.31-2.37-2.37a1.724 1.724 0 00-2.572-1.065c-1.756-.426-1.756-2.924 0-3.35.426-.426.99-.704 1.066-2.573 0"></path></svg>
+                        Настройки
+                    </a>
+                </nav>
+
+                <div class="mt-auto pt-6 hidden md:block">
+                    <button id="logout-button-desktop" class="w-full flex items-center justify-center p-3 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition duration-200 shadow-md">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        Выход
+                    </button>
                 </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-lg">
-                    <!-- Dates will be generated by JS -->
+            </aside>
+
+            <!-- Основное содержимое (Dashboard / Settings) -->
+            <main class="flex-grow p-6 md:p-10 overflow-y-auto">
+                
+                <!-- Заголовок для мобильных устройств и кнопка выхода -->
+                <div class="flex justify-between items-center md:hidden mb-6">
+                    <h1 id="mobile-header-title" class="text-2xl font-bold text-gray-900">Обзор Продаж</h1>
                 </div>
-            </div>
+
+                <!-- Контейнеры для динамического содержимого -->
+
+                <!-- 2.1. Обзор Продаж (Dashboard) -->
+                <section id="view-dashboard" class="view-content transition-opacity duration-300">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-6 hidden md:block">Обзор Продаж</h1>
+                    <p class="text-gray-600 mb-8">Сводная информация о проданных товарах, покупателях и общем доходе.</p>
+
+                    <!-- Карточки с ключевыми показателями -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                            <p class="text-sm font-medium text-blue-600">Всего Продано</p>
+                            <p class="text-3xl font-extrabold text-gray-900 mt-1">1,250</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-xl border border-green-200">
+                            <p class="text-sm font-medium text-green-600">Общий Доход</p>
+                            <p class="text-3xl font-extrabold text-gray-900 mt-1">$155,900</p>
+                        </div>
+                        <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
+                            <p class="text-sm font-medium text-yellow-600">Новых Клиентов</p>
+                            <p class="text-3xl font-extrabold text-gray-900 mt-1">210</p>
+                        </div>
+                    </div>
+
+                    <!-- Таблица с последними продажами -->
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Последние Транзакции</h2>
+                    <div class="overflow-x-auto bg-white rounded-xl card border border-gray-100">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Товар</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Покупатель</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Ультрабук X1</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Иванов П.П.</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-10-18</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-semibold">$1,200.00</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Мышь Bluetooth 5.0</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Смирнова А.В.</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-10-17</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-semibold">$25.50</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Смартфон Pro Max</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Козлов Д.А.</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-10-17</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-semibold">$799.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 2.2. Настройки -->
+                <section id="view-settings" class="view-content hidden opacity-0 transition-opacity duration-300">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-6 hidden md:block">Настройки Системы</h1>
+                    <p class="text-gray-600 mb-8">Управление учётной записью и общими параметрами приложения.</p>
+
+                    <div class="space-y-8 max-w-2xl">
+                        <!-- Секция Учётной Записи -->
+                        <div class="bg-white p-6 rounded-xl border border-gray-200">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Учётная Запись</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Имя пользователя</label>
+                                    <input type="text" value="Администратор" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Смена Пароля</label>
+                                    <p class="text-sm text-gray-500">Здесь можно было бы реализовать форму смены пароля, но в этом демо он жёстко задан (admin/admin).</p>
+                                    <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition duration-150" disabled>Изменить пароль</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Секция Общих Параметров -->
+                        <div class="bg-white p-6 rounded-xl border border-gray-200">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Общие Параметры</h3>
+                            <div class="flex items-center justify-between py-2">
+                                <label for="notifications" class="text-sm font-medium text-gray-700">Включить уведомления о новых продажах</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" value="" id="notifications" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between py-2 border-t border-gray-100 mt-2">
+                                <label for="theme" class="text-sm font-medium text-gray-700">Тёмная тема (скоро)</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" value="" id="theme" disabled class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
         </div>
 
-        <!-- 6. ОКНО ПРИЛОЖЕНИЯ: БРАУЗЕР (Рабочий) -->
-        <div id="app-browser" data-app-name="Браузер" data-icon="Browser" class="app-window hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-6xl h-4/5" style="z-index: 100;">
-            <div class="app-title-bar" onmousedown="startDrag(event, 'app-browser')" onclick="bringToFront('app-browser')">
-                <span class="text-sm font-semibold text-white">Браузер (Web)</span>
-                <button onclick="closeApp('Browser')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="app-content flex-grow flex flex-col p-2 text-text-light">
-                <!-- Адресная строка -->
-                <div class="flex space-x-2 mb-2">
-                    <input type="text" id="browser-url-input" placeholder="Введите URL (например, https://google.com)" value="https://example.com" class="flex-grow p-2 rounded-md bg-gray-700 border border-gray-600 text-text-light focus:outline-none focus:border-accent-blue">
-                    <button onclick="browser.goToUrl()" class="p-2 rounded-md bg-accent-blue hover:bg-accent-blue/80 transition duration-150 font-semibold">Перейти</button>
-                </div>
-                <!-- Iframe для отображения страницы -->
-                <iframe id="browser-iframe" src="https://example.com" class="flex-grow rounded-md border border-gray-600 bg-white"></iframe>
-                <p class="text-xs text-red-400 mt-1">Внимание: некоторые сайты блокируют загрузку в iframe.</p>
-            </div>
-        </div>
-
-
-        <!-- 7. Placeholder for other apps (Explorer, Media) -->
-        <div id="app-explorer" data-app-name="Проводник" data-icon="Explorer" class="app-window hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4" style="z-index: 100;">
-            <div class="app-title-bar" onmousedown="startDrag(event, 'app-explorer')" onclick="bringToFront('app-explorer')">
-                <span class="text-sm font-semibold text-white">Проводник</span>
-                <button onclick="closeApp('Explorer')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
-                <h2 class="text-2xl font-bold mb-4">Проводник Файлов (В Разработке)</h2>
-                <p class="text-gray-400">Здесь будет файловая система Asonik OS.</p>
-            </div>
-        </div>
-        <div id="app-media" data-app-name="Медиаплеер" data-icon="Media" class="app-window hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-3/4" style="z-index: 100;">
-            <div class="app-title-bar" onmousedown="startDrag(event, 'app-media')" onclick="bringToFront('app-media')">
-                <span class="text-sm font-semibold text-white">Медиаплеер</span>
-                <button onclick="closeApp('Media')" class="p-1 rounded-md text-white hover:bg-red-600 transition duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <div class="app-content p-6 flex-grow overflow-y-auto text-text-light text-center">
-                <h2 class="text-2xl font-bold mb-4">Медиаплеер (В Разработке)</h2>
-                <p class="text-gray-400">Для просмотра видео и прослушивания музыки.</p>
-            </div>
-        </div>
-
-
-    </main>
-
+    </div>
 
     <script>
-        // Глобальные переменные состояния
-        let isStartMenuOpen = false;
-        let isSearchOpen = false;
-        let currentZIndex = 100; // Базовый Z-Index для окон
-        let dragElement = null;
-        let dragOffsetX = 0;
-        let dragOffsetY = 0;
-        
-        const startMenu = document.getElementById('start-menu');
-        const searchPanel = document.getElementById('search-panel');
-        const clockElement = document.getElementById('clock');
-        const desktopElement = document.body;
-        const activeAppsContainer = document.getElementById('active-apps');
-        
-        // Словарь для хранения информации об иконках приложений
-        const appIcons = {
-            'Settings': 'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.44.25a2 2 0 0 0-2 0l-.16-.09a2 2 0 0 0-2 0l-.44.25A2 2 0 0 1 2 7.22v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 0 2l-.25.44a2 2 0 0 1-1.73 1H2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.44a2 2 0 0 0 2 0l.44-.25a2 2 0 0 1 1-1.73v-.18a2 2 0 0 0 2-2h.44a2 2 0 0 0 2 2v.18a2 2 0 0 1 1 1.73l.44.25a2 2 0 0 0 2 0l.16-.09a2 2 0 0 0 2 0l.44-.25A2 2 0 0 1 22 16.78v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0 0-2l.25-.44a2 2 0 0 1 1.73-1H22v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.44a2 2 0 0 0-2 0l-.44.25a2 2 0 0 1-1 1.73v.18a2 2 0 0 0-2 2zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
-            'Calculator': 'M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm4 4h8m-8 4h8m-8 4h8m-8 4h4',
-            'Calendar': 'M3 4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4zm13 0v4M8 2v4M3 10h18',
-            'Browser': 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zM2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z',
-            'Explorer': 'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.93a2 2 0 0 1 1.66.9l.86 1.28a2 2 0 0 0 1.66.9H20a2 2 0 0 1 2 2z',
-            'Media': 'M5 3l14 9-14 9z',
-        };
+        // === Настройка и Глобальные Переменные ===
+        const AUTH_KEY = 'sales_app_is_authenticated';
+        const loginScreen = document.getElementById('login-screen');
+        const mainAppScreen = document.getElementById('main-app-screen');
+        const loginForm = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewContents = document.querySelectorAll('.view-content');
+        const mobileHeaderTitle = document.getElementById('mobile-header-title');
 
-        // --- UI/STATE MANAGEMENT FUNCTIONS ---
+        // === Логика Аутентификации ===
 
-        function updateClock() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            const dateString = now.toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' });
-            clockElement.textContent = `${timeString} | ${dateString}`;
-            
-            // Обновление Календаря при старте
-            if (window.calendar) {
-                 calendar.renderCalendar();
-            }
-        }
-        
-        setInterval(updateClock, 1000);
-        updateClock();
-
-
-        function closeAllPopups() {
-            if (isStartMenuOpen) closeStartMenu();
-            if (isSearchOpen) closeSearch();
-        }
-
-        function toggleStartMenu() {
-            closeAllPopups();
-
-            isStartMenuOpen = !isStartMenuOpen;
-            
-            if (isStartMenuOpen) {
-                startMenu.classList.remove('hidden', 'scale-95', 'opacity-0');
-                startMenu.classList.add('scale-100', 'opacity-100');
-            } else {
-                startMenu.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    if (!isStartMenuOpen) startMenu.classList.add('hidden');
-                }, 300); 
-            }
-        }
-
-        function toggleSearch() {
-            closeAllPopups();
-
-            isSearchOpen = !isSearchOpen;
-            
-            if (isSearchOpen) {
-                searchPanel.classList.remove('hidden', 'scale-95', 'opacity-0');
-                searchPanel.classList.add('scale-100', 'opacity-100');
-            } else {
-                searchPanel.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => {
-                    if (!isSearchOpen) searchPanel.classList.add('hidden');
-                }, 300); 
-            }
-        }
-
-        function closeStartMenu() {
-            isStartMenuOpen = false;
-            startMenu.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { startMenu.classList.add('hidden'); }, 300);
-        }
-
-        function closeSearch() {
-            isSearchOpen = false;
-            searchPanel.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { searchPanel.classList.add('hidden'); }, 300);
+        /**
+         * Проверяет, аутентифицирован ли пользователь.
+         */
+        function checkAuth() {
+            return localStorage.getItem(AUTH_KEY) === 'true';
         }
 
         /**
-         * Перемещает окно на передний план, обновляя Z-index.
-         * @param {string} appId - ID элемента окна (например, 'app-calculator').
+         * Управляет отображением экранов (Вход vs. Приложение).
          */
-        function bringToFront(appId) {
-            const appElement = document.getElementById(appId);
-            if (appElement) {
-                currentZIndex++;
-                appElement.style.zIndex = currentZIndex;
-                
-                // Снимаем активность со всех иконок в панели задач
-                document.querySelectorAll('.taskbar-icon').forEach(icon => {
-                    icon.classList.remove('taskbar-icon-active');
-                });
-
-                // Добавляем активность текущей иконке
-                const taskbarIcon = document.getElementById(`taskbar-icon-${appId}`);
-                if (taskbarIcon) {
-                    taskbarIcon.classList.add('taskbar-icon-active');
-                }
+        function renderApp() {
+            if (checkAuth()) {
+                loginScreen.classList.add('hidden');
+                mainAppScreen.classList.remove('hidden');
+                mainAppScreen.classList.add('flex'); // Используем flex для главного контейнера
+                // При входе по умолчанию показываем Dashboard
+                showView('dashboard');
+            } else {
+                loginScreen.classList.remove('hidden');
+                mainAppScreen.classList.add('hidden');
+                mainAppScreen.classList.remove('flex');
             }
         }
 
         /**
-         * Запускает приложение (открывает или фокусирует окно).
-         * @param {string} appName - Краткое имя приложения (e.g., 'Settings').
-         * @param {string} displayName - Имя для отображения (e.g., 'Настройки').
+         * Обрабатывает попытку входа.
          */
-        function launchApp(appName, displayName) {
-            closeAllPopups();
+        function handleLogin(event) {
+            event.preventDefault();
             
-            const appId = `app-${appName.toLowerCase()}`;
-            const appElement = document.getElementById(appId);
-            const taskbarIconId = `taskbar-icon-${appId}`;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-            if (appElement) {
-                // 1. Открываем/Фокусируем окно
-                appElement.classList.remove('hidden');
-                bringToFront(appId);
-
-                // 2. Управляем иконкой в панели задач
-                let iconElement = document.getElementById(taskbarIconId);
-                if (!iconElement) {
-                    // Создаем иконку, если её нет
-                    iconElement = document.createElement('button');
-                    iconElement.id = taskbarIconId;
-                    iconElement.classList.add('taskbar-icon', 'p-1', 'w-10', 'h-10', 'rounded-lg', 'text-white', 'hover:bg-gray-700/50', 'transition', 'duration-150', 'flex', 'items-center', 'justify-center');
-                    iconElement.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="${appIcons[appName]}" />
-                        </svg>
-                    `;
-                    iconElement.title = displayName;
-                    iconElement.onclick = () => {
-                        // При нажатии либо фокус, либо сворачивание
-                        if (appElement.classList.contains('hidden')) {
-                            appElement.classList.remove('hidden'); // Развернуть
-                            bringToFront(appId);
-                        } else if (appElement.style.zIndex == currentZIndex) {
-                            appElement.classList.add('hidden'); // Свернуть (если на переднем плане)
-                            iconElement.classList.remove('taskbar-icon-active');
-                        } else {
-                            bringToFront(appId); // Фокусировка
-                        }
-                    };
-                    activeAppsContainer.appendChild(iconElement);
-                }
+            // Жестко заданные учетные данные
+            if (username === 'admin' && password === 'admin') {
+                localStorage.setItem(AUTH_KEY, 'true');
+                errorMessage.classList.add('hidden');
+                renderApp();
+            } else {
+                errorMessage.classList.remove('hidden');
+                // Очистка полей пароля для безопасности
+                document.getElementById('password').value = ''; 
             }
         }
 
-        function closeApp(appName) {
-            const appId = `app-${appName.toLowerCase()}`;
-            const appElement = document.getElementById(appId);
-            const taskbarIconId = `taskbar-icon-${appId}`;
-
-            if (appElement) {
-                // 1. Скрываем окно
-                appElement.classList.add('hidden');
-                // 2. Удаляем иконку из панели задач
-                const iconElement = document.getElementById(taskbarIconId);
-                if (iconElement) {
-                    iconElement.remove();
-                }
-            }
+        /**
+         * Обрабатывает выход из системы.
+         */
+        function handleLogout() {
+            localStorage.removeItem(AUTH_KEY);
+            renderApp();
         }
 
+        // === Логика Навигации (Переключение Вкладок) ===
 
-        // --- DRAG AND DROP FUNCTIONALITY ---
-
-        function startDrag(event, appId) {
-            // Убеждаемся, что drag начинается с заголовка
-            if (!event.target.closest('.app-title-bar')) return;
-            
-            // Устанавливаем окно как перетаскиваемое и перемещаем его на передний план
-            dragElement = document.getElementById(appId);
-            bringToFront(appId); 
-
-            // Рассчитываем смещение
-            dragOffsetX = event.clientX - dragElement.getBoundingClientRect().left;
-            dragOffsetY = event.clientY - dragElement.getBoundingClientRect().top;
-
-            // Убираем трансформацию translate, чтобы координаты были абсолютными
-            dragElement.style.transform = 'none';
-            dragElement.style.left = dragElement.getBoundingClientRect().left + 'px';
-            dragElement.style.top = dragElement.getBoundingClientRect().top + 'px';
-
-            document.addEventListener('mousemove', onDrag);
-            document.addEventListener('mouseup', stopDrag);
-        }
-
-        function onDrag(event) {
-            if (!dragElement) return;
-
-            const newX = event.clientX - dragOffsetX;
-            const newY = event.clientY - dragOffsetY;
-
-            // Проверка границ (чтобы окно не вышло за пределы экрана/рабочего стола)
-            const bounds = document.getElementById('desktop').getBoundingClientRect();
-            const taskbarHeight = document.getElementById('taskbar').offsetHeight;
-
-            // Ограничение по горизонтали
-            const finalX = Math.max(0, Math.min(newX, bounds.width - dragElement.offsetWidth));
-            
-            // Ограничение по вертикали (не выше панели задач)
-            const finalY = Math.max(taskbarHeight, Math.min(newY, bounds.height + taskbarHeight - dragElement.offsetHeight));
-
-            dragElement.style.left = finalX + 'px';
-            dragElement.style.top = finalY + 'px';
-        }
-
-        function stopDrag() {
-            if (dragElement) {
-                // Убираем трансформацию, но сохраняем текущие координаты
-                dragElement.style.transform = 'none';
-                dragElement = null;
-            }
-            document.removeEventListener('mousemove', onDrag);
-            document.removeEventListener('mouseup', stopDrag);
-        }
-
-
-        // --- APP LOGIC: CALCULATOR ---
-
-        const calculator = {
-            displayValue: '0',
-            firstOperand: null,
-            waitingForSecondOperand: false,
-            operator: null,
-            displayElement: document.getElementById('calc-display'),
-
-            updateDisplay() {
-                this.displayElement.textContent = this.displayValue.substring(0, 12);
-            },
-
-            appendNumber(number) {
-                if (this.waitingForSecondOperand) {
-                    this.displayValue = number;
-                    this.waitingForSecondOperand = false;
+        /**
+         * Показывает запрошенное представление (Dashboard или Settings).
+         * @param {string} viewId - ID представления для показа (например, 'dashboard' или 'settings').
+         */
+        function showView(viewId) {
+            viewContents.forEach(view => {
+                const targetId = `view-${viewId}`;
+                if (view.id === targetId) {
+                    // Показать с анимацией
+                    view.classList.remove('hidden', 'opacity-0');
+                    view.classList.add('opacity-100');
                 } else {
-                    if (number === '.' && this.displayValue.includes('.')) return;
-                    this.displayValue = this.displayValue === '0' && number !== '.' ? number : this.displayValue + number;
+                    // Скрыть
+                    view.classList.add('hidden', 'opacity-0');
+                    view.classList.remove('opacity-100');
                 }
-                this.updateDisplay();
-            },
+            });
 
-            clear() {
-                this.displayValue = '0';
-                this.firstOperand = null;
-                this.waitingForSecondOperand = false;
-                this.operator = null;
-                this.updateDisplay();
-            },
-            
-            delete() {
-                if (this.displayValue === '0' || this.waitingForSecondOperand) return;
-                this.displayValue = this.displayValue.slice(0, -1);
-                if (this.displayValue === '' || this.displayValue === '-') {
-                    this.displayValue = '0';
+            // Обновление активного элемента в меню
+            navItems.forEach(item => {
+                item.classList.remove('bg-blue-100', 'text-blue-700', 'active-view');
+                item.classList.add('text-gray-700');
+                if (item.getAttribute('data-view') === viewId) {
+                    item.classList.add('bg-blue-100', 'text-blue-700', 'active-view');
                 }
-                this.updateDisplay();
-            },
+            });
 
-            appendOperator(nextOperator) {
-                const inputValue = parseFloat(this.displayValue);
-
-                if (this.operator && this.waitingForSecondOperand) {
-                    this.operator = nextOperator;
-                    return;
-                }
-
-                if (this.firstOperand === null) {
-                    this.firstOperand = inputValue;
-                } else if (this.operator) {
-                    const result = this.calculate(this.firstOperand, inputValue, this.operator);
-                    this.displayValue = String(result);
-                    this.firstOperand = result;
-                }
-
-                this.waitingForSecondOperand = true;
-                this.operator = nextOperator;
-                this.updateDisplay();
-            },
-
-            compute() {
-                const inputValue = parseFloat(this.displayValue);
-
-                if (this.firstOperand === null || this.operator === null) {
-                    return;
-                }
-
-                const result = this.calculate(this.firstOperand, inputValue, this.operator);
-
-                this.displayValue = String(result);
-                this.firstOperand = null;
-                this.operator = null;
-                this.waitingForSecondOperand = true;
-                this.updateDisplay();
-            },
-
-            calculate(first, second, operator) {
-                if (operator === '+') return first + second;
-                if (operator === '-') return first - second;
-                if (operator === '*') return first * second;
-                if (operator === '/') {
-                    if (second === 0) return 'Error'; // Деление на ноль
-                    return first / second;
-                }
-                return second;
-            }
-        };
-
-
-        // --- APP LOGIC: CALENDAR ---
-        const calendar = {
-            currentDate: new Date(),
-            gridElement: document.getElementById('calendar-grid'),
-            monthDisplay: document.getElementById('current-month-display'),
-
-            renderCalendar() {
-                const year = this.currentDate.getFullYear();
-                const month = this.currentDate.getMonth();
-                const today = new Date();
-
-                this.monthDisplay.textContent = this.currentDate.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long' });
-
-                this.gridElement.innerHTML = '';
-
-                // Дата первого дня месяца
-                const firstDayOfMonth = new Date(year, month, 1);
-                // Получаем день недели (0=Вс, 1=Пн, ...)
-                let startingDay = firstDayOfMonth.getDay();
-                if (startingDay === 0) startingDay = 7; // Делаем Воскресенье последним днем (7)
-
-                // Сдвиг, чтобы понедельник был первым
-                const dayOffset = startingDay - 1;
-
-                // Количество дней в месяце
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-                // 1. Пустые ячейки для сдвига
-                for (let i = 0; i < dayOffset; i++) {
-                    const emptyCell = document.createElement('span');
-                    emptyCell.classList.add('p-2');
-                    this.gridElement.appendChild(emptyCell);
-                }
-
-                // 2. Дни месяца
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dayCell = document.createElement('span');
-                    dayCell.textContent = day;
-                    dayCell.classList.add('p-2', 'rounded-full');
-                    dayCell.style.cursor = 'pointer';
-
-                    const currentDayOfWeek = (dayOffset + day - 1) % 7; // 0=Пн, ..., 5=Сб, 6=Вс
-
-                    // Выделение сегодняшней даты
-                    if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                        dayCell.classList.add('bg-accent-blue', 'text-white', 'font-bold', 'shadow-lg');
-                    } else if (currentDayOfWeek === 5 || currentDayOfWeek === 6) {
-                        // Выходные (Сб=5, Вс=6)
-                        dayCell.classList.add('text-red-400', 'hover:bg-gray-700');
-                    } else {
-                         dayCell.classList.add('hover:bg-gray-700');
-                    }
-
-
-                    dayCell.onclick = () => {
-                        alert(`Вы выбрали: ${day} ${this.currentDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}`);
-                    };
-
-                    this.gridElement.appendChild(dayCell);
-                }
-            },
-
-            changeMonth(amount) {
-                this.currentDate.setMonth(this.currentDate.getMonth() + amount);
-                this.renderCalendar();
-            }
-        };
-        
-        // --- APP LOGIC: BROWSER ---
-
-        const browser = {
-            urlInput: document.getElementById('browser-url-input'),
-            iframe: document.getElementById('browser-iframe'),
-
-            goToUrl() {
-                let url = this.urlInput.value.trim();
-                if (!url) return;
-
-                // Добавляем префикс, если он отсутствует
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
-
-                this.iframe.src = url;
-            }
-        };
-
-        // --- BACKGROUND MANAGEMENT FUNCTIONS ---
-
-        function setDesktopBackground(value) {
-            if (value.startsWith('url') || value.startsWith('linear-gradient')) {
-                desktopElement.style.backgroundImage = value;
-                localStorage.setItem('webos_background', value);
-                closeApp('Settings');
-            }
+            // Обновление заголовка для мобильных устройств
+            const titleMap = {
+                'dashboard': 'Обзор Продаж',
+                'settings': 'Настройки Системы'
+            };
+            mobileHeaderTitle.textContent = titleMap[viewId] || 'Система Учёта';
         }
 
-        function setCustomBackgroundFromUrl() {
-            const urlInput = document.getElementById('custom-url');
-            const url = urlInput.value.trim();
-            if (url) {
-                setDesktopBackground(`url(${url})`);
-            }
+        /**
+         * Обработчик клика по элементам навигации.
+         */
+        function handleNavClick(event) {
+            event.preventDefault();
+            const view = event.currentTarget.getAttribute('data-view');
+            showView(view);
         }
 
-        function previewCustomFile(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    setDesktopBackground(`url(${e.target.result})`);
-                }
-                reader.readAsDataURL(file);
-            }
-        }
 
-        // Загрузка сохраненного фона и инициализация
+        // === Инициализация Приложения ===
+
         window.onload = function() {
-            const savedBackground = localStorage.getItem('webos_background');
-            if (savedBackground) {
-                desktopElement.style.backgroundImage = savedBackground;
-            }
-            // Инициализация календаря
-            calendar.renderCalendar();
-        }
-
-
-        // --- GLOBAL EVENT LISTENERS ---
-
-        document.addEventListener('click', function(event) {
-            const startButton = document.getElementById('start-button');
-            const searchButton = document.getElementById('search-button');
+            // 1. Привязка обработчика входа
+            loginForm.addEventListener('submit', handleLogin);
             
-            const clickedStartButton = startButton.contains(event.target);
-            const clickedSearchButton = searchButton.contains(event.target);
+            // 2. Привязка обработчиков выхода (для мобильных и десктопных кнопок)
+            document.getElementById('logout-button-desktop').addEventListener('click', handleLogout);
+            document.getElementById('logout-button-mobile').addEventListener('click', handleLogout);
 
-            // Закрытие панелей при клике вне
-            if (!clickedStartButton && !clickedSearchButton) {
-                 if (isStartMenuOpen && !startMenu.contains(event.target)) {
-                    closeStartMenu();
-                }
-                if (isSearchOpen && !searchPanel.contains(event.target)) {
-                    closeSearch();
-                }
-            }
+            // 3. Привязка обработчиков навигации
+            navItems.forEach(item => {
+                item.addEventListener('click', handleNavClick);
+            });
 
-            // Фокусировка окна при клике
-            const clickedAppWindow = event.target.closest('.app-window');
-            if (clickedAppWindow && !clickedAppWindow.classList.contains('hidden')) {
-                bringToFront(clickedAppWindow.id);
-            }
-        });
+            // 4. Первичная проверка аутентификации и рендеринг
+            renderApp();
+        };
 
     </script>
 </body>
