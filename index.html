@@ -110,9 +110,9 @@
                 <div class="overflow-y-auto flex-grow bg-white rounded-xl border border-gray-100 divide-y divide-gray-100">
                     <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase grid grid-cols-12">
                         <span class="col-span-3">Клиент / Дата</span>
-                        <span class="col-span-3">Товар (Кол-во) / Сумма</span>
+                        <span class="col-span-4">Товар (Кол-во) / Сумма</span> <!-- Расширен до col-span-4 -->
                         <span class="col-span-2 text-center">Касса</span>
-                        <span class="col-span-3 text-right">Полный Остаток</span>
+                        <span class="col-span-2 text-right">Полный Остаток</span>
                         <span class="col-span-1 text-center">Действ.</span>
                     </div>
                     <div id="clients-list-container">
@@ -518,6 +518,7 @@
                     agg.totalQuantity += transaction.quantity;
                     
                     const currentTransDate = data.transactionDate.toDate();
+                    // Также обновляем ссылку на последнюю транзакцию
                     if (!agg.lastTransactionDate || currentTransDate > agg.lastTransactionDate) {
                         agg.lastTransactionDate = currentTransDate;
                         latestTransactionMap[transaction.clientId] = transaction;
@@ -750,24 +751,28 @@
                 const escapedClientName = client.name.replace(/'/g, "\\'");
                 const escapedItemName = (lastTrans.itemName || '').replace(/'/g, "\\'");
                 
-                // Детализация для ОСНОВЫ:
-                const itemDetails = `${lastTrans.itemName || 'N/A'} (x${lastTrans.quantity || 0})`;
-                const itemSum = formatCurrency(lastTrans.totalAmount || 0);
+                // === ОБНОВЛЕННАЯ ДЕТАЛИЗАЦИЯ ДЛЯ ОСНОВЫ (Товар, Сумма, Касса, Кол-во) ===
+                const itemName = lastTrans.itemName || 'N/A';
+                const quantity = lastTrans.quantity || 0;
+                const totalAmount = formatCurrency(lastTrans.totalAmount || 0);
+                const paymentReceived = formatCurrency(lastTrans.paymentReceived || 0);
 
                 clientCard.innerHTML = `
                     <div class="col-span-3 flex flex-col">
                         <span class="text-base font-semibold text-gray-900">${client.name}</span>
                         <span class="text-xs text-gray-500 mt-0.5">${lastDate}</span>
                     </div>
-                    <div class="col-span-3 flex flex-col">
-                        <span class="text-sm font-medium text-gray-800 truncate" title="${itemDetails}">${itemDetails}</span>
-                        <span class="text-xs text-blue-600">Сумма: ${itemSum}</span>
+                    <!-- ИЗМЕНЕНО: Товар, Количество, Общая Сумма -->
+                    <div class="col-span-4 flex flex-col">
+                        <span class="text-sm font-medium text-gray-800 truncate" title="${itemName}">${itemName} (x${quantity})</span>
+                        <span class="text-xs text-blue-600">Сумма: ${totalAmount}</span>
                     </div>
+                    <!-- ИЗМЕНЕНО: Внесенная сумма (Касса) -->
                     <div class="col-span-2 text-center flex flex-col text-sm font-medium">
-                        <span class="text-green-600">${formatCurrency(client.totalPaid || 0)}</span>
+                        <span class="text-green-600">${paymentReceived}</span>
                         <span class="text-xs text-gray-500">Касса</span>
                     </div>
-                    <div class="col-span-3 text-right flex flex-col items-end">
+                    <div class="col-span-2 text-right flex flex-col items-end">
                         <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">
                             ${formatCurrency(remaining)}
                         </span>
