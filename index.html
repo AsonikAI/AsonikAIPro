@@ -169,7 +169,7 @@
                 </div>
 
                 <div>
-                    <label for="modal-payment-received" class="block text-sm font-medium text-gray-700" data-lang-key="payment_received">Внесено (Касса, $)</label>
+                    <label for="modal-payment-received" class="block text-sm font-medium text-gray-700" data-lang-key="payment_received">Касса ($)</label>
                     <input type="number" step="0.01" id="modal-payment-received" required class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="100">
                 </div>
                 
@@ -260,7 +260,7 @@
                 item_name: "Товар / Описание",
                 unit_price: "Цена за единицу ($)",
                 quantity: "Количество (шт)",
-                payment_received: "Внесено (Касса, $)",
+                payment_received: "Касса ($)",
                 transaction_date: "Дата Транзакции",
                 cancel: "Отмена",
                 save: "Сохранить",
@@ -271,7 +271,7 @@
                 turkish: "Türkçe",
                 details_title: "Подробная информация о клиенте",
                 total_sales: "Всего Продано",
-                total_paid: "Внесено (Касса)",
+                total_paid: "Всего (Касса)",
                 total_remaining: "Полный Остаток",
                 transaction_history: "История Транзакций",
                 edit: "Ред.",
@@ -281,8 +281,9 @@
                 date: "Дата",
                 item_q: "Товар (Кол-во)",
                 amount: "Сумма",
-                paid: "Внесено",
-                remaining: "Остаток",
+                paid: "Касса",
+                remaining: "Остаток (Транз.)",
+                running_balance: "Итоговый Остаток",
                 actions: "Действия",
                 confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?",
                 confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.",
@@ -316,7 +317,7 @@
                 item_name: "Ürün / Açıklama",
                 unit_price: "Birim Fiyat ($)",
                 quantity: "Miktar (adet)",
-                payment_received: "Alınan (Kasa, $)",
+                payment_received: "Kasa ($)",
                 transaction_date: "İşlem Tarihi",
                 cancel: "İptal",
                 save: "Kaydet",
@@ -327,7 +328,7 @@
                 turkish: "Türkçe",
                 details_title: "Müşteri Detayları",
                 total_sales: "Toplam Satış",
-                total_paid: "Alınan (Kasa)",
+                total_paid: "Toplam (Kasa)",
                 total_remaining: "Toplam Kalan",
                 transaction_history: "İşlem Geçmişi",
                 edit: "Düz.",
@@ -337,8 +338,9 @@
                 date: "Tarih",
                 item_q: "Ürün (Miktar)",
                 amount: "Tutar",
-                paid: "Ödenen",
-                remaining: "Kalan",
+                paid: "Kasa",
+                remaining: "Kalan (İşlem)",
+                running_balance: "Genel Bakiye",
                 actions: "Eylemler",
                 confirm_delete_transaction: "Bu işlemi silmek istediğinizden emin misiniz?",
                 confirm_delete_client: "DİKKAT! Müşteriyi ve TÜM işlemlerini gerçekten silmek istiyor musunuz? Bu işlem geri alınamaz.",
@@ -443,15 +445,25 @@
                     if (!clientAggregates[t.clientId]) {
                         clientAggregates[t.clientId] = {
                             name: t.clientName,
-                            totalSales: 0,
-                            totalPaid: 0,
                             transactions: []
                         };
                     }
-                    const agg = clientAggregates[t.clientId];
-                    agg.totalSales += t.unitPrice * t.quantity;
-                    agg.totalPaid += t.paymentReceived;
-                    agg.transactions.push(t);
+                    clientAggregates[t.clientId].transactions.push(t);
+                });
+
+                // Recalculate totals based on sorted transactions
+                Object.keys(clientAggregates).forEach(clientId => {
+                    const client = clientAggregates[clientId];
+                    // Sort transactions for this client from oldest to newest to calculate running balance correctly
+                    const chronologicalTransactions = [...client.transactions].reverse();
+                    let totalSales = 0;
+                    let totalPaid = 0;
+                    chronologicalTransactions.forEach(t => {
+                        totalSales += t.unitPrice * t.quantity;
+                        totalPaid += t.paymentReceived;
+                    });
+                    client.totalSales = totalSales;
+                    client.totalPaid = totalPaid;
                 });
                 
                 renderClientsList(clientAggregates, document.getElementById('client-search').value);
@@ -569,8 +581,16 @@
         function renderDetailedClientInfo(container, clientId) {
             const client = clientAggregates[clientId];
             const remaining = client.totalSales - client.totalPaid;
+
+            const chronologicalTransactions = [...client.transactions].reverse();
+            let runningBalance = 0;
+            const transactionsWithRunningBalance = chronologicalTransactions.map(t => {
+                const transactionTotal = t.unitPrice * t.quantity;
+                runningBalance += transactionTotal - t.paymentReceived;
+                return { ...t, runningBalance };
+            }).reverse();
             
-            const transactionsHtml = client.transactions.map(t => {
+            const transactionsHtml = transactionsWithRunningBalance.map(t => {
                 const remainingInTrans = (t.unitPrice * t.quantity) - t.paymentReceived;
                 return `
                 <tr class="hover:bg-gray-50">
@@ -579,6 +599,7 @@
                     <td class="px-4 py-3 text-right text-sm font-medium text-blue-600">${formatCurrency(t.unitPrice * t.quantity)}</td>
                     <td class="px-4 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
                     <td class="px-4 py-3 text-right text-sm font-bold ${remainingInTrans > 0 ? 'text-red-600' : 'text-gray-600'}">${formatCurrency(remainingInTrans)}</td>
+                    <td class="px-4 py-3 text-right text-sm font-bold ${t.runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(t.runningBalance)}</td>
                     <td class="px-4 py-3 text-center whitespace-nowrap">
                         <button class="text-blue-600 hover:text-blue-900 mr-2 text-sm" data-lang-key="edit" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
                         <button class="text-red-600 hover:text-red-900 text-sm" data-lang-key="delete" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
@@ -605,7 +626,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="bg-blue-50 p-4 rounded-lg"><p class="text-sm text-blue-800" data-lang-key="total_sales">Всего Продано</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(client.totalSales)}</p></div>
-                    <div class="bg-green-50 p-4 rounded-lg"><p class="text-sm text-green-800" data-lang-key="total_paid">Внесено (Касса)</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
+                    <div class="bg-green-50 p-4 rounded-lg"><p class="text-sm text-green-800" data-lang-key="total_paid">Всего (Касса)</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
                     <div class="bg-red-50 p-4 rounded-lg"><p class="text-sm text-red-800" data-lang-key="total_remaining">Полный Остаток</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-800 mb-3" data-lang-key="transaction_history">История Транзакций</h3>
@@ -616,8 +637,9 @@
                                 <th class="px-4 py-3 text-left" data-lang-key="date">Дата</th>
                                 <th class="px-4 py-3 text-left" data-lang-key="item_q">Товар (Кол-во)</th>
                                 <th class="px-4 py-3 text-right" data-lang-key="amount">Сумма</th>
-                                <th class="px-4 py-3 text-right" data-lang-key="paid">Внесено</th>
-                                <th class="px-4 py-3 text-right" data-lang-key="remaining">Остаток</th>
+                                <th class="px-4 py-3 text-right" data-lang-key="paid">Касса</th>
+                                <th class="px-4 py-3 text-right" data-lang-key="remaining">Остаток (Транз.)</th>
+                                <th class="px-4 py-3 text-right" data-lang-key="running_balance">Итоговый Остаток</th>
                                 <th class="px-4 py-3 text-center" data-lang-key="actions">Действия</th>
                             </tr>
                         </thead>
@@ -865,4 +887,5 @@
     </script>
 </body>
 </html>
+
 
