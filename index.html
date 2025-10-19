@@ -366,8 +366,12 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUserId = user.uid;
-                        document.getElementById('user-id-display').textContent = currentUserId;
-                        document.getElementById('user-id-display-settings').textContent = currentUserId;
+                        // Убран вызов document.getElementById('user-id-display'), который вызывал ошибку.
+                        
+                        const userIdDisplaySettings = document.getElementById('user-id-display-settings');
+                        if (userIdDisplaySettings) { // Добавлена проверка на существование элемента
+                             userIdDisplaySettings.textContent = currentUserId;
+                        }
 
                         document.getElementById('loading-screen').classList.add('hidden');
                         document.getElementById('main-app-screen').classList.remove('hidden');
