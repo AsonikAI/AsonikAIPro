@@ -54,6 +54,7 @@
                     <button id="logout-button-mobile" class="md:hidden text-gray-500 hover:text-gray-900 focus:outline-none">
                         <!-- Иконка выхода (SVG) -->
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        Выход
                     </button>
                 </div>
                 
@@ -274,10 +275,37 @@
         import { getFirestore, doc, collection, query, where, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, getDocs, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ FIREBASE (ОБЯЗАТЕЛЬНО) ===
+        
+        // Пользовательская конфигурация Firebase в качестве запасного варианта, предоставленная пользователем.
+        const CUSTOM_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
+            authDomain: "asonik-ai.firebaseapp.com",
+            projectId: "asonik-ai",
+            storageBucket: "asonik-ai.firebasestorage.app",
+            messagingSenderId: "875716508614",
+            appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
+            measurementId: "G-HT5T20YPVE"
+        };
+        
         // App ID
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        // Firebase Config
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        
+        // Firebase Config: Приоритет отдается конфигурации из среды Canvas, если она доступна.
+        let firebaseConfig = null;
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                // Пытаемся распарсить конфигурацию из среды
+                firebaseConfig = JSON.parse(__firebase_config);
+            } catch (e) {
+                console.error("Failed to parse __firebase_config:", e);
+            }
+        }
+        
+        // Если конфигурация из среды не была получена или недействительна, используем пользовательскую.
+        if (!firebaseConfig || !firebaseConfig.apiKey) {
+            firebaseConfig = CUSTOM_FIREBASE_CONFIG;
+        }
+
         // Auth Token
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
@@ -356,9 +384,11 @@
          * Инициализация Firebase и установка слушателя авторизации.
          */
         function setupFirebase() {
-            if (!firebaseConfig) {
-                console.error("Firebase config is missing.");
-                document.getElementById('loading-screen').innerHTML = '<p class="text-red-600">Ошибка: Конфигурация Firebase отсутствует.</p>';
+            // Поскольку мы добавили запасной вариант, это условие должно срабатывать только 
+            // в случае критической ошибки в самой пользовательской конфигурации.
+            if (!firebaseConfig || !firebaseConfig.apiKey) {
+                console.error("Firebase config is missing or invalid after fallback.");
+                document.getElementById('loading-screen').innerHTML = '<p class="text-red-600">Ошибка: Критическая ошибка конфигурации Firebase.</p>';
                 return;
             }
 
