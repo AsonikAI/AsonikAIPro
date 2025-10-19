@@ -13,9 +13,20 @@
             font-family: 'Inter', sans-serif;
             background-color: #f7f7f9;
         }
-        /* Стили для центрирования и теней */
         .card {
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Убедимся, что главное окно занимает всю доступную высоту */
+        .min-h-screen-fixed {
+            min-height: calc(100vh - 32px); /* Учитываем padding 4 */
+        }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+        /* Стили для ссылок на клиента в списке */
+        .client-link {
+            cursor: pointer;
+            transition: background-color 0.15s;
         }
     </style>
 </head>
@@ -24,33 +35,17 @@
     <!-- Главный контейнер для всего приложения -->
     <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4">
 
-        <!-- 1. Экран Входа (Скрыт по умолчанию) -->
-        <div id="login-screen" class="w-full max-w-md bg-white p-8 rounded-xl card transition-all duration-300">
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Вход в систему</h1>
-            <p class="text-center text-sm text-gray-500 mb-8">Используйте логин: <code class="bg-gray-100 p-1 rounded">admin</code> и пароль: <code class="bg-gray-100 p-1 rounded">admin</code></p>
-
-            <form id="login-form">
-                <div class="mb-5">
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Логин</label>
-                    <input type="text" id="username" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="admin">
-                </div>
-                <div class="mb-6">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Пароль</label>
-                    <input type="password" id="password" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="••••••••">
-                </div>
-
-                <div id="error-message" class="text-red-600 text-sm mb-4 text-center hidden">
-                    Неверный логин или пароль.
-                </div>
-
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                    Войти
-                </button>
-            </form>
+        <!-- 0. Экран Загрузки/Инициализации Firebase -->
+        <div id="loading-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center transition-all duration-300">
+            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-4 text-lg font-medium text-gray-700">Загрузка системы...</p>
         </div>
 
-        <!-- 2. Главный Экран Приложения (Скрыт по умолчанию) -->
-        <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col md:flex-row min-h-screen bg-white rounded-xl card transition-all duration-300">
+        <!-- 1. Главный Экран Приложения (Скрыт по умолчанию) -->
+        <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col md:flex-row min-h-screen-fixed bg-white rounded-xl card transition-all duration-300">
 
             <!-- Боковое меню (Навигация) -->
             <aside class="md:w-64 bg-gray-50 p-6 md:p-4 border-r border-gray-200 flex-shrink-0">
@@ -63,92 +58,131 @@
                 </div>
                 
                 <nav>
-                    <a href="#" data-view="dashboard" class="nav-item flex items-center p-3 text-lg font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-lg mb-2 active-view">
-                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0V9a2 2 0 00-2-2m2 4v2a2 2 0 01-2 2M5 11V9a2 2 0 012-2m-2 4v2a2 2 0 002 2m7-10V5a2 2 0 00-2-2H7a2 2 0 00-2 2v4m10 0v2m2-10a2 2 0 012 2v4m-2 4v2a2 2 0 002 2H7a2 2 0 01-2-2v-2m4-10H7m4 0h6m-10 4h6m-10 4h6"></path></svg>
-                        Обзор Продаж
+                    <!-- Главный список клиентов -->
+                    <a href="#" data-view="clients" class="nav-item flex items-center p-3 text-lg font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-lg mb-2 active-view">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20h-2m2 0h-2M17 14v2m-2-2v2m-2-2v2m0 0h-2m-2-2h-2M4 7h6m0 0H4m6 0v6m0-6H4m6 0v6"></path></svg>
+                        Обзор Клиентов
                     </a>
+                    <!-- Настройки -->
                     <a href="#" data-view="settings" class="nav-item flex items-center p-3 text-lg font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 rounded-lg mb-2">
                         <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35-.426.426-.99.704-1.066 2.573-.94 1.543.826 3.31 2.37 2.37a1.724 1.724 0 002.572 1.065c.426 1.756 2.924 1.756 3.35 0a1.724 1.724 0 001.066-2.573c.94-1.543-.826-3.31-2.37-2.37a1.724 1.724 0 00-2.572-1.065c-1.756-.426-1.756-2.924 0-3.35.426-.426.99-.704 1.066-2.573 0"></path></svg>
                         Настройки
                     </a>
                 </nav>
 
-                <div class="mt-auto pt-6 hidden md:block">
-                    <button id="logout-button-desktop" class="w-full flex items-center justify-center p-3 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition duration-200 shadow-md">
+                <div class="mt-auto pt-6 border-t border-gray-200">
+                    <p class="text-xs text-gray-400 mb-2 truncate">ID Пользователя:</p>
+                    <code id="user-id-display" class="block bg-gray-100 p-2 rounded text-sm text-gray-700 break-all">...</code>
+                    <button id="logout-button-desktop" class="w-full mt-4 flex items-center justify-center p-3 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition duration-200 shadow-md">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                         Выход
                     </button>
                 </div>
             </aside>
 
-            <!-- Основное содержимое (Dashboard / Settings) -->
+            <!-- Основное содержимое -->
             <main class="flex-grow p-6 md:p-10 overflow-y-auto">
                 
-                <!-- Заголовок для мобильных устройств и кнопка выхода -->
+                <!-- Заголовок для мобильных устройств -->
                 <div class="flex justify-between items-center md:hidden mb-6">
-                    <h1 id="mobile-header-title" class="text-2xl font-bold text-gray-900">Обзор Продаж</h1>
+                    <h1 id="mobile-header-title" class="text-2xl font-bold text-gray-900">Обзор Клиентов</h1>
                 </div>
 
-                <!-- Контейнеры для динамического содержимого -->
+                <!-- 1. Обзор Клиентов (Client List) -->
+                <section id="view-clients" class="view-content transition-opacity duration-300">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-6 hidden md:block">Обзор Клиентов и Общая Касса</h1>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 mb-6">
+                        <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <button id="add-transaction-button" class="flex-shrink-0 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-200 shadow-md">
+                            + Добавить Транзакцию/Клиента
+                        </button>
+                    </div>
 
-                <!-- 2.1. Обзор Продаж (Dashboard) -->
-                <section id="view-dashboard" class="view-content transition-opacity duration-300">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-6 hidden md:block">Обзор Продаж</h1>
-                    <p class="text-gray-600 mb-8">Сводная информация о проданных товарах, покупателях и общем доходе.</p>
-
-                    <!-- Карточки с ключевыми показателями -->
+                    <!-- Агрегированные Карточки KPI -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                         <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
-                            <p class="text-sm font-medium text-blue-600">Всего Продано</p>
-                            <p class="text-3xl font-extrabold text-gray-900 mt-1">1,250</p>
+                            <p class="text-sm font-medium text-blue-600">Общая Сумма Продаж</p>
+                            <p id="kpi-total-sales" class="text-3xl font-extrabold text-gray-900 mt-1">$0.00</p>
                         </div>
                         <div class="bg-green-50 p-6 rounded-xl border border-green-200">
-                            <p class="text-sm font-medium text-green-600">Общий Доход</p>
-                            <p class="text-3xl font-extrabold text-gray-900 mt-1">$155,900</p>
+                            <p class="text-sm font-medium text-green-600">Всего Получено (Касса)</p>
+                            <p id="kpi-total-paid" class="text-3xl font-extrabold text-gray-900 mt-1">$0.00</p>
                         </div>
-                        <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
-                            <p class="text-sm font-medium text-yellow-600">Новых Клиентов</p>
-                            <p class="text-3xl font-extrabold text-gray-900 mt-1">210</p>
+                        <div class="bg-red-50 p-6 rounded-xl border border-red-200">
+                            <p class="text-sm font-medium text-red-600">Общий Остаток Долга</p>
+                            <p id="kpi-total-remaining" class="text-3xl font-extrabold text-gray-900 mt-1 text-red-700">$0.00</p>
                         </div>
                     </div>
 
-                    <!-- Таблица с последними продажами -->
-                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Последние Транзакции</h2>
+                    <!-- Таблица Клиентов -->
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Клиенты</h2>
                     <div class="overflow-x-auto bg-white rounded-xl card border border-gray-100">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Товар</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Покупатель</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Клиент</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Товаров (шт)</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма Продаж</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Остаток Долга</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Ультрабук X1</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Иванов П.П.</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-10-18</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-semibold">$1,200.00</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Мышь Bluetooth 5.0</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Смирнова А.В.</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-10-17</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-semibold">$25.50</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Смартфон Pro Max</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Козлов Д.А.</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2024-10-17</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 font-semibold">$799.00</td>
-                                </tr>
+                            <tbody id="clients-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Данные будут загружены из Firestore -->
+                                <tr id="no-clients-row"><td colspan="4" class="px-6 py-4 text-center text-gray-500">Нет данных о клиентах. Добавьте первую транзакцию!</td></tr>
                             </tbody>
                         </table>
                     </div>
                 </section>
 
-                <!-- 2.2. Настройки -->
+                <!-- 2. Детали Клиента (Transaction Log) - Скрыт по умолчанию -->
+                <section id="view-details" class="view-content hidden opacity-0 transition-opacity duration-300">
+                    <button id="back-to-clients-button" class="flex items-center text-blue-600 hover:text-blue-800 mb-6 transition duration-150">
+                        <svg class="w-4 h-4 mr-1 transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        Назад к списку клиентов
+                    </button>
+
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Детали Клиента: <span id="details-client-name" class="text-blue-600">...</span></h1>
+                    <p id="details-client-id" class="text-sm text-gray-500 mb-6">ID: </p>
+                    
+                    <!-- Сводка по клиенту -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                            <p class="text-sm font-medium text-gray-600">Всего Продано (за все время)</p>
+                            <p id="details-total-sales" class="text-3xl font-extrabold text-gray-900 mt-1">$0.00</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-xl border border-green-200">
+                            <p class="text-sm font-medium text-green-600">Внесено (Касса)</p>
+                            <p id="details-total-paid" class="text-3xl font-extrabold text-gray-900 mt-1">$0.00</p>
+                        </div>
+                        <div class="bg-red-50 p-6 rounded-xl border border-red-200">
+                            <p class="text-sm font-medium text-red-600">Текущий Остаток</p>
+                            <p id="details-remaining" class="text-3xl font-extrabold text-gray-900 mt-1 text-red-700">$0.00</p>
+                        </div>
+                    </div>
+
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">История Транзакций</h2>
+                    <div class="overflow-x-auto bg-white rounded-xl card border border-gray-100">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Товар/Описание</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Кол-во</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Сумма</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Внесено</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Транзакции будут здесь -->
+                                <tr id="no-transactions-row"><td colspan="6" class="px-6 py-4 text-center text-gray-500">Нет транзакций для этого клиента.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. Настройки -->
                 <section id="view-settings" class="view-content hidden opacity-0 transition-opacity duration-300">
                     <h1 class="text-3xl font-bold text-gray-900 mb-6 hidden md:block">Настройки Системы</h1>
                     <p class="text-gray-600 mb-8">Управление учётной записью и общими параметрами приложения.</p>
@@ -159,33 +193,9 @@
                             <h3 class="text-xl font-semibold text-gray-900 mb-4">Учётная Запись</h3>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Имя пользователя</label>
-                                    <input type="text" value="Администратор" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none" />
+                                    <label class="block text-sm font-medium text-gray-700">Статус</label>
+                                    <input type="text" value="Анонимный/Токеновый Вход" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none" />
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Смена Пароля</label>
-                                    <p class="text-sm text-gray-500">Здесь можно было бы реализовать форму смены пароля, но в этом демо он жёстко задан (admin/admin).</p>
-                                    <button class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition duration-150" disabled>Изменить пароль</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Секция Общих Параметров -->
-                        <div class="bg-white p-6 rounded-xl border border-gray-200">
-                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Общие Параметры</h3>
-                            <div class="flex items-center justify-between py-2">
-                                <label for="notifications" class="text-sm font-medium text-gray-700">Включить уведомления о новых продажах</label>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" value="" id="notifications" checked class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
-                            <div class="flex items-center justify-between py-2 border-t border-gray-100 mt-2">
-                                <label for="theme" class="text-sm font-medium text-gray-700">Тёмная тема (скоро)</label>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" value="" id="theme" disabled class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 rounded-full"></div>
-                                </label>
                             </div>
                         </div>
                     </div>
@@ -196,94 +206,130 @@
 
     </div>
 
-    <script>
-        // === Настройка и Глобальные Переменные ===
-        const AUTH_KEY = 'sales_app_is_authenticated';
-        const loginScreen = document.getElementById('login-screen');
-        const mainAppScreen = document.getElementById('main-app-screen');
-        const loginForm = document.getElementById('login-form');
-        const errorMessage = document.getElementById('error-message');
-        const navItems = document.querySelectorAll('.nav-item');
-        const viewContents = document.querySelectorAll('.view-content');
-        const mobileHeaderTitle = document.getElementById('mobile-header-title');
+    <!-- Модальное окно для добавления/редактирования транзакции -->
+    <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300 scale-95 opacity-0" id="transaction-modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4">Добавить Новую Транзакцию</h2>
+            <form id="transaction-form" class="space-y-4">
+                <input type="hidden" id="transaction-doc-id">
+                <input type="hidden" id="transaction-client-id">
+                
+                <!-- Имя Клиента -->
+                <div>
+                    <label for="modal-client-name" class="block text-sm font-medium text-gray-700">Имя Клиента (Обязательно)</label>
+                    <input type="text" id="modal-client-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- Товар / Описание -->
+                <div>
+                    <label for="modal-item-name" class="block text-sm font-medium text-gray-700">Товар / Описание</label>
+                    <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="Товар">
+                </div>
 
-        // === Логика Аутентификации ===
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Цена за единицу -->
+                    <div>
+                        <label for="modal-unit-price" class="block text-sm font-medium text-gray-700">Цена за единицу ($)</label>
+                        <input type="number" step="0.01" id="modal-unit-price" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="100">
+                    </div>
+                    <!-- Количество -->
+                    <div>
+                        <label for="modal-quantity" class="block text-sm font-medium text-gray-700">Количество (шт)</label>
+                        <input type="number" step="1" id="modal-quantity" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="1">
+                    </div>
+                </div>
+
+                <!-- Внесено (Касса) -->
+                <div>
+                    <label for="modal-payment-received" class="block text-sm font-medium text-gray-700">Внесено (Касса, $)</label>
+                    <input type="number" step="0.01" id="modal-payment-received" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" value="100">
+                    <p class="text-xs text-gray-500 mt-1">Остаток будет рассчитан автоматически (Сумма - Внесено).</p>
+                </div>
+                
+                <!-- Дата -->
+                <div>
+                    <label for="modal-transaction-date" class="block text-sm font-medium text-gray-700">Дата Транзакции</label>
+                    <input type="date" id="modal-transaction-date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="flex justify-between pt-4">
+                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-150">
+                        Отмена
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150">
+                        Сохранить Транзакцию
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, getDocs, orderBy, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ FIREBASE (ОБЯЗАТЕЛЬНО) ===
+        // App ID
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // Firebase Config
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        // Auth Token
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db = null;
+        let auth = null;
+        let currentUserId = null;
+        let currentClientDetailsId = null; // ID клиента, для которого отображаются детали
+
+        // Кэш для агрегированных данных о клиентах
+        let clientAggregates = {};
+        let allTransactions = [];
+
+        // === УТИЛИТЫ ===
 
         /**
-         * Проверяет, аутентифицирован ли пользователь.
+         * Форматирует число в валютный формат ($XX.XX).
+         * @param {number} amount
+         * @returns {string}
          */
-        function checkAuth() {
-            return localStorage.getItem(AUTH_KEY) === 'true';
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(amount);
         }
 
         /**
-         * Управляет отображением экранов (Вход vs. Приложение).
+         * Получает ссылку на коллекцию записей о продажах.
+         * @returns {import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js").CollectionReference}
          */
-        function renderApp() {
-            if (checkAuth()) {
-                loginScreen.classList.add('hidden');
-                mainAppScreen.classList.remove('hidden');
-                mainAppScreen.classList.add('flex'); // Используем flex для главного контейнера
-                // При входе по умолчанию показываем Dashboard
-                showView('dashboard');
-            } else {
-                loginScreen.classList.remove('hidden');
-                mainAppScreen.classList.add('hidden');
-                mainAppScreen.classList.remove('flex');
-            }
+        function getSalesCollectionRef() {
+            if (!db || !currentUserId) return null;
+            // Путь для частных данных: /artifacts/{appId}/users/{userId}/sales_records
+            return collection(db, 'artifacts', appId, 'users', currentUserId, 'sales_records');
         }
 
         /**
-         * Обрабатывает попытку входа.
-         */
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            // Жестко заданные учетные данные
-            if (username === 'admin' && password === 'admin') {
-                localStorage.setItem(AUTH_KEY, 'true');
-                errorMessage.classList.add('hidden');
-                renderApp();
-            } else {
-                errorMessage.classList.remove('hidden');
-                // Очистка полей пароля для безопасности
-                document.getElementById('password').value = ''; 
-            }
-        }
-
-        /**
-         * Обрабатывает выход из системы.
-         */
-        function handleLogout() {
-            localStorage.removeItem(AUTH_KEY);
-            renderApp();
-        }
-
-        // === Логика Навигации (Переключение Вкладок) ===
-
-        /**
-         * Показывает запрошенное представление (Dashboard или Settings).
-         * @param {string} viewId - ID представления для показа (например, 'dashboard' или 'settings').
+         * Переключает видимость представлений.
+         * @param {string} viewId - ID представления для показа (clients, details, settings).
          */
         function showView(viewId) {
-            viewContents.forEach(view => {
+            document.querySelectorAll('.view-content').forEach(view => {
                 const targetId = `view-${viewId}`;
                 if (view.id === targetId) {
-                    // Показать с анимацией
                     view.classList.remove('hidden', 'opacity-0');
                     view.classList.add('opacity-100');
                 } else {
-                    // Скрыть
                     view.classList.add('hidden', 'opacity-0');
                     view.classList.remove('opacity-100');
                 }
             });
 
             // Обновление активного элемента в меню
-            navItems.forEach(item => {
+            document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('bg-blue-100', 'text-blue-700', 'active-view');
                 item.classList.add('text-gray-700');
                 if (item.getAttribute('data-view') === viewId) {
@@ -293,39 +339,434 @@
 
             // Обновление заголовка для мобильных устройств
             const titleMap = {
-                'dashboard': 'Обзор Продаж',
+                'clients': 'Обзор Клиентов',
+                'details': 'Детали Клиента',
                 'settings': 'Настройки Системы'
             };
-            mobileHeaderTitle.textContent = titleMap[viewId] || 'Система Учёта';
+            document.getElementById('mobile-header-title').textContent = titleMap[viewId] || 'Система Учёта';
+        }
+
+        // === ЛОГИКА FIREBASE И АВТОРИЗАЦИИ ===
+
+        /**
+         * Инициализация Firebase и установка слушателя авторизации.
+         */
+        function setupFirebase() {
+            if (!firebaseConfig) {
+                console.error("Firebase config is missing.");
+                document.getElementById('loading-screen').innerHTML = '<p class="text-red-600">Ошибка: Конфигурация Firebase отсутствует.</p>';
+                return;
+            }
+
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                // Включаем логирование для отладки Firestore
+                // setLogLevel('Debug'); 
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        document.getElementById('user-id-display').textContent = currentUserId;
+
+                        document.getElementById('loading-screen').classList.add('hidden');
+                        document.getElementById('main-app-screen').classList.remove('hidden');
+
+                        // Запуск главного слушателя данных
+                        startDataListener();
+
+                        // Показать экран клиентов по умолчанию
+                        showView('clients');
+
+                    } else {
+                        // Попытка анонимного входа
+                        if (initialAuthToken) {
+                            // Вход через предоставленный токен
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            // Анонимный вход
+                            await signInAnonymously(auth);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.getElementById('loading-screen').innerHTML = `<p class="text-red-600">Ошибка инициализации: ${error.message}</p>`;
+            }
+        }
+
+        // === ЛОГИКА ДАННЫХ (CRUD и АГРЕГАЦИЯ) ===
+
+        /**
+         * Главный слушатель данных Firestore. Загружает ВСЕ транзакции
+         * и агрегирует их для списка клиентов.
+         */
+        function startDataListener() {
+            const salesRef = getSalesCollectionRef();
+            if (!salesRef) return;
+
+            // Используем onSnapshot для постоянного прослушивания изменений
+            onSnapshot(salesRef, (snapshot) => {
+                allTransactions = [];
+                clientAggregates = {};
+                
+                let totalSalesGlobal = 0;
+                let totalPaidGlobal = 0;
+                
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    const transaction = {
+                        ...data,
+                        id: doc.id,
+                        transactionDate: data.transactionDate ? data.transactionDate.toDate().toISOString().split('T')[0] : 'N/A', // Преобразование Timestamp в дату
+                        totalAmount: data.quantity * data.unitPrice
+                    };
+                    allTransactions.push(transaction);
+
+                    // Агрегация по клиенту
+                    if (!clientAggregates[transaction.clientId]) {
+                        clientAggregates[transaction.clientId] = {
+                            name: transaction.clientName,
+                            totalSales: 0,
+                            totalPaid: 0,
+                            transactionCount: 0
+                        };
+                    }
+
+                    const agg = clientAggregates[transaction.clientId];
+                    agg.totalSales += transaction.totalAmount;
+                    agg.totalPaid += transaction.paymentReceived;
+                    agg.transactionCount++;
+
+                    totalSalesGlobal += transaction.totalAmount;
+                    totalPaidGlobal += transaction.paymentReceived;
+                });
+                
+                // Рендеринг KPI и списка клиентов
+                renderGlobalKPI(totalSalesGlobal, totalPaidGlobal);
+                renderClientsList(clientAggregates, document.getElementById('client-search').value);
+                
+                // Если мы находились на странице деталей, обновить ее
+                if (currentClientDetailsId) {
+                    showClientDetails(currentClientDetailsId);
+                }
+
+            }, (error) => {
+                console.error("Ошибка при получении данных Firestore:", error);
+                // В реальном приложении здесь можно показать сообщение об ошибке пользователю
+            });
         }
 
         /**
-         * Обработчик клика по элементам навигации.
+         * Рендерит глобальные KPI.
+         * @param {number} totalSales
+         * @param {number} totalPaid
          */
-        function handleNavClick(event) {
-            event.preventDefault();
-            const view = event.currentTarget.getAttribute('data-view');
-            showView(view);
+        function renderGlobalKPI(totalSales, totalPaid) {
+            const remaining = totalSales - totalPaid;
+            document.getElementById('kpi-total-sales').textContent = formatCurrency(totalSales);
+            document.getElementById('kpi-total-paid').textContent = formatCurrency(totalPaid);
+            document.getElementById('kpi-total-remaining').textContent = formatCurrency(remaining);
+            document.getElementById('kpi-total-remaining').classList.toggle('text-red-700', remaining > 0);
+            document.getElementById('kpi-total-remaining').classList.toggle('text-green-700', remaining <= 0);
         }
 
+        /**
+         * Рендерит список клиентов в таблице.
+         * @param {Object} aggregates - агрегированные данные.
+         * @param {string} filter - строка для поиска.
+         */
+        function renderClientsList(aggregates, filter = '') {
+            const tbody = document.getElementById('clients-table-body');
+            tbody.innerHTML = '';
+            
+            const clientIds = Object.keys(aggregates);
+            if (clientIds.length === 0) {
+                 tbody.innerHTML = '<tr id="no-clients-row"><td colspan="4" class="px-6 py-4 text-center text-gray-500">Нет данных о клиентах. Добавьте первую транзакцию!</td></tr>';
+                 return;
+            }
+            
+            const lowerCaseFilter = filter.toLowerCase();
 
-        // === Инициализация Приложения ===
+            clientIds.forEach(clientId => {
+                const client = aggregates[clientId];
+                if (filter && !client.name.toLowerCase().includes(lowerCaseFilter)) {
+                    return; // Пропустить, если не соответствует фильтру
+                }
+
+                const remaining = client.totalSales - client.totalPaid;
+                const row = tbody.insertRow();
+                row.className = 'client-link hover:bg-gray-50';
+                row.setAttribute('data-client-id', clientId);
+                row.onclick = () => showClientDetails(clientId);
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-150">${client.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${client.transactionCount}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">${formatCurrency(client.totalSales)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">
+                        ${formatCurrency(remaining)}
+                    </td>
+                `;
+            });
+        }
+
+        /**
+         * Отображает детали транзакций для выбранного клиента.
+         * @param {string} clientId
+         */
+        function showClientDetails(clientId) {
+            currentClientDetailsId = clientId;
+            showView('details');
+
+            const clientAgg = clientAggregates[clientId];
+            const clientTransactions = allTransactions.filter(t => t.clientId === clientId)
+                                                       .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)); // Сортировка по дате
+
+            if (!clientAgg) {
+                document.getElementById('details-client-name').textContent = 'Неизвестный Клиент';
+                document.getElementById('transactions-table-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Данные не найдены.</td></tr>';
+                return;
+            }
+
+            // Обновление сводки
+            const remaining = clientAgg.totalSales - clientAgg.totalPaid;
+            document.getElementById('details-client-name').textContent = clientAgg.name;
+            document.getElementById('details-client-id').textContent = `ID: ${clientId}`;
+            document.getElementById('details-total-sales').textContent = formatCurrency(clientAgg.totalSales);
+            document.getElementById('details-total-paid').textContent = formatCurrency(clientAgg.totalPaid);
+            document.getElementById('details-remaining').textContent = formatCurrency(remaining);
+            document.getElementById('details-remaining').classList.toggle('text-red-700', remaining > 0);
+            document.getElementById('details-remaining').classList.toggle('text-green-700', remaining <= 0);
+
+
+            // Рендеринг таблицы транзакций
+            const tbody = document.getElementById('transactions-table-body');
+            tbody.innerHTML = '';
+
+            if (clientTransactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Нет транзакций для этого клиента.</td></tr>';
+                return;
+            }
+
+            clientTransactions.forEach(t => {
+                const row = tbody.insertRow();
+                row.className = 'hover:bg-gray-50';
+
+                const remainingInTransaction = t.totalAmount - t.paymentReceived;
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.transactionDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${t.itemName} (x${t.quantity})</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">${t.quantity}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-blue-600">${formatCurrency(t.totalAmount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold ${t.paymentReceived >= t.totalAmount ? 'text-green-600' : 'text-orange-600'}">
+                        ${formatCurrency(t.paymentReceived)}
+                        ${remainingInTransaction > 0 ? `<br><span class="text-xs text-red-500">Ост.: ${formatCurrency(remainingInTransaction)}</span>` : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2" onclick="openTransactionModal(
+                            '${t.id}', 
+                            '${t.clientId}', 
+                            '${t.clientName.replace(/'/g, "\\'")}', 
+                            '${t.itemName.replace(/'/g, "\\'")}', 
+                            ${t.unitPrice}, 
+                            ${t.quantity}, 
+                            ${t.paymentReceived}, 
+                            '${t.transactionDate}'
+                        )">
+                            Ред.
+                        </button>
+                        <button class="text-red-600 hover:text-red-900" onclick="deleteTransaction('${t.id}')">
+                            Удал.
+                        </button>
+                    </td>
+                `;
+            });
+        }
+        
+        // Глобальная функция для использования в инлайн-обработчиках
+        window.openTransactionModal = openTransactionModal;
+        window.deleteTransaction = deleteTransaction;
+
+        /**
+         * Открывает модальное окно для добавления или редактирования.
+         * @param {string|null} docId - ID документа для редактирования, или null для нового.
+         * @param {string|null} clientId - ID клиента.
+         * @param {string|null} clientName - Имя клиента.
+         * @param {string} itemName - Название товара.
+         * @param {number} unitPrice - Цена за единицу.
+         * @param {number} quantity - Количество.
+         * @param {number} paymentReceived - Внесено.
+         * @param {string} transactionDate - Дата в формате YYYY-MM-DD.
+         */
+        function openTransactionModal(docId = null, clientId = null, clientName = '', itemName = 'Товар', unitPrice = 100, quantity = 1, paymentReceived = 0, transactionDate = new Date().toISOString().split('T')[0]) {
+            const modal = document.getElementById('transaction-modal');
+            const modalContent = document.getElementById('transaction-modal-content');
+            
+            // Заполнение формы
+            document.getElementById('modal-title').textContent = docId ? 'Редактировать Транзакцию' : 'Добавить Новую Транзакцию';
+            document.getElementById('transaction-doc-id').value = docId || '';
+            document.getElementById('transaction-client-id').value = clientId || crypto.randomUUID(); // Генерируем новый ClientId, если это новый клиент
+            document.getElementById('modal-client-name').value = clientName;
+            document.getElementById('modal-client-name').disabled = !!docId; // Запретить менять имя клиента при редактировании транзакции
+            document.getElementById('modal-item-name').value = itemName;
+            document.getElementById('modal-unit-price').value = unitPrice;
+            document.getElementById('modal-quantity').value = quantity;
+            document.getElementById('modal-payment-received').value = paymentReceived;
+            document.getElementById('modal-transaction-date').value = transactionDate;
+
+            // Если открыто из списка клиентов, то имя клиента заполняем и блокируем
+            if (currentClientDetailsId && !docId) {
+                const clientAgg = clientAggregates[currentClientDetailsId];
+                if (clientAgg) {
+                    document.getElementById('modal-client-name').value = clientAgg.name;
+                    document.getElementById('modal-client-name').disabled = true;
+                    document.getElementById('transaction-client-id').value = currentClientDetailsId;
+                }
+            } else if (!docId) {
+                 // Если добавляем новую транзакцию с главной страницы, разрешаем ввод имени
+                 document.getElementById('modal-client-name').disabled = false;
+            }
+
+            // Показать модальное окно
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        /**
+         * Скрывает модальное окно.
+         */
+        function closeTransactionModal() {
+            const modal = document.getElementById('transaction-modal');
+            const modalContent = document.getElementById('transaction-modal-content');
+
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        /**
+         * Обрабатывает отправку формы транзакции (Добавление/Редактирование).
+         */
+        async function handleTransactionSubmit(event) {
+            event.preventDefault();
+
+            const docId = document.getElementById('transaction-doc-id').value;
+            const clientId = document.getElementById('transaction-client-id').value;
+            const clientName = document.getElementById('modal-client-name').value.trim();
+            const itemName = document.getElementById('modal-item-name').value.trim();
+            const unitPrice = parseFloat(document.getElementById('modal-unit-price').value);
+            const quantity = parseInt(document.getElementById('modal-quantity').value);
+            const paymentReceived = parseFloat(document.getElementById('modal-payment-received').value);
+            const transactionDate = document.getElementById('modal-transaction-date').value;
+            
+            // Валидация
+            if (!clientName || !itemName || isNaN(unitPrice) || isNaN(quantity) || isNaN(paymentReceived) || !transactionDate) {
+                console.error("Не все поля заполнены корректно.");
+                return;
+            }
+
+            const data = {
+                clientId: clientId,
+                clientName: clientName,
+                itemName: itemName,
+                unitPrice: unitPrice,
+                quantity: quantity,
+                paymentReceived: paymentReceived,
+                // totalAmount будет вычисляться при чтении, но сохраним его тоже для ясности
+                totalAmount: unitPrice * quantity,
+                transactionDate: new Date(transactionDate) // Firestore будет хранить как Timestamp
+            };
+
+            const salesRef = getSalesCollectionRef();
+            if (!salesRef) return;
+
+            try {
+                if (docId) {
+                    // Редактирование существующего документа
+                    await updateDoc(doc(salesRef, docId), data);
+                    console.log("Транзакция успешно обновлена:", docId);
+                } else {
+                    // Добавление нового документа
+                    await addDoc(salesRef, data);
+                    console.log("Новая транзакция успешно добавлена.");
+                }
+
+                closeTransactionModal();
+            } catch (error) {
+                console.error("Ошибка при сохранении транзакции:", error);
+                // В реальном приложении здесь можно показать сообщение об ошибке
+            }
+        }
+
+        /**
+         * Удаляет транзакцию.
+         * @param {string} docId - ID документа для удаления.
+         */
+        async function deleteTransaction(docId) {
+            const salesRef = getSalesCollectionRef();
+            if (!salesRef) return;
+
+            // Используем пользовательское модальное окно для подтверждения (вместо alert/confirm)
+            const isConfirmed = window.confirm('Вы уверены, что хотите удалить эту транзакцию?'); 
+
+            if (isConfirmed) {
+                try {
+                    await deleteDoc(doc(salesRef, docId));
+                    console.log("Транзакция успешно удалена:", docId);
+                } catch (error) {
+                    console.error("Ошибка при удалении транзакции:", error);
+                }
+            }
+        }
+
+        // === ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ СОБЫТИЙ ===
 
         window.onload = function() {
-            // 1. Привязка обработчика входа
-            loginForm.addEventListener('submit', handleLogin);
+            // Установка слушателей для модального окна
+            document.getElementById('add-transaction-button').addEventListener('click', () => {
+                currentClientDetailsId = null; // Сброс ID, если добавляем с главной
+                openTransactionModal();
+            });
+            document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
+            document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
             
-            // 2. Привязка обработчиков выхода (для мобильных и десктопных кнопок)
-            document.getElementById('logout-button-desktop').addEventListener('click', handleLogout);
-            document.getElementById('logout-button-mobile').addEventListener('click', handleLogout);
-
-            // 3. Привязка обработчиков навигации
-            navItems.forEach(item => {
-                item.addEventListener('click', handleNavClick);
+            // Обработчики навигации
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showView(e.currentTarget.getAttribute('data-view'));
+                });
             });
 
-            // 4. Первичная проверка аутентификации и рендеринг
-            renderApp();
+            // Обработчики выхода
+            document.getElementById('logout-button-desktop').addEventListener('click', () => signOut(auth).catch(e => console.error("Logout failed:", e)));
+            document.getElementById('logout-button-mobile').addEventListener('click', () => signOut(auth).catch(e => console.error("Logout failed:", e)));
+            
+            // Обработчик кнопки "Назад" в деталях
+            document.getElementById('back-to-clients-button').addEventListener('click', (e) => {
+                e.preventDefault();
+                currentClientDetailsId = null;
+                showView('clients');
+            });
+            
+            // Обработчик поиска
+            document.getElementById('client-search').addEventListener('input', (e) => {
+                renderClientsList(clientAggregates, e.target.value);
+            });
+
+            // Установим текущую дату в форме
+            document.getElementById('modal-transaction-date').value = new Date().toISOString().split('T')[0];
+
+            // Начать инициализацию Firebase
+            setupFirebase();
         };
 
     </script>
