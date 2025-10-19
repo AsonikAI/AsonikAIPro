@@ -19,35 +19,41 @@
             --bg-hover: #f3f4f6;
         }
 
-        .theme-dark {
-            --bg-main: #111827;
-            --bg-card: #1f2937;
-            --text-primary: #f9fafb;
-            --text-secondary: #9ca3af;
-            --border-color: #374151;
-            --header-brand: #60a5fa;
-            --bg-hover: #374151;
+        /* --- НОВЫЕ ГРАДИЕНТНЫЕ ТЕМЫ --- */
+
+        .theme-violet {
+            --bg-main-start: #4c1d95; /* violet-900 */
+            --bg-main-end: #a78bfa; /* violet-400 */
+            --bg-card: rgba(255, 255, 255, 0.1);
+            --text-primary: #f5f3ff; /* violet-50 */
+            --text-secondary: #d8b4fe; /* purple-300 */
+            --border-color: rgba(255, 255, 255, 0.2);
+            --header-brand: #e9d5ff; /* purple-200 */
+            --bg-hover: rgba(255, 255, 255, 0.15);
         }
 
-        .theme-sunset {
-            --bg-main: #f9fafb;
-            --bg-card: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #4b5563;
-            --border-color: #e5e7eb;
-            --header-brand: #f97316;
-            --bg-hover: #fed7aa;
-        }
-        
-        .theme-sunset .header-nav-item.border-orange-500 {
-            color: var(--header-brand) !important;
+        .theme-crimson {
+            --bg-main-start: #9f1239; /* rose-900 */
+            --bg-main-end: #fb7185; /* rose-400 */
+            --bg-card: rgba(255, 255, 255, 0.1);
+            --text-primary: #fff1f2; /* rose-50 */
+            --text-secondary: #fecdd3; /* rose-200 */
+            --border-color: rgba(255, 255, 255, 0.2);
+            --header-brand: #fda4af; /* rose-300 */
+            --bg-hover: rgba(255, 255, 255, 0.15);
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-primary);
+            transition: background-color 0.5s ease;
         }
+
+        body.theme-violet, body.theme-crimson {
+            background-image: linear-gradient(135deg, var(--bg-main-start), var(--bg-main-end));
+        }
+
         .card, .bg-white, .bg-gray-50 {
             background-color: var(--bg-card);
             border-color: var(--border-color);
@@ -67,6 +73,17 @@
             border-color: var(--header-brand);
             box-shadow: 0 0 0 2px var(--bg-main), 0 0 0 4px var(--header-brand);
         }
+        
+        /* Стили для модальных окон в градиентных темах */
+        .theme-violet .modal-overlay .card,
+        .theme-crimson .modal-overlay .card {
+             background-color: #1f2937; /* Темный фон для лучшей читаемости */
+             color: #f9fafb;
+        }
+         .theme-violet .modal-overlay .bg-transparent,
+         .theme-crimson .modal-overlay .bg-transparent {
+            background-color: rgba(255, 255, 255, 0.05);
+         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -101,15 +118,20 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         <span data-lang-key="nav_settings">НАСТРОЙКИ</span>
                     </button>
-                    <div class="flex items-center space-x-1">
-                        <button data-lang="ru" class="language-option p-2 rounded-md hover:bg-gray-100 transition duration-150">
-                            <span class="text-2xl">🇷🇺</span>
+                     <div class="relative">
+                        <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="language-menu-button">
+                            <span id="current-lang-text" class="font-semibold">RU</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
-                        <button data-lang="tr" class="language-option p-2 rounded-md hover:bg-gray-100 transition duration-150">
-                             <span class="text-2xl">🇹🇷</span>
-                        </button>
+                        <div id="language-dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                            <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
+                                <span>🇷🇺</span><span data-lang-key="russian">Русский</span>
+                            </button>
+                            <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
+                                <span>🇹🇷</span><span data-lang-key="turkish">Türkçe</span>
+                            </button>
+                        </div>
                     </div>
-
                     <button id="logout-button-desktop" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     </button>
@@ -123,7 +145,7 @@
                 
                 <div class="flex flex-col md:flex-row gap-3 mb-4">
                     <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent" data-lang-key="search_placeholder">
-                    <select id="client-sort" class="px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent">
+                    <select id="client-sort" class="px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
                         <option value="newest" data-lang-key="sort_newest">Сначала новые</option>
                         <option value="oldest" data-lang-key="sort_oldest">Сначала старые</option>
                         <option value="name_az" data-lang-key="sort_name_az">Имя (А-Я)</option>
@@ -153,8 +175,8 @@
                         <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_theme_title">Тема оформления</h3>
                         <div class="flex space-x-2">
                             <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="light" data-lang-key="theme_light">Светлая</button>
-                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="dark" data-lang-key="theme_dark">Темная</button>
-                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="sunset" data-lang-key="theme_sunset">Закат</button>
+                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="violet" data-lang-key="theme_violet">Фиолетовая</button>
+                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="crimson" data-lang-key="theme_crimson">Багровая</button>
                         </div>
                     </div>
                     <div class="p-6 rounded-xl border card">
@@ -295,8 +317,8 @@
                 settings_title: "Настройки Системы",
                 settings_theme_title: "Тема оформления",
                 theme_light: "Светлая",
-                theme_dark: "Темная",
-                theme_sunset: "Закат",
+                theme_violet: "Фиолетовая",
+                theme_crimson: "Багровая",
                 settings_logo_title: "Логотип",
                 logo_upload_placeholder: "Загрузить логотип",
                 logo_uploading: "Загрузка...",
@@ -366,8 +388,8 @@
                 settings_title: "Sistem Ayarları",
                 settings_theme_title: "Tema",
                 theme_light: "Açık",
-                theme_dark: "Koyu",
-                theme_sunset: "Gün Batımı",
+                theme_violet: "Mor",
+                theme_crimson: "Koyu Kırmızı",
                 settings_logo_title: "Logo",
                 logo_upload_placeholder: "Logo yükle",
                 logo_uploading: "Yükleniyor...",
@@ -429,6 +451,7 @@
             currentLang = lang;
             localStorage.setItem('appLanguage', lang);
             document.documentElement.lang = lang;
+            document.getElementById('current-lang-text').textContent = lang.toUpperCase();
             
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.dataset.langKey;
@@ -464,15 +487,20 @@
             document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
 
-            const theme = localStorage.getItem('siteTheme') || 'light';
-            let activeColorClass = 'border-blue-600';
-            if (theme === 'sunset') activeColorClass = 'border-orange-500';
+            let activeColorClass = 'border-blue-600'; // Default for light theme
+            if (document.body.classList.contains('theme-violet') || document.body.classList.contains('theme-crimson')) {
+                activeColorClass = 'border-b-2'; // A generic class for gradient themes
+            }
             
             document.querySelectorAll('.header-nav-item').forEach(item => {
-                item.classList.remove('border-blue-600', 'border-orange-500', 'text-gray-900');
-                item.classList.add('border-transparent', 'text-gray-500');
+                item.classList.remove('border-blue-600', 'text-gray-900');
+                item.classList.add('border-transparent');
+                item.style.borderColor = 'transparent'; // Reset style
+                item.style.color = 'var(--text-secondary)';
+
                 if (item.dataset.view === viewId) {
-                    item.classList.add(activeColorClass, 'text-gray-900');
+                    item.style.borderColor = 'var(--header-brand)';
+                    item.style.color = 'var(--text-primary)';
                 }
             });
 
@@ -539,7 +567,9 @@
                 });
                 
                 renderClientsList();
-                const currentView = document.querySelector('.header-nav-item.border-blue-600, .header-nav-item.border-orange-500')?.dataset.view;
+                const activeNavItem = document.querySelector('.header-nav-item[style*="var(--header-brand)"]');
+                const currentView = activeNavItem ? activeNavItem.dataset.view : null;
+
                 if (currentView === 'details') {
                     renderDetailsView();
                 }
@@ -737,10 +767,14 @@
                                 <th class="px-2 py-3 text-center" data-lang-key="actions">Действия</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y">${transactionsHtml}</tbody>
+                        <tbody id="transactions-table-body" class="divide-y">${transactionsHtml}</tbody>
                     </table>
                 </div>`;
             setLanguage(currentLang);
+            // ИСПРАВЛЕНИЕ: Добавляем слушатель событий прямо здесь
+            document.getElementById('details-transaction-search').addEventListener('input', () => {
+                renderDetailedClientInfo(container, clientId);
+            });
         }
         
         // === MODAL FUNCTIONS ===
@@ -925,9 +959,12 @@
             document.getElementById('logout-button-desktop').addEventListener('click', () => signOut(auth));
             document.getElementById('client-search').addEventListener('input', renderClientsList);
             document.getElementById('client-sort').addEventListener('change', renderClientsList);
-            document.body.addEventListener('input', e => { if (e.target.id === 'details-transaction-search') renderDetailsView(); });
             
             // Language Switcher
+            const langButton = document.getElementById('language-menu-button');
+            const langDropdown = document.getElementById('language-dropdown');
+            langButton.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); });
+            document.addEventListener('click', () => langDropdown.classList.add('hidden'));
             document.querySelectorAll('.language-option').forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.lang)));
 
             // New Client Toggle
@@ -948,12 +985,18 @@
 
             // Settings: Theme
             const applyTheme = (theme) => {
-                document.body.classList.remove('theme-dark', 'theme-sunset');
-                if (theme) document.body.classList.add(`theme-${theme}`);
+                document.body.className = 'min-h-screen flex flex-col'; // Reset classes
+                if (theme !== 'light') document.body.classList.add(`theme-${theme}`);
+                
                 localStorage.setItem('siteTheme', theme);
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-                document.querySelector(`.theme-btn[data-theme="${theme}"]`).classList.add('active');
-                showView(document.querySelector('.header-nav-item.border-blue-600, .header-nav-item.border-orange-500')?.dataset.view || 'clients');
+                const activeBtn = document.querySelector(`.theme-btn[data-theme="${theme}"]`);
+                if(activeBtn) activeBtn.classList.add('active');
+                
+                // Re-apply active nav item style
+                const activeNavItem = document.querySelector('.header-nav-item[style*="var(--header-brand)"]');
+                if (activeNavItem) showView(activeNavItem.dataset.view);
+
             };
             document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
             
@@ -966,7 +1009,7 @@
                 if (url) {
                     logoImg.src = url;
                     logoImg.classList.remove('hidden');
-                    title.classList.remove('hidden'); // Показываем и лого, и название
+                    title.classList.remove('hidden'); 
                     
                     if (logoBg) logoBg.src = url;
 
