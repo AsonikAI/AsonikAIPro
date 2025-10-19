@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система Учёта Продаж</title>
+    <title id="site-title-tag">Система Учёта Продаж</title>
     <!-- Подключение Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Настройка шрифта Inter для современного вида -->
@@ -26,7 +26,6 @@
             cursor: pointer;
             transition: background-color 0.15s;
         }
-        /* Активация только цветом, без рамки на мобильных */
         .client-link.active {
             background-color: #e0f2fe; /* blue-100 */
         }
@@ -58,13 +57,29 @@
 
             <!-- Заголовок и навигация -->
             <header class="flex items-center justify-between border-b pb-4 mb-4">
-                <h1 class="text-3xl font-bold text-blue-700">CYTC.COM SYSTEM</h1>
+                <h1 class="text-3xl font-bold text-blue-700" id="site-title-display">CYTC.COM SYSTEM</h1>
                 <div class="flex items-center space-x-4">
-                    <!-- Навигация, теперь как вкладки. Все кнопки видимы и независимы. -->
+                    
+                    <!-- Кнопка выбора языка -->
+                    <div class="relative group">
+                        <button class="flex items-center space-x-1 text-gray-500 hover:text-gray-900 transition duration-150" id="language-button">
+                            <span class="text-xl">🇷🇺</span> 
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-xl hidden group-hover:block z-10 p-2">
+                            <p class="text-sm font-semibold text-gray-700 mb-1">Смена языка (В разработке):</p>
+                            <button class="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg" title="Текущий язык">
+                                <span>🇷🇺</span><span>Русский (Текущий)</span>
+                            </button>
+                            <button class="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg">
+                                <span>🇹🇷</span><span>Türkçe</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Навигация -->
                     <button data-view="clients" class="header-nav-item text-lg font-semibold text-gray-900 border-b-2 border-blue-600 pb-1 px-2 transition duration-150">
                         ОСНОВА
                     </button>
-                    <!-- Кнопка "ПОДРОБНО" теперь всегда видима и является отдельным пунктом -->
                     <button data-view="details" id="details-nav-button" class="header-nav-item text-lg font-semibold text-gray-500 hover:text-gray-900 pb-1 px-2 transition duration-150">
                         ПОДРОБНО
                     </button>
@@ -95,9 +110,10 @@
                 <div class="overflow-y-auto flex-grow bg-white rounded-xl border border-gray-100 divide-y divide-gray-100">
                     <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase grid grid-cols-12">
                         <span class="col-span-3">Клиент / Дата</span>
-                        <span class="col-span-4">Товары (Кол-во) / Сумма</span>
+                        <span class="col-span-3">Товар (Кол-во) / Сумма</span>
                         <span class="col-span-2 text-center">Касса</span>
                         <span class="col-span-3 text-right">Полный Остаток</span>
+                        <span class="col-span-1 text-center">Действ.</span>
                     </div>
                     <div id="clients-list-container">
                         <!-- Здесь будет список клиентов -->
@@ -106,57 +122,54 @@
                 </div>
             </section>
 
-            <!-- 1.2 ЭКРАН: ДЕТАЛИ КЛИЕНТА (ПОДРОБНО) -->
+            <!-- 1.2 ЭКРАН: ДЕТАЛИ КЛИЕНТА (ПОДРОБНО) - Теперь это экран выбора клиента -->
             <section id="view-details" class="view-content hidden opacity-0 transition-opacity duration-300 flex-grow flex-col pt-4 px-4 bg-gray-50 rounded-xl border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">ПОДРОБНО (Детали Клиента)</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">ПОДРОБНО (Выбор Клиента)</h2>
                 
-                <!-- Блок Информации о Клиенте -->
-                <div id="details-summary-card" class="bg-white p-4 rounded-lg shadow-sm mb-4 border border-gray-100">
-                    <h3 class="text-xl font-bold text-blue-600" id="details-client-name">Выберите клиента</h3>
-                    <p id="details-placeholder" class="text-gray-500 mt-2">Нажмите на клиента в списке "ОСНОВА" для просмотра его полной истории транзакций.</p>
-                    
-                    <!-- Сводка и кнопки будут видны только при выборе клиента -->
-                    <div id="details-active-content" class="hidden">
-                        <div class="text-sm mt-2 grid grid-cols-2 gap-2">
-                            <div><span class="font-medium text-gray-600">Всего Продано:</span> <span id="details-total-sales" class="font-semibold text-gray-900">$0.00</span></div>
-                            <div><span class="font-medium text-gray-600">Внесено (Касса):</span> <span id="details-total-paid" class="font-semibold text-green-600">$0.00</span></div>
-                            <div><span class="font-medium text-gray-600">Полный Остаток:</span> <span id="details-remaining" class="font-bold text-red-700">$0.00</span></div>
-                            <div><span class="font-medium text-gray-600">ID:</span> <code id="details-client-id" class="text-xs text-gray-500">...</code></div>
-                        </div>
-                        <div class="flex space-x-2 mt-4">
-                            <button id="add-transaction-to-client-button" class="flex-grow flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-200">
-                                + Добавить Транзакцию
-                            </button>
-                            <button id="delete-client-button" class="flex-grow flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-200">
-                                Удалить Клиента
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <p class="text-gray-600 mb-4">Выберите клиента из списка ниже, чтобы открыть его полную историю транзакций в детальном окне.</p>
+                
+                <!-- Поиск для ПОДРОБНО -->
+                <input type="text" id="details-client-search" placeholder="Поиск клиента..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-4">
 
-                <h4 class="text-lg font-semibold text-gray-800 mb-2">Журнал Транзакций</h4>
-                <!-- Поиск по транзакциям -->
-                <input type="text" id="transaction-search" placeholder="Поиск по товару или описанию..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-4">
-
-                <!-- Список Транзакций -->
+                <!-- Список Клиентов для выбора в ПОДРОБНО -->
                 <div class="overflow-y-auto flex-grow bg-white rounded-xl border border-gray-100 divide-y divide-gray-100">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <tbody id="transactions-table-body" class="bg-white divide-y divide-gray-200">
-                            <tr><td colspan="3" class="px-4 py-3 text-center text-gray-500">Выберите клиента для просмотра истории.</td></tr>
-                        </tbody>
-                    </table>
+                    <div id="details-clients-list-container">
+                        <!-- Здесь будет список клиентов, но с кнопкой "Подробнее" -->
+                        <div class="p-4 text-center text-gray-500">Загрузка данных...</div>
+                    </div>
                 </div>
             </section>
 
             <!-- 1.3 ЭКРАН: НАСТРОЙКИ -->
             <section id="view-settings" class="view-content hidden opacity-0 transition-opacity duration-300 flex-grow pt-4 px-4">
                 <h1 class="text-3xl font-bold text-gray-900 mb-6">Настройки Системы</h1>
-                <p class="text-gray-600 mb-8">Управление учётной записью и общими параметрами приложения.</p>
 
                 <div class="space-y-8 max-w-2xl">
+                    
+                    <!-- Секция Названия Сайта (Пункт 2) -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Название Приложения</h3>
+                        <label for="app-name-input" class="block text-sm font-medium text-gray-700">Изменить название</label>
+                        <input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="CYTC.COM SYSTEM" value="CYTC.COM SYSTEM"/>
+                        <p class="text-xs text-gray-500 mt-1">Название будет изменено в заголовке и вкладке браузера.</p>
+                    </div>
+
+                    <!-- Секция Управления Пользователями (Пункт 1) -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Управление Пользователями (В разработке)</h3>
+                        <p class="text-red-500 mb-4 text-sm">В настоящий момент система использует анонимный вход. Создание полноценных учетных записей требует серверной части. Доступна только смена пароля для текущего пользователя.</p>
+                        
+                        <h4 class="font-semibold text-gray-800 mb-2">Смена Пароля (Placeholder)</h4>
+                        <div class="space-y-3">
+                             <input type="password" placeholder="Старый Пароль" disabled class="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg" />
+                             <input type="password" placeholder="Новый Пароль" disabled class="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg" />
+                             <button disabled class="px-4 py-2 bg-gray-400 text-white font-semibold rounded-lg">Сохранить Пароль</button>
+                        </div>
+                    </div>
+
                     <!-- Секция Учётной Записи -->
                     <div class="bg-white p-6 rounded-xl border border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Учётная Запись</h3>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Ваша Учётная Запись</h3>
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Статус</label>
@@ -174,7 +187,7 @@
         </div>
     </div>
 
-    <!-- Модальное окно для добавления/редактирования транзакции -->
+    <!-- 2. МОДАЛЬНОЕ ОКНО ДЛЯ ТРАНЗАКЦИЙ (ДОБАВЛЕНИЕ/РЕДАКТИРОВАНИЕ) -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300 scale-95 opacity-0" id="transaction-modal-content">
             <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4">Добавить Новую Транзакцию</h2>
@@ -231,6 +244,70 @@
             </form>
         </div>
     </div>
+    
+    <!-- 3. МОДАЛЬНОЕ ОКНО ДЛЯ ДЕТАЛЕЙ (ПОДРОБНАЯ ИНФОРМАЦИЯ О КЛИЕНТЕ) -->
+    <div id="details-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 rounded-xl card transform transition-all duration-300 scale-95 opacity-0" id="details-modal-content">
+            <div class="flex justify-between items-start mb-6 border-b pb-3">
+                <h2 class="text-3xl font-bold text-gray-900" id="modal-details-client-name"></h2>
+                <button id="modal-details-close-button" class="text-gray-500 hover:text-gray-900">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Сводка -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p class="text-sm font-medium text-blue-800">Всего Продано</p>
+                    <p class="text-2xl font-bold text-blue-900 mt-1" id="modal-details-total-sales">$0.00</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <p class="text-sm font-medium text-green-800">Внесено (Касса)</p>
+                    <p class="text-2xl font-bold text-green-900 mt-1" id="modal-details-total-paid">$0.00</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <p class="text-sm font-medium text-red-800">Полный Остаток</p>
+                    <p class="text-2xl font-bold text-red-900 mt-1" id="modal-details-remaining">$0.00</p>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="flex space-x-3 mb-6">
+                 <button id="modal-add-transaction-button" class="flex-grow flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-200">
+                    + Добавить Транзакцию
+                </button>
+                <button id="modal-delete-client-button" class="flex-grow flex items-center justify-center bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-200">
+                    Удалить Клиента
+                </button>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">История Транзакций</h3>
+            
+             <!-- Поиск по транзакциям в модале -->
+            <input type="text" id="modal-transaction-search" placeholder="Поиск по товару или описанию..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 mb-4 w-full">
+
+            <!-- Таблица транзакций -->
+            <div class="bg-white rounded-lg border border-gray-100 overflow-x-auto">
+                 <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 py-3 text-left">Дата</th>
+                            <th class="px-4 py-3 text-left">Товар (Кол-во)</th>
+                            <th class="px-4 py-3 text-right">Сумма</th>
+                            <th class="px-4 py-3 text-right">Внесено</th>
+                            <th class="px-4 py-3 text-right">Остаток</th>
+                            <th class="px-4 py-3 text-center">Действ.</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-transactions-table-body" class="bg-white divide-y divide-gray-200">
+                        <tr><td colspan="6" class="px-4 py-3 text-center text-gray-500">Загрузка...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
@@ -278,6 +355,7 @@
         let currentUserId = null;
         let currentClientDetailsId = null; // ID клиента, для которого отображаются детали
         let currentTransactionFilter = ''; // Фильтр поиска для транзакций клиента
+        let modalTransactionFilter = ''; // Фильтр поиска для транзакций в модальном окне
 
         // Кэш для агрегированных данных о клиентах
         let clientAggregates = {};
@@ -335,30 +413,10 @@
                 }
             });
             
-            // Если переходим на Обзор клиентов, сбрасываем активный ID в шапке
-            if (viewId === 'clients') {
-                // Если мы переходим на ОСНОВУ, деактивируем все элементы списка
-                document.querySelectorAll('.client-link').forEach(link => {
-                    link.classList.remove('active');
-                });
-            }
-            
-            // Если переключаемся на Детали (и клиент выбран), обновляем детали, иначе показываем заглушку
+            // Логика для экрана ПОДРОБНО
             if (viewId === 'details') {
-                if (currentClientDetailsId) {
-                    // Показываем активное содержимое деталей
-                    document.getElementById('details-placeholder').classList.add('hidden');
-                    document.getElementById('details-active-content').classList.remove('hidden');
-                    updateClientDetailsKPI();
-                    filterAndRenderTransactions();
-                } else {
-                    // Показываем заглушку, если клиент не выбран
-                    document.getElementById('details-client-name').textContent = "Выберите клиента";
-                    document.getElementById('details-placeholder').classList.remove('hidden');
-                    document.getElementById('details-active-content').classList.add('hidden');
-                    // Очищаем список транзакций
-                    document.getElementById('transactions-table-body').innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-gray-500">Выберите клиента для просмотра истории.</td></tr>';
-                }
+                // Рендерим список клиентов для выбора на вкладке "ПОДРОБНО"
+                renderDetailsClientList(clientAggregates, document.getElementById('details-client-search').value);
             }
         }
 
@@ -384,7 +442,7 @@
                         currentUserId = user.uid;
                         
                         const userIdDisplaySettings = document.getElementById('user-id-display-settings');
-                        if (userIdDisplaySettings) { // Добавлена проверка на существование элемента
+                        if (userIdDisplaySettings) { 
                              userIdDisplaySettings.textContent = currentUserId;
                         }
 
@@ -422,7 +480,6 @@
             const salesRef = getSalesCollectionRef();
             if (!salesRef) return;
 
-            // Используем onSnapshot для постоянного прослушивания изменений
             onSnapshot(salesRef, (snapshot) => {
                 allTransactions = [];
                 clientAggregates = {};
@@ -430,7 +487,6 @@
                 let totalSalesGlobal = 0;
                 let totalPaidGlobal = 0;
                 
-                // Временный объект для поиска самой последней транзакции по клиенту
                 const latestTransactionMap = {};
                 
                 snapshot.docs.forEach(doc => {
@@ -438,7 +494,6 @@
                     const transaction = {
                         ...data,
                         id: doc.id,
-                        // Преобразуем Timestamp в дату YYYY-MM-DD
                         transactionDate: data.transactionDate ? data.transactionDate.toDate().toISOString().split('T')[0] : 'N/A', 
                         totalAmount: data.quantity * data.unitPrice
                     };
@@ -451,7 +506,7 @@
                             totalSales: 0,
                             totalPaid: 0,
                             transactionCount: 0,
-                            totalQuantity: 0, // Добавлено: Общее количество товаров
+                            totalQuantity: 0,
                             lastTransactionDate: data.transactionDate ? data.transactionDate.toDate() : null
                         };
                     }
@@ -460,13 +515,11 @@
                     agg.totalSales += transaction.totalAmount;
                     agg.totalPaid += transaction.paymentReceived;
                     agg.transactionCount++;
-                    agg.totalQuantity += transaction.quantity; // Обновляем общее количество
+                    agg.totalQuantity += transaction.quantity;
                     
-                    // Обновляем дату последней транзакции
                     const currentTransDate = data.transactionDate.toDate();
                     if (!agg.lastTransactionDate || currentTransDate > agg.lastTransactionDate) {
                         agg.lastTransactionDate = currentTransDate;
-                        // Также обновляем карту последней транзакции
                         latestTransactionMap[transaction.clientId] = transaction;
                     }
                     
@@ -474,25 +527,23 @@
                     totalPaidGlobal += transaction.paymentReceived;
                 });
                 
-                // Добавляем объект последней транзакции в агрегаты
                 Object.keys(clientAggregates).forEach(clientId => {
                     clientAggregates[clientId].lastTransaction = latestTransactionMap[clientId];
                 });
 
                 
-                // Рендеринг KPI и списка клиентов
-                renderGlobalKPI(totalSalesGlobal, totalPaidGlobal);
-                // Применяем фильтр поиска клиентов
                 renderClientsList(clientAggregates, document.getElementById('client-search').value);
                 
-                // Если выбран клиент, обновляем его детали
+                // Обновляем список для вкладки ПОДРОБНО (если она активна)
+                const currentView = document.querySelector('.header-nav-item.border-blue-600').getAttribute('data-view');
+                if (currentView === 'details') {
+                    renderDetailsClientList(clientAggregates, document.getElementById('details-client-search').value);
+                }
+                
+                // Если выбран клиент, обновляем его детали в модальном окне
                 if (currentClientDetailsId) {
-                    // Убеждаемся, что мы обновляем детали, только если мы на вкладке "ПОДРОБНО"
-                    const currentView = document.querySelector('.header-nav-item.border-blue-600').getAttribute('data-view');
-                    if (currentView === 'details') {
-                        updateClientDetailsKPI();
-                        filterAndRenderTransactions();
-                    }
+                    updateClientDetailsModalKPI();
+                    filterAndRenderModalTransactions();
                 }
 
             }, (error) => {
@@ -501,20 +552,7 @@
         }
 
         /**
-         * Рендерит глобальные KPI.
-         * @param {number} totalSales
-         * @param {number} totalPaid
-         */
-        function renderGlobalKPI(totalSales, totalPaid) {
-            // Этот блок удален по запросу: document.getElementById('kpi-total-remaining').textContent = formatCurrency(remaining);
-            // document.getElementById('kpi-total-remaining').classList.toggle('text-red-700', remaining > 0);
-            // document.getElementById('kpi-total-remaining').classList.toggle('text-green-700', remaining <= 0);
-        }
-
-        /**
-         * Рендерит список клиентов.
-         * @param {Object} aggregates - агрегированные данные.
-         * @param {string} filter - строка для поиска.
+         * Рендерит список клиентов для вкладки ОСНОВА.
          */
         function renderClientsList(aggregates, filter = '') {
             const container = document.getElementById('clients-list-container');
@@ -528,13 +566,12 @@
             
             const lowerCaseFilter = filter.toLowerCase();
 
-            // Сортируем клиентов по дате последней транзакции (новейшие сверху)
             const sortedClients = clientIds.map(id => ({ id, ...aggregates[id] }))
                                             .sort((a, b) => b.lastTransactionDate - a.lastTransactionDate);
 
             sortedClients.forEach(client => {
                 if (filter && !client.name.toLowerCase().includes(lowerCaseFilter)) {
-                    return; // Пропустить, если не соответствует фильтру
+                    return; 
                 }
 
                 const remaining = client.totalSales - client.totalPaid;
@@ -542,29 +579,32 @@
                 const lastDate = lastTrans.transactionDate || 'Нет данных';
                 
                 const clientCard = document.createElement('div');
-                // Используем grid-cols-12 для правильного отображения колонок, как определено в заголовке
                 clientCard.className = `client-link grid grid-cols-12 items-center p-4 hover:bg-gray-100 ${client.id === currentClientDetailsId ? 'active' : ''}`;
                 clientCard.setAttribute('data-client-id', client.id);
                 
-                // *** ИЗМЕНЕНИЕ: Убран showClientDetails(client.id) из onclick ***
-                // Теперь клик только устанавливает ID и подсвечивает элемент
                 clientCard.onclick = () => {
+                    // Клик только выбирает клиента и подсвечивает его
                     currentClientDetailsId = client.id;
                     document.querySelectorAll('.client-link').forEach(link => link.classList.remove('active'));
                     clientCard.classList.add('active');
-                    // Добавлено: Обновление деталей в фоновом режиме, чтобы ПОДРОБНО было готово
-                    updateClientDetailsKPI();
-                    filterAndRenderTransactions();
+                    
+                    // Обновляет данные в фоне для вкладки ПОДРОБНО
+                    updateClientDetailsModalKPI();
+                    filterAndRenderModalTransactions();
                 };
+                
+                // Экранирование для inline JS
+                const escapedClientName = client.name.replace(/'/g, "\\'");
+                const escapedItemName = (lastTrans.itemName || '').replace(/'/g, "\\'");
 
                 clientCard.innerHTML = `
                     <div class="col-span-3 flex flex-col">
                         <span class="text-base font-semibold text-gray-900">${client.name}</span>
                         <span class="text-xs text-gray-500 mt-0.5">${lastDate}</span>
                     </div>
-                    <div class="col-span-4 flex flex-col">
-                        <span class="text-sm font-medium text-gray-800 truncate">Товаров: ${client.totalQuantity || 0}</span>
-                        <span class="text-xs text-blue-600">Сумма: ${formatCurrency(client.totalSales || 0)}</span>
+                    <div class="col-span-3 flex flex-col">
+                        <span class="text-sm font-medium text-gray-800 truncate">${lastTrans.itemName || 'N/A'} (x${lastTrans.quantity || 0})</span>
+                        <span class="text-xs text-blue-600">Сумма: ${formatCurrency(lastTrans.totalAmount || 0)}</span>
                     </div>
                     <div class="col-span-2 text-center flex flex-col text-sm font-medium">
                         <span class="text-green-600">${formatCurrency(client.totalPaid || 0)}</span>
@@ -574,7 +614,21 @@
                         <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">
                             ${formatCurrency(remaining)}
                         </span>
-                        <span class="block text-xs text-gray-400">Полный Остаток (${client.transactionCount} тр.)</span>
+                        <span class="block text-xs text-gray-400">Остаток (${client.transactionCount} тр.)</span>
+                    </div>
+                    <div class="col-span-1 text-center">
+                        <button class="text-blue-600 hover:text-blue-900 text-sm" title="Редактировать последнюю транзакцию" onclick="event.stopPropagation(); openTransactionModal(
+                            '${lastTrans.id || ''}', 
+                            '${client.id}', 
+                            '${escapedClientName}', 
+                            '${escapedItemName}', 
+                            ${lastTrans.unitPrice || 0}, 
+                            ${lastTrans.quantity || 0}, 
+                            ${lastTrans.paymentReceived || 0}, 
+                            '${lastDate}'
+                        )">
+                            Ред.
+                        </button>
                     </div>
                 `;
                 container.appendChild(clientCard);
@@ -582,65 +636,122 @@
         }
         
         /**
-         * Обновляет сводные KPI клиента на странице деталей.
+         * Рендерит список клиентов для вкладки ПОДРОБНО (выбор клиента).
          */
-        function updateClientDetailsKPI() {
-            if (!currentClientDetailsId) return;
+        function renderDetailsClientList(aggregates, filter = '') {
+             const container = document.getElementById('details-clients-list-container');
+             container.innerHTML = '';
+            
+             const clientIds = Object.keys(aggregates);
+             if (clientIds.length === 0) {
+                 container.innerHTML = '<div class="p-4 text-center text-gray-500">Нет данных о клиентах.</div>';
+                 return;
+             }
+            
+             const lowerCaseFilter = filter.toLowerCase();
 
-            const clientAgg = clientAggregates[currentClientDetailsId];
+             const sortedClients = clientIds.map(id => ({ id, ...aggregates[id] }))
+                                             .sort((a, b) => b.lastTransactionDate - a.lastTransactionDate);
+
+             sortedClients.forEach(client => {
+                 if (filter && !client.name.toLowerCase().includes(lowerCaseFilter)) {
+                     return; 
+                 }
+                 
+                 const remaining = client.totalSales - client.totalPaid;
+                 const clientCard = document.createElement('div');
+                 clientCard.className = `client-link flex justify-between items-center p-4 hover:bg-gray-100 rounded-lg ${client.id === currentClientDetailsId ? 'active' : ''}`;
+                 
+                 clientCard.innerHTML = `
+                     <div class="flex flex-col">
+                         <span class="text-base font-semibold text-gray-900">${client.name}</span>
+                         <span class="text-xs text-gray-500">Транзакций: ${client.transactionCount} | Остаток: ${formatCurrency(remaining)}</span>
+                     </div>
+                     <button class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-lg transition duration-200" onclick="openClientDetailsModal('${client.id}')">
+                         Подробнее
+                     </button>
+                 `;
+                 container.appendChild(clientCard);
+             });
+        }
+
+        // Глобальная функция для использования в инлайн-обработчиках
+        window.openTransactionModal = openTransactionModal;
+        window.deleteTransaction = deleteTransaction;
+        window.showClientDetails = showClientDetails; // Оставлено для совместимости, но не меняет вкладку
+        window.openClientDetailsModal = openClientDetailsModal; // Новая функция для модального окна деталей
+
+        /**
+         * Открывает модальное окно с полной историей транзакций.
+         * @param {string} clientId
+         */
+        function openClientDetailsModal(clientId) {
+            currentClientDetailsId = clientId;
             
-            if (!clientAgg) {
-                // Если данные клиента не найдены, сбрасываем выбор
-                currentClientDetailsId = null;
-                showView('clients'); 
-                return;
-            }
+            // Устанавливаем активный класс в списке "ПОДРОБНО"
+            document.querySelectorAll('#details-clients-list-container .client-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            const selectedLink = document.querySelector(`#details-clients-list-container [data-client-id="${clientId}"]`);
+            if (selectedLink) selectedLink.classList.add('active');
+
+            // Обновляем данные в модальном окне
+            updateClientDetailsModalKPI();
+            filterAndRenderModalTransactions();
             
-            const remaining = clientAgg.totalSales - clientAgg.totalPaid;
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('details-modal-content');
             
-            // Показываем активное содержимое и скрываем заглушку
-            document.getElementById('details-placeholder').classList.add('hidden');
-            document.getElementById('details-active-content').classList.remove('hidden');
-            
-            document.getElementById('details-client-name').textContent = clientAgg.name;
-            document.getElementById('details-client-id').textContent = currentClientDetailsId;
-            document.getElementById('details-total-sales').textContent = formatCurrency(clientAgg.totalSales);
-            document.getElementById('details-total-paid').textContent = formatCurrency(clientAgg.totalPaid);
-            document.getElementById('details-remaining').textContent = formatCurrency(remaining);
-            document.getElementById('details-remaining').classList.toggle('text-red-700', remaining > 0);
-            document.getElementById('details-remaining').classList.toggle('text-green-700', remaining <= 0);
+            // Показать модальное окно
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
         }
 
         /**
-         * Рендерит таблицу транзакций для текущего выбранного клиента, применяя фильтр.
+         * Обновляет сводные KPI клиента в модальном окне деталей.
          */
-        function filterAndRenderTransactions() {
-            if (!currentClientDetailsId) {
-                document.getElementById('transactions-table-body').innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-gray-500">Выберите клиента для просмотра истории.</td></tr>';
-                return;
-            }
+        function updateClientDetailsModalKPI() {
+            if (!currentClientDetailsId) return;
 
             const clientAgg = clientAggregates[currentClientDetailsId];
             if (!clientAgg) return;
             
-            const filter = currentTransactionFilter.toLowerCase();
+            const remaining = clientAgg.totalSales - clientAgg.totalPaid;
+            
+            document.getElementById('modal-details-client-name').textContent = clientAgg.name;
+            document.getElementById('modal-details-total-sales').textContent = formatCurrency(clientAgg.totalSales);
+            document.getElementById('modal-details-total-paid').textContent = formatCurrency(clientAgg.totalPaid);
+            document.getElementById('modal-details-remaining').textContent = formatCurrency(remaining);
+            document.getElementById('modal-details-remaining').classList.toggle('text-red-900', remaining > 0);
+            document.getElementById('modal-details-remaining').classList.toggle('text-green-900', remaining <= 0);
+        }
+        
+        /**
+         * Рендерит таблицу транзакций для текущего клиента в модальном окне, применяя фильтр.
+         */
+        function filterAndRenderModalTransactions() {
+            if (!currentClientDetailsId) return;
+
+            const filter = modalTransactionFilter.toLowerCase();
 
             let clientTransactions = allTransactions
                 .filter(t => t.clientId === currentClientDetailsId)
-                .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)); // Сортировка по дате (новейшие сверху)
+                .sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)); 
 
-            // Применяем фильтр поиска по товару/описанию
             if (filter) {
                 clientTransactions = clientTransactions.filter(t => 
                     t.itemName.toLowerCase().includes(filter) || t.transactionDate.includes(filter)
                 );
             }
             
-            const tbody = document.getElementById('transactions-table-body');
+            const tbody = document.getElementById('modal-transactions-table-body');
             tbody.innerHTML = '';
 
             if (clientTransactions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-3 text-center text-gray-500">Нет транзакций, соответствующих фильтру.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-3 text-center text-gray-500">Нет транзакций, соответствующих фильтру.</td></tr>';
                 return;
             }
 
@@ -650,22 +761,17 @@
 
                 const remainingInTransaction = t.totalAmount - t.paymentReceived;
                 
-                // Экранирование для безопасной передачи в inline JS
                 const escapedClientName = t.clientName.replace(/'/g, "\\'");
                 const escapedItemName = t.itemName.replace(/'/g, "\\'");
                 
                 row.innerHTML = `
-                    <td class="px-4 py-3 text-left w-1/3">
-                        <span class="block text-sm font-semibold text-gray-900">${t.itemName} (x${t.quantity})</span>
-                        <span class="block text-xs text-gray-500">${t.transactionDate}</span>
-                    </td>
-                    <td class="px-4 py-3 text-right w-1/3">
-                        <span class="block text-sm font-bold text-blue-600">${formatCurrency(t.totalAmount)}</span>
-                        <span class="block text-xs text-gray-500">Внесено: ${formatCurrency(t.paymentReceived)}</span>
-                        ${remainingInTransaction > 0 ? `<span class="block text-xs text-red-500 font-bold">Ост.: ${formatCurrency(remainingInTransaction)}</span>` : ''}
-                    </td>
-                    <td class="px-4 py-3 text-right w-1/3 whitespace-nowrap">
-                        <button class="text-blue-600 hover:text-blue-900 mr-2 text-sm" onclick="openTransactionModal(
+                    <td class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">${t.transactionDate}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${t.itemName} (x${t.quantity})</td>
+                    <td class="px-4 py-3 text-right text-sm font-medium text-blue-600">${formatCurrency(t.totalAmount)}</td>
+                    <td class="px-4 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
+                    <td class="px-4 py-3 text-right text-sm font-bold ${remainingInTransaction > 0 ? 'text-red-600' : 'text-gray-600'}">${formatCurrency(remainingInTransaction)}</td>
+                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2 text-sm" onclick="closeClientDetailsModal(); openTransactionModal(
                             '${t.id}', 
                             '${t.clientId}', 
                             '${escapedClientName}', 
@@ -677,49 +783,11 @@
                         )">
                             Ред.
                         </button>
-                        <button class="text-red-600 hover:text-red-900 text-sm" onclick="deleteTransaction('${t.id}')">
-                            Удал.
-                        </button>
                     </td>
                 `;
             });
         }
 
-
-        /**
-         * Устанавливает выбранного клиента, не меняя экран.
-         * @param {string} clientId
-         */
-        function showClientDetails(clientId) {
-            currentClientDetailsId = clientId;
-            
-            // Обновляем состояние списка клиентов (активный класс)
-            document.querySelectorAll('.client-link').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('data-client-id') === clientId) {
-                    link.classList.add('active');
-                }
-            });
-
-            // Обновление сводки KPI и имени (готовит данные для вкладки ПОДРОБНО)
-            updateClientDetailsKPI();
-
-            // Рендеринг таблицы транзакций (готовит данные для вкладки ПОДРОБНО)
-            currentTransactionFilter = '';
-            document.getElementById('transaction-search').value = '';
-            filterAndRenderTransactions();
-            
-            // Если текущая вкладка - ПОДРОБНО, обновляем ее.
-            const currentView = document.querySelector('.header-nav-item.border-blue-600').getAttribute('data-view');
-            if (currentView === 'details') {
-                showView('details'); // Вызывает обновление деталей
-            }
-        }
-        
-        // Глобальная функция для использования в инлайн-обработчиках
-        window.openTransactionModal = openTransactionModal;
-        window.deleteTransaction = deleteTransaction;
-        window.showClientDetails = showClientDetails; // Делаем доступным глобально для списка клиентов
 
         /**
          * Открывает модальное окно для добавления или редактирования.
@@ -728,31 +796,31 @@
             const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
             
-            // Заполнение формы
             document.getElementById('modal-title').textContent = docId ? 'Редактировать Транзакцию' : 'Добавить Новую Транзакцию';
             document.getElementById('transaction-doc-id').value = docId || '';
             
-            // === ИСПРАВЛЕНИЕ #1: Гарантируем уникальный ID для нового клиента ===
+            // === ЛОГИКА ID КЛИЕНТА ===
             let finalClientId = clientId;
             const isAddingNewFromClientsList = !docId && !currentClientDetailsId;
             
             if (isAddingNewFromClientsList) {
-                // Если мы добавляем НОВУЮ транзакцию И не выбран активный клиент,
-                // это новый клиент, и ему нужен новый UUID.
                 finalClientId = crypto.randomUUID();
             } else if (!docId && currentClientDetailsId) {
-                // Если мы добавляем НОВУЮ транзакцию к выбранному клиенту (из деталей), используем его ID.
                 finalClientId = currentClientDetailsId;
-            } else if (docId) {
-                // Редактирование существующей транзакции
-                finalClientId = clientId;
+            } else if (docId && !clientId) {
+                 // Если редактируем старый док, но почему-то потеряли clientId, 
+                 // пытаемся найти его через allTransactions (защита)
+                 const oldTrans = allTransactions.find(t => t.id === docId);
+                 finalClientId = oldTrans ? oldTrans.clientId : crypto.randomUUID();
+            } else if (!finalClientId) {
+                 finalClientId = crypto.randomUUID(); // Последняя защита
             }
             
             document.getElementById('transaction-client-id').value = finalClientId; 
             document.getElementById('modal-client-name').value = clientName;
             
             
-            // === ИСПРАВЛЕНИЕ #2: Логика блокировки имени ===
+            // === ЛОГИКА БЛОКИРОВКИ ИМЕНИ ===
             const modalClientNameInput = document.getElementById('modal-client-name');
             
             if (docId || currentClientDetailsId) {
@@ -780,7 +848,6 @@
             document.getElementById('modal-payment-received').value = paymentReceived;
             document.getElementById('modal-transaction-date').value = transactionDate;
 
-            // Показать модальное окно
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
@@ -799,8 +866,28 @@
             modalContent.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
                 modal.classList.add('hidden');
+                // Если мы закрыли модал, и активен экран деталей, обновляем его
+                if (document.getElementById('details-modal').classList.contains('hidden') === false) {
+                     updateClientDetailsModalKPI();
+                     filterAndRenderModalTransactions();
+                }
             }, 300);
         }
+        
+        /**
+         * Скрывает модальное окно деталей.
+         */
+        function closeClientDetailsModal() {
+            const modal = document.getElementById('details-modal');
+            const modalContent = document.getElementById('details-modal-content');
+
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
 
         /**
          * Обрабатывает отправку формы транзакции (Добавление/Редактирование).
@@ -811,13 +898,13 @@
             const docId = document.getElementById('transaction-doc-id').value;
             const clientId = document.getElementById('transaction-client-id').value;
             const clientName = document.getElementById('modal-client-name').value.trim();
+            // ... (остальные поля)
             const itemName = document.getElementById('modal-item-name').value.trim();
             const unitPrice = parseFloat(document.getElementById('modal-unit-price').value);
             const quantity = parseInt(document.getElementById('modal-quantity').value);
             const paymentReceived = parseFloat(document.getElementById('modal-payment-received').value);
             const transactionDate = document.getElementById('modal-transaction-date').value;
             
-            // Валидация
             if (!clientName || !itemName || isNaN(unitPrice) || isNaN(quantity) || isNaN(paymentReceived) || !transactionDate) {
                 console.error("Не все поля заполнены корректно.");
                 return;
@@ -831,33 +918,27 @@
                 quantity: quantity,
                 paymentReceived: paymentReceived,
                 totalAmount: unitPrice * quantity,
-                transactionDate: new Date(transactionDate) // Firestore будет хранить как Timestamp
+                transactionDate: new Date(transactionDate)
             };
 
             const salesRef = getSalesCollectionRef();
             if (!salesRef) return;
 
-            const isNewTransaction = !docId;
             const savedClientId = clientId; 
 
             try {
                 if (docId) {
-                    // Редактирование существующего документа
                     await updateDoc(doc(salesRef, docId), data);
-                    console.log("Транзакция успешно обновлена:", docId);
                 } else {
-                    // Добавление нового документа
                     await addDoc(salesRef, data);
-                    console.log("Новая транзакция успешно добавлена.");
                 }
 
                 closeTransactionModal();
                 
-                // *** ИЗМЕНЕНИЕ: Установка активного клиента после добавления/редактирования ***
-                // Это гарантирует, что при переходе на ПОДРОБНО, данные будут готовы.
+                // Устанавливаем активного клиента после сохранения
                 currentClientDetailsId = savedClientId; 
                 
-                // Обновляем список клиентов (onSnapshot сделает это) и подсвечиваем активного
+                // Обновляем подсветку активного клиента
                 document.querySelectorAll('.client-link').forEach(link => {
                     link.classList.remove('active');
                     if (link.getAttribute('data-client-id') === savedClientId) {
@@ -867,7 +948,6 @@
 
             } catch (error) {
                 console.error("Ошибка при сохранении транзакции:", error);
-                // В реальном приложении здесь можно показать сообщение об ошибке
             }
         }
 
@@ -879,13 +959,11 @@
             const salesRef = getSalesCollectionRef();
             if (!salesRef) return;
 
-            // Используем пользовательское модальное окно для подтверждения (вместо alert/confirm)
             const isConfirmed = window.confirm('Вы уверены, что хотите удалить эту транзакцию?'); 
 
             if (isConfirmed) {
                 try {
                     await deleteDoc(doc(salesRef, docId));
-                    console.log("Транзакция успешно удалена:", docId);
                 } catch (error) {
                     console.error("Ошибка при удалении транзакции:", error);
                 }
@@ -910,24 +988,20 @@
                 if (!salesRef) return;
 
                 try {
-                    // 1. Находим все документы этого клиента
                     const clientQuery = query(salesRef, where("clientId", "==", clientId));
                     const snapshot = await getDocs(clientQuery);
 
-                    // 2. Создаем пакетный запрос
                     const batch = writeBatch(db);
                     
                     snapshot.docs.forEach(doc => {
                         batch.delete(doc.ref);
                     });
 
-                    // 3. Выполняем пакетное удаление
                     await batch.commit();
 
-                    console.log(`Клиент ${clientAgg.name} (ID: ${clientId}) и все его транзакции успешно удалены.`);
-                    
                     // 4. Сброс выбранного клиента и обновление интерфейса
                     currentClientDetailsId = null;
+                    closeClientDetailsModal(); 
                     showView('clients'); // Возвращаемся на экран Обзора
                 } catch (error) {
                     console.error("Ошибка при удалении клиента и транзакций:", error);
@@ -940,30 +1014,33 @@
         // === ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ СОБЫТИЙ ===
 
         window.onload = function() {
-            // Установка слушателей для модального окна
+            // Установка слушателей для модального окна транзакций
             document.getElementById('add-transaction-button').addEventListener('click', () => {
-                // Всегда открываем модал, при необходимости генерируя новый ID клиента
                 openTransactionModal();
             });
             
-            // Кнопка добавления транзакции со страницы деталей
-             document.getElementById('add-transaction-to-client-button').addEventListener('click', () => {
-                const clientAgg = clientAggregates[currentClientDetailsId];
-                if (clientAgg) {
-                    // Передаем существующий ID клиента и его имя
-                    openTransactionModal(null, currentClientDetailsId, clientAgg.name);
-                }
-            });
-
-
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
             document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
+            
+            // Установка слушателей для модального окна деталей
+            document.getElementById('modal-details-close-button').addEventListener('click', closeClientDetailsModal);
+            document.getElementById('modal-add-transaction-button').addEventListener('click', () => {
+                 closeClientDetailsModal(); 
+                 const clientAgg = clientAggregates[currentClientDetailsId];
+                 if (clientAgg) {
+                    openTransactionModal(null, currentClientDetailsId, clientAgg.name);
+                 }
+            });
+            document.getElementById('modal-delete-client-button').addEventListener('click', () => {
+                 if (currentClientDetailsId) {
+                    deleteClientAndTransactions(currentClientDetailsId);
+                 }
+            });
             
             // Обработчики навигации в заголовке
             document.querySelectorAll('.header-nav-item').forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Переход на выбранный экран
                     showView(e.currentTarget.getAttribute('data-view'));
                 });
             });
@@ -971,25 +1048,29 @@
             // Обработчик выхода
             document.getElementById('logout-button-desktop').addEventListener('click', () => signOut(auth).catch(e => console.error("Logout failed:", e)));
             
-            // Обработчик поиска клиентов
+            // Обработчик изменения названия сайта
+            document.getElementById('app-name-input').addEventListener('input', (e) => {
+                const newTitle = e.target.value.trim() || "Система Учёта Продаж";
+                document.getElementById('site-title-display').textContent = newTitle;
+                document.getElementById('site-title-tag').textContent = newTitle;
+            });
+            
+            // Обработчик поиска клиентов (ОСНОВА)
             document.getElementById('client-search').addEventListener('input', (e) => {
                 renderClientsList(clientAggregates, e.target.value);
             });
             
-            // Обработчик поиска транзакций
-            document.getElementById('transaction-search').addEventListener('input', (e) => {
-                currentTransactionFilter = e.target.value;
-                filterAndRenderTransactions();
+            // Обработчик поиска клиентов (ПОДРОБНО)
+            document.getElementById('details-client-search').addEventListener('input', (e) => {
+                 renderDetailsClientList(clientAggregates, e.target.value);
             });
             
-            // ОБРАБОТЧИК: Удаление клиента
-            document.getElementById('delete-client-button').addEventListener('click', () => {
-                if (currentClientDetailsId) {
-                    deleteClientAndTransactions(currentClientDetailsId);
-                } else {
-                    console.warn("Невозможно удалить клиента: ID клиента не установлен.");
-                }
+            // Обработчик поиска транзакций в модальном окне
+            document.getElementById('modal-transaction-search').addEventListener('input', (e) => {
+                modalTransactionFilter = e.target.value;
+                filterAndRenderModalTransactions();
             });
+            
 
             // Установим текущую дату в форме
             document.getElementById('modal-transaction-date').value = new Date().toISOString().split('T')[0];
