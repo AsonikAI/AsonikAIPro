@@ -84,6 +84,12 @@
          .theme-crimson .modal-overlay .bg-transparent {
             background-color: rgba(255, 255, 255, 0.05);
          }
+        mark {
+            background-color: #fde047; /* yellow-300 */
+            color: black;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -486,16 +492,9 @@
         function showView(viewId) {
             document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
-
-            let activeColorClass = 'border-blue-600'; // Default for light theme
-            if (document.body.classList.contains('theme-violet') || document.body.classList.contains('theme-crimson')) {
-                activeColorClass = 'border-b-2'; // A generic class for gradient themes
-            }
             
             document.querySelectorAll('.header-nav-item').forEach(item => {
-                item.classList.remove('border-blue-600', 'text-gray-900');
-                item.classList.add('border-transparent');
-                item.style.borderColor = 'transparent'; // Reset style
+                item.style.borderColor = 'transparent';
                 item.style.color = 'var(--text-secondary)';
 
                 if (item.dataset.view === viewId) {
@@ -568,7 +567,7 @@
                 
                 renderClientsList();
                 const activeNavItem = document.querySelector('.header-nav-item[style*="var(--header-brand)"]');
-                const currentView = activeNavItem ? activeNavItem.dataset.view : null;
+                const currentView = activeNavItem ? activeNavItem.dataset.view : 'clients';
 
                 if (currentView === 'details') {
                     renderDetailsView();
@@ -696,27 +695,36 @@
             });
             setLanguage(currentLang);
         }
+
+        // *** ИСПРАВЛЕННАЯ ЛОГИКА ПОИСКА И ПОДСВЕТКИ ***
         
-        function renderDetailedClientInfo(container, clientId) {
+        // Эта функция теперь ТОЛЬКО отрисовывает строки таблицы
+        function renderTransactionsTable(clientId, searchTerm = '') {
+            const tableBody = document.getElementById('transactions-table-body');
+            if (!tableBody) return;
+
             const client = clientAggregates[clientId];
-            const remaining = client.totalSales - client.totalPaid;
-            
             let runningBalance = 0;
             const transactionsWithRunningBalance = [...client.transactions].map(t => {
                 const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
                 runningBalance += transactionTotal - (t.paymentReceived || 0);
                 return { ...t, runningBalance };
             }).reverse();
-
-            const searchTerm = document.getElementById('details-transaction-search')?.value.toLowerCase() || '';
-            const filteredTransactions = searchTerm 
-                ? transactionsWithRunningBalance.filter(t => t.itemName.toLowerCase().includes(searchTerm))
+            
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
+            const filteredTransactions = lowerCaseSearchTerm
+                ? transactionsWithRunningBalance.filter(t => t.itemName.toLowerCase().includes(lowerCaseSearchTerm))
                 : transactionsWithRunningBalance;
 
-            const transactionsHtml = filteredTransactions.map(t => `
+            const transactionsHtml = filteredTransactions.map(t => {
+                const itemNameHtml = lowerCaseSearchTerm
+                    ? t.itemName.replace(new RegExp(lowerCaseSearchTerm, 'gi'), match => `<mark>${match}</mark>`)
+                    : t.itemName;
+
+                return `
                 <tr class="hover:bg-gray-50">
                     <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
-                    <td class="px-2 py-3 text-sm">${t.itemName}</td>
+                    <td class="px-2 py-3 text-sm">${itemNameHtml}</td>
                     <td class="px-2 py-3 text-center text-sm">${t.quantity || 0}</td>
                     <td class="px-2 py-3 text-right text-sm">${formatCurrency(t.unitPrice)}</td>
                     <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</td>
@@ -726,9 +734,18 @@
                         <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" data-lang-key="edit" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
                         <button class="text-red-600 hover:text-red-900 text-sm" data-lang-key="delete" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
 
+            tableBody.innerHTML = transactionsHtml;
+            setLanguage(currentLang); // Применяем язык к новым кнопкам "Ред." и "Удал."
+        }
+
+        // Эта функция теперь отрисовывает "каркас" и вешает слушатель
+        function renderDetailedClientInfo(container, clientId) {
+            const client = clientAggregates[clientId];
+            const remaining = client.totalSales - client.totalPaid;
+            
             container.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center space-x-4">
@@ -767,14 +784,20 @@
                                 <th class="px-2 py-3 text-center" data-lang-key="actions">Действия</th>
                             </tr>
                         </thead>
-                        <tbody id="transactions-table-body" class="divide-y">${transactionsHtml}</tbody>
+                        <tbody id="transactions-table-body" class="divide-y"></tbody>
                     </table>
                 </div>`;
-            setLanguage(currentLang);
-            // ИСПРАВЛЕНИЕ: Добавляем слушатель событий прямо здесь
-            document.getElementById('details-transaction-search').addEventListener('input', () => {
-                renderDetailedClientInfo(container, clientId);
+            
+            // Сначала отрисовываем таблицу
+            renderTransactionsTable(clientId);
+
+            // Теперь вешаем слушатель на созданный input
+            const searchInput = document.getElementById('details-transaction-search');
+            searchInput.addEventListener('input', (e) => {
+                renderTransactionsTable(clientId, e.target.value);
             });
+            
+            setLanguage(currentLang);
         }
         
         // === MODAL FUNCTIONS ===
@@ -993,9 +1016,9 @@
                 const activeBtn = document.querySelector(`.theme-btn[data-theme="${theme}"]`);
                 if(activeBtn) activeBtn.classList.add('active');
                 
-                // Re-apply active nav item style
                 const activeNavItem = document.querySelector('.header-nav-item[style*="var(--header-brand)"]');
                 if (activeNavItem) showView(activeNavItem.dataset.view);
+                else showView('clients');
 
             };
             document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
