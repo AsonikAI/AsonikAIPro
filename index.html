@@ -749,6 +749,10 @@
                 // Экранирование для inline JS
                 const escapedClientName = client.name.replace(/'/g, "\\'");
                 const escapedItemName = (lastTrans.itemName || '').replace(/'/g, "\\'");
+                
+                // Детализация для ОСНОВЫ:
+                const itemDetails = `${lastTrans.itemName || 'N/A'} (x${lastTrans.quantity || 0})`;
+                const itemSum = formatCurrency(lastTrans.totalAmount || 0);
 
                 clientCard.innerHTML = `
                     <div class="col-span-3 flex flex-col">
@@ -756,8 +760,8 @@
                         <span class="text-xs text-gray-500 mt-0.5">${lastDate}</span>
                     </div>
                     <div class="col-span-3 flex flex-col">
-                        <span class="text-sm font-medium text-gray-800 truncate">${lastTrans.itemName || 'N/A'} (x${lastTrans.quantity || 0})</span>
-                        <span class="text-xs text-blue-600">Сумма: ${formatCurrency(lastTrans.totalAmount || 0)}</span>
+                        <span class="text-sm font-medium text-gray-800 truncate" title="${itemDetails}">${itemDetails}</span>
+                        <span class="text-xs text-blue-600">Сумма: ${itemSum}</span>
                     </div>
                     <div class="col-span-2 text-center flex flex-col text-sm font-medium">
                         <span class="text-green-600">${formatCurrency(client.totalPaid || 0)}</span>
@@ -814,6 +818,7 @@
                  const remaining = client.totalSales - client.totalPaid;
                  const clientCard = document.createElement('div');
                  clientCard.className = `client-link flex justify-between items-center p-4 hover:bg-gray-100 rounded-lg ${client.id === currentClientDetailsId ? 'active' : ''}`;
+                 clientCard.setAttribute('data-client-id', client.id); // Добавлено: ID для подсветки
                  
                  clientCard.innerHTML = `
                      <div class="flex flex-col">
@@ -1053,8 +1058,18 @@
         // === ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ СОБЫТИЙ ===
 
         window.onload = function() {
+            
+            // *** КРИТИЧЕСКИЙ ФИКС: Делаем функции доступными для HTML onclick ***
+            window.showClientDetails = showClientDetails;
+            window.deleteTransaction = deleteTransaction;
+            window.openClientDetailsModal = openClientDetailsModal;
+            window.openTransactionModal = openTransactionModal;
+            window.deleteClientAndTransactions = deleteClientAndTransactions; // Убеждаемся, что она тоже глобальна
+            
             // Установка слушателей для модального окна транзакций
             document.getElementById('add-transaction-button').addEventListener('click', () => {
+                // Сброс currentClientDetailsId для добавления нового клиента
+                currentClientDetailsId = null; 
                 openTransactionModal();
             });
             
