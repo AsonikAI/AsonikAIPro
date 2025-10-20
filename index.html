@@ -104,6 +104,13 @@
 
     <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4">
         
+        <div id="initial-loading-screen" class="w-full h-screen flex items-center justify-center">
+             <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+
         <div id="login-screen" class="w-full max-w-md hidden">
             <div class="bg-white p-8 rounded-xl card shadow-lg">
                 <h2 class="text-2xl font-bold text-center mb-2" data-lang-key="login_title">Вход в Систему</h2>
@@ -217,7 +224,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, onSnapshot, writeBatch, setDoc, getDoc, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -247,8 +254,6 @@
                 }
             });
         };
-        const formatDate = (dateObj) => new Date(dateObj.seconds * 1000).toLocaleDateString('ru-RU');
-        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
         
         const getConfigRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'system_settings', 'config');
         const getAllowedUsersRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'allowedUsers');
@@ -270,36 +275,42 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                getRedirectResult(auth).then(async (result) => {
-                    if (result && result.user) {
-                        const user = result.user;
-                        const configRef = getConfigRef();
-                        const configSnap = await getDoc(configRef);
-
-                        if (!configSnap.exists()) {
-                            await setDoc(configRef, { superAdminUid: user.uid, superAdminEmail: user.email });
-                            await setDoc(doc(getAllowedUsersRef(), user.uid), { email: user.email, role: 'admin', addedAt: serverTimestamp() });
-                        } else {
-                             const userRef = doc(getAllowedUsersRef(), user.uid);
-                             const userSnap = await getDoc(userRef);
-                             if (!userSnap.exists()) {
-                                await setDoc(doc(getPendingUsersRef(), user.uid), { email: user.email, attemptedAt: serverTimestamp() });
-                                await signOut(auth);
-                             }
-                        }
-                    }
-                }).catch(error => console.error("Redirect Result Error:", error));
-
                 onAuthStateChanged(auth, (user) => {
                     if (unsubscribeSales) unsubscribeSales();
                     if (unsubscribeAllowed) unsubscribeAllowed();
                     if (unsubscribePending) unsubscribePending();
-                    document.getElementById('app-container').classList.remove('hidden');
 
                     if (user) {
                         initializeUser(user);
                     } else {
-                        showLoginScreen();
+                        getRedirectResult(auth).then(async (result) => {
+                            if (result && result.user) {
+                                // User just came back from redirect.
+                                // onAuthStateChanged will be triggered again with the user object.
+                                // We just need to create the records if it's the first time.
+                                const user = result.user;
+                                const configRef = getConfigRef();
+                                const configSnap = await getDoc(configRef);
+
+                                if (!configSnap.exists()) {
+                                    await setDoc(configRef, { superAdminUid: user.uid, superAdminEmail: user.email });
+                                    await setDoc(doc(getAllowedUsersRef(), user.uid), { email: user.email, role: 'admin', addedAt: serverTimestamp() });
+                                } else {
+                                    const userRef = doc(getAllowedUsersRef(), user.uid);
+                                    const userSnap = await getDoc(userRef);
+                                    if (!userSnap.exists()) {
+                                        await setDoc(doc(getPendingUsersRef(), user.uid), { email: user.email, attemptedAt: serverTimestamp() });
+                                        await signOut(auth); // Sign out immediately, they will be kicked to login screen.
+                                    }
+                                }
+                            } else {
+                                // No user, and no redirect result. Show the login screen.
+                                showLoginScreen();
+                            }
+                        }).catch(error => {
+                            console.error("Redirect Result Error:", error);
+                            showLoginScreen();
+                        });
                     }
                 });
             } catch (error) { console.error("Firebase initialization failed:", error); }
@@ -308,6 +319,10 @@
         async function initializeUser(user) {
             const userRef = doc(getAllowedUsersRef(), user.uid);
             const userSnap = await getDoc(userRef);
+
+            const loading = document.getElementById('initial-loading-screen');
+            if (loading) loading.style.display = 'none';
+
             if (!userSnap.exists()) {
                 document.getElementById('login-error').textContent = translations[currentLang].login_error_denied;
                 await signOut(auth);
@@ -318,17 +333,19 @@
             currentUserIsAdmin = userSnap.data().role === 'admin';
             
             document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app-screen').classList.remove('hidden');
+            document.getElementById('main-app-screen').style.display = 'flex';
             document.getElementById('admin-nav-button').classList.toggle('hidden', !currentUserIsAdmin);
             startDataListeners();
             showView('clients');
         }
 
         function showLoginScreen() {
+             const loading = document.getElementById('initial-loading-screen');
+             if (loading) loading.style.display = 'none';
              currentUserId = null;
             currentUserIsAdmin = false;
             document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('main-app-screen').classList.add('hidden');
+            document.getElementById('main-app-screen').style.display = 'none';
         }
 
         function startDataListeners() {
@@ -393,13 +410,13 @@
                         ${user.role === 'admin' ? '<span class="text-xs font-bold text-blue-600">АДМИН</span>' : ''}
                     </div>
                     ${user.role !== 'admin' ? `<button class="text-sm text-red-600 hover:underline" onclick="window.revokeUser('${user.id}')">${translations[currentLang].admin_revoke}</button>` : ''}
-                </div>`).join('');
+                </div>`).join('') || '<p class="text-sm text-gray-500">Нет активных пользователей.</p>';
             
             pendingContainer.innerHTML = pendingUsers.map(user => `
                 <div class="flex items-center justify-between p-2 border rounded-lg card">
                     <p class="font-semibold">${user.email}</p>
                     <button class="text-sm text-green-600 hover:underline" onclick="window.approveUser('${user.id}', '${user.email}')">${translations[currentLang].admin_approve}</button>
-                </div>`).join('');
+                </div>`).join('') || '<p class="text-sm text-gray-500">Нет ожидающих пользователей.</p>';
         }
         
         async function handleGoogleLogin() {
