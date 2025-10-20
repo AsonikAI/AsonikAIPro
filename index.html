@@ -102,10 +102,9 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4 hidden">
+    <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4">
         
-        <!-- ЭКРАН ВХОДА -->
-        <div id="login-screen" class="w-full max-w-md">
+        <div id="login-screen" class="w-full max-w-md hidden">
             <div class="bg-white p-8 rounded-xl card shadow-lg">
                 <h2 class="text-2xl font-bold text-center mb-6" data-lang-key="login_title">Вход в Систему</h2>
                 <form id="login-form">
@@ -123,7 +122,6 @@
             </div>
         </div>
         
-        <!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
         <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
 
             <header class="flex items-center justify-between border-b pb-4 mb-4">
@@ -299,13 +297,16 @@
         let unsubscribeUsers = null;
         let currentLang = 'ru';
 
-        const translations = { ru: { login_error_wrong: "Неверный логин или пароль.", admin_user_created: "Пользователь создан!", admin_user_exists: "Пользователь уже существует.", admin_delete_user_confirm: "Вы уверены, что хотите удалить этого пользователя?", nav_main: "ОСНОВА", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ", nav_admin: "АДМИН", main_header: "ОСНОВА (Обзор Клиентов)", details_btn: "Выбрать", back_to_clients: "Назад к списку клиентов", russian: "Русский", turkish: "Türkçe", theme_light: "Светлая", theme_violet: "Фиолетовая", theme_crimson: "Багровая", theme_sunset: "Закат"} };
+        const translations = { ru: { login_title: "Вход в Систему", login_email: "Логин (Email)", login_password: "Пароль", login_btn: "Войти", login_error_wrong: "Неверный логин или пароль.", admin_user_created: "Пользователь создан!", admin_user_exists: "Пользователь уже существует.", admin_delete_user_confirm: "Вы уверены, что хотите удалить этого пользователя?", nav_main: "ОСНОВА", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ", nav_admin: "АДМИН", main_header: "ОСНОВА (Обзор Клиентов)", details_btn: "Выбрать", back_to_clients: "Назад к списку клиентов", russian: "Русский", turkish: "Türkçe", theme_light: "Светлая", theme_violet: "Фиолетовая", theme_crimson: "Багровая", theme_sunset: "Закат"} };
 
         const setLanguage = (lang) => {
             currentLang = lang;
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.dataset.langKey;
-                if(translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+                if(translations[lang] && translations[lang][key]) {
+                    if (el.placeholder) el.placeholder = translations[lang][key];
+                    else el.textContent = translations[lang][key];
+                }
             });
         };
         
@@ -360,7 +361,7 @@
         function startDataListeners() {
             if (!currentUserId) return;
             unsubscribeSales = onSnapshot(getSalesCollectionRef(), (snapshot) => {
-                allTransactions = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
+                allTransactions = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate ? doc.data().transactionDate.toDate() : new Date() }));
                 clientAggregates = {};
                 allTransactions.forEach(t => {
                     if (!clientAggregates[t.clientId]) clientAggregates[t.clientId] = { name: t.clientName, transactions: [] };
@@ -384,9 +385,37 @@
         }
 
         function renderClientsList() {
-             const container = document.getElementById('clients-list-container');
-             container.innerHTML = 'Render logic here...';
+            const container = document.getElementById('clients-list-container');
+            const filter = document.getElementById('client-search').value.toLowerCase();
+            const sortMethod = document.getElementById('client-sort').value;
+            container.innerHTML = '';
+            let clientIds = Object.keys(clientAggregates);
+
+            clientIds.sort((a,b) => clientAggregates[a].name.localeCompare(clientAggregates[b].name)); // Simple sort
+            const filteredClientIds = clientIds.filter(id => clientAggregates[id].name.toLowerCase().includes(filter));
+
+            if (filteredClientIds.length === 0) {
+                 container.innerHTML = `<div class="p-4 text-center text-gray-500">Нет клиентов.</div>`;
+                return;
+            }
+
+            filteredClientIds.forEach((clientId, index) => {
+                const client = clientAggregates[clientId];
+                const remaining = client.totalSales - client.totalPaid;
+                const clientCard = document.createElement('div');
+                clientCard.className = `p-4 border rounded-lg shadow-sm card`;
+                clientCard.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${client.name}</h3>
+                        <div class="text-right">
+                           <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
+                           <span class="text-xs block">Полный остаток</span>
+                        </div>
+                    </div>`;
+                container.appendChild(clientCard);
+            });
         }
+
 
         function renderAdminPanel() {
             if (!currentUserIsAdmin) return;
@@ -417,7 +446,6 @@
             const email = document.getElementById('new-user-email').value;
             const password = document.getElementById('new-user-password').value;
             const statusP = document.getElementById('create-user-status');
-            const mainAuth = getAuth();
             const tempAppName = 'user-creation-' + Date.now();
             const tempApp = initializeApp(firebaseConfig, tempAppName);
             const tempAuth = getAuth(tempApp);
@@ -456,4 +484,3 @@
     </script>
 </body>
 </html>
-
