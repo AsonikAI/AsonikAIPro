@@ -42,6 +42,18 @@
             --header-brand: #fda4af; /* rose-300 */
             --bg-hover: rgba(255, 255, 255, 0.15);
         }
+        
+        /* НОВАЯ ТЕМА "ЗАКАТ" */
+        .theme-sunset {
+            --bg-main-start: #7f1d1d; /* red-900 */
+            --bg-main-end: #fb923c; /* orange-400 */
+            --bg-card: rgba(255, 255, 255, 0.1);
+            --text-primary: #fef2f2; /* red-50 */
+            --text-secondary: #fed7aa; /* orange-200 */
+            --border-color: rgba(255, 255, 255, 0.2);
+            --header-brand: #fcd34d; /* amber-300 */
+            --bg-hover: rgba(255, 255, 255, 0.15);
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -50,7 +62,7 @@
             transition: background-color 0.5s ease;
         }
 
-        body.theme-violet, body.theme-crimson {
+        body.theme-violet, body.theme-crimson, body.theme-sunset {
             background-image: linear-gradient(135deg, var(--bg-main-start), var(--bg-main-end));
         }
 
@@ -76,12 +88,14 @@
         
         /* Стили для модальных окон в градиентных темах */
         .theme-violet .modal-overlay .card,
-        .theme-crimson .modal-overlay .card {
+        .theme-crimson .modal-overlay .card,
+        .theme-sunset .modal-overlay .card {
              background-color: #1f2937; /* Темный фон для лучшей читаемости */
              color: #f9fafb;
         }
          .theme-violet .modal-overlay .bg-transparent,
-         .theme-crimson .modal-overlay .bg-transparent {
+         .theme-crimson .modal-overlay .bg-transparent,
+         .theme-sunset .modal-overlay .bg-transparent {
             background-color: rgba(255, 255, 255, 0.05);
          }
         mark {
@@ -183,6 +197,7 @@
                             <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="light" data-lang-key="theme_light">Светлая</button>
                             <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="violet" data-lang-key="theme_violet">Фиолетовая</button>
                             <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="crimson" data-lang-key="theme_crimson">Багровая</button>
+                            <button class="theme-btn flex-1 py-2 px-4 rounded-lg border" data-theme="sunset" data-lang-key="theme_sunset">Закат</button>
                         </div>
                     </div>
                     <div class="p-6 rounded-xl border card">
@@ -325,6 +340,7 @@
                 theme_light: "Светлая",
                 theme_violet: "Фиолетовая",
                 theme_crimson: "Багровая",
+                theme_sunset: "Закат",
                 settings_logo_title: "Логотип",
                 logo_upload_placeholder: "Загрузить логотип",
                 logo_uploading: "Загрузка...",
@@ -376,6 +392,7 @@
                 sort_oldest: "Сначала старые",
                 sort_name_az: "Имя (А-Я)",
                 sort_name_za: "Имя (Я-А)",
+                reset_filters: "Сброс",
             },
             tr: {
                 loading: "Sistem yükleniyor...",
@@ -396,6 +413,7 @@
                 theme_light: "Açık",
                 theme_violet: "Mor",
                 theme_crimson: "Koyu Kırmızı",
+                theme_sunset: "Gün Batımı",
                 settings_logo_title: "Logo",
                 logo_upload_placeholder: "Logo yükle",
                 logo_uploading: "Yükleniyor...",
@@ -447,6 +465,7 @@
                 sort_oldest: "Önce en eski",
                 sort_name_az: "İsim (A-Z)",
                 sort_name_za: "İsim (Z-A)",
+                reset_filters: "Sıfırla",
             }
         };
 
@@ -695,27 +714,50 @@
             });
             setLanguage(currentLang);
         }
-
-        // *** ИСПРАВЛЕННАЯ ЛОГИКА ПОИСКА И ПОДСВЕТКИ ***
         
-        // Эта функция теперь ТОЛЬКО отрисовывает строки таблицы
-        function renderTransactionsTable(clientId, searchTerm = '') {
+        // *** ОБНОВЛЕННАЯ ЛОГИКА ФИЛЬТРАЦИИ И РЕНДЕРА ТАБЛИЦЫ ***
+        function renderTransactionsTable(clientId, searchTerm = '', sortOrder = 'newest', startDateStr = null, endDateStr = null) {
             const tableBody = document.getElementById('transactions-table-body');
             if (!tableBody) return;
 
             const client = clientAggregates[clientId];
+
+            // 1. Рассчитать "бегущий" остаток для ВСЕХ транзакций, чтобы он всегда был исторически верным
             let runningBalance = 0;
-            const transactionsWithRunningBalance = [...client.transactions].map(t => {
-                const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
-                runningBalance += transactionTotal - (t.paymentReceived || 0);
-                return { ...t, runningBalance };
-            }).reverse();
+            const allTransactionsWithBalance = [...client.transactions]
+                .sort((a, b) => a.transactionDate - b.transactionDate) // Сначала сортируем хронологически
+                .map(t => {
+                    const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
+                    runningBalance += transactionTotal - (t.paymentReceived || 0);
+                    return { ...t, runningBalance };
+                });
+
+            // 2. Применить фильтры к списку с рассчитанным остатком
+            let filteredTransactions = allTransactionsWithBalance;
+
+            if (startDateStr) {
+                const startDate = new Date(startDateStr);
+                startDate.setHours(0, 0, 0, 0);
+                filteredTransactions = filteredTransactions.filter(t => t.transactionDate >= startDate);
+            }
+            if (endDateStr) {
+                const endDate = new Date(endDateStr);
+                endDate.setHours(23, 59, 59, 999);
+                filteredTransactions = filteredTransactions.filter(t => t.transactionDate <= endDate);
+            }
             
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            const filteredTransactions = lowerCaseSearchTerm
-                ? transactionsWithRunningBalance.filter(t => t.itemName.toLowerCase().includes(lowerCaseSearchTerm))
-                : transactionsWithRunningBalance;
+            if (lowerCaseSearchTerm) {
+                filteredTransactions = filteredTransactions.filter(t => t.itemName.toLowerCase().includes(lowerCaseSearchTerm));
+            }
+            
+            // 3. Отсортировать отфильтрованный список для отображения
+            if (sortOrder === 'newest') {
+                filteredTransactions.reverse(); // Так как массив уже отсортирован хронологически, reverse() сделает его "сначала новые"
+            }
+            // Для 'oldest' ничего делать не нужно, он уже в правильном порядке
 
+            // 4. Рендер HTML
             const transactionsHtml = filteredTransactions.map(t => {
                 const itemNameHtml = lowerCaseSearchTerm
                     ? t.itemName.replace(new RegExp(lowerCaseSearchTerm, 'gi'), match => `<mark>${match}</mark>`)
@@ -738,10 +780,9 @@
             }).join('');
 
             tableBody.innerHTML = transactionsHtml;
-            setLanguage(currentLang); // Применяем язык к новым кнопкам "Ред." и "Удал."
+            setLanguage(currentLang);
         }
 
-        // Эта функция теперь отрисовывает "каркас" и вешает слушатель
         function renderDetailedClientInfo(container, clientId) {
             const client = clientAggregates[clientId];
             const remaining = client.totalSales - client.totalPaid;
@@ -766,9 +807,20 @@
                     <div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid">Всего (Касса)</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
                     <div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining">Полный Остаток</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
                 </div>
-                <div class="flex items-center space-x-4 mb-3">
-                    <h3 class="text-xl font-semibold" data-lang-key="transaction_history">История Транзакций</h3>
+                <!-- НОВЫЕ ФИЛЬТРЫ -->
+                <div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card">
+                    <h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history">История Транзакций</h3>
                     <input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" placeholder="Поиск по товару..." data-lang-key="search_item_placeholder">
+                    <select id="details-sort-order" class="px-3 py-1.5 border rounded-lg bg-transparent card">
+                        <option value="newest" data-lang-key="sort_newest">Сначала новые</option>
+                        <option value="oldest" data-lang-key="sort_oldest">Сначала старые</option>
+                    </select>
+                    <div class="flex items-center gap-2">
+                        <input type="date" id="details-start-date" class="px-3 py-1.5 border rounded-lg bg-transparent card">
+                        <span class="text-gray-500">-</span>
+                        <input type="date" id="details-end-date" class="px-3 py-1.5 border rounded-lg bg-transparent card">
+                    </div>
+                    <button id="details-filter-reset" class="px-4 py-1.5 border rounded-lg bg-transparent hover:bg-gray-100 card font-semibold" data-lang-key="reset_filters">Сброс</button>
                 </div>
                 <div class="rounded-lg border overflow-x-auto card">
                      <table class="min-w-full divide-y">
@@ -788,13 +840,29 @@
                     </table>
                 </div>`;
             
-            // Сначала отрисовываем таблицу
-            renderTransactionsTable(clientId);
+            // Функция для применения всех фильтров и перерисовки таблицы
+            function applyDetailsFilters() {
+                const searchTerm = document.getElementById('details-transaction-search').value;
+                const sortOrder = document.getElementById('details-sort-order').value;
+                const startDate = document.getElementById('details-start-date').value;
+                const endDate = document.getElementById('details-end-date').value;
+                renderTransactionsTable(clientId, searchTerm, sortOrder, startDate, endDate);
+            }
 
-            // Теперь вешаем слушатель на созданный input
-            const searchInput = document.getElementById('details-transaction-search');
-            searchInput.addEventListener('input', (e) => {
-                renderTransactionsTable(clientId, e.target.value);
+            // Изначальный рендер таблицы
+            applyDetailsFilters(); 
+
+            // Навешиваем слушатели событий на все элементы управления фильтрами
+            document.getElementById('details-transaction-search').addEventListener('input', applyDetailsFilters);
+            document.getElementById('details-sort-order').addEventListener('change', applyDetailsFilters);
+            document.getElementById('details-start-date').addEventListener('change', applyDetailsFilters);
+            document.getElementById('details-end-date').addEventListener('change', applyDetailsFilters);
+            document.getElementById('details-filter-reset').addEventListener('click', () => {
+                document.getElementById('details-transaction-search').value = '';
+                document.getElementById('details-sort-order').value = 'newest';
+                document.getElementById('details-start-date').value = '';
+                document.getElementById('details-end-date').value = '';
+                applyDetailsFilters();
             });
             
             setLanguage(currentLang);
