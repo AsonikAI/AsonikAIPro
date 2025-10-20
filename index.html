@@ -19,16 +19,14 @@
             --bg-hover: #f3f4f6;
         }
 
-        /* --- ИСПРАВЛЕННЫЕ ГРАДИЕНТНЫЕ ТЕМЫ --- */
-
         .theme-violet {
             --bg-main-start: #a78bfa; 
             --bg-main-end: #ddd6fe;
             --bg-card: rgba(255, 255, 255, 0.4);
-            --text-primary: #1e1b4b; /* Темный текст для читаемости */
-            --text-secondary: #4338ca; /* Контрастный вторичный текст */
+            --text-primary: #1e1b4b;
+            --text-secondary: #4338ca;
             --border-color: rgba(99, 102, 241, 0.3);
-            --header-brand: #4338ca; /* Темный фиолетовый для заголовка */
+            --header-brand: #4338ca;
             --bg-hover: rgba(255, 255, 255, 0.6);
         }
 
@@ -36,10 +34,10 @@
             --bg-main-start: #fb7185;
             --bg-main-end: #fecdd3;
             --bg-card: rgba(255, 255, 255, 0.4);
-            --text-primary: #881337; /* Темный текст */
-            --text-secondary: #be123c; /* Контрастный вторичный текст */
+            --text-primary: #881337;
+            --text-secondary: #be123c;
             --border-color: rgba(225, 29, 72, 0.3);
-            --header-brand: #be123c; /* Темный красный для заголовка */
+            --header-brand: #be123c;
             --bg-hover: rgba(255, 255, 255, 0.6);
         }
         
@@ -47,10 +45,10 @@
             --bg-main-start: #fb923c;
             --bg-main-end: #fed7aa;
             --bg-card: rgba(255, 255, 255, 0.4);
-            --text-primary: #7c2d12; /* Темный текст */
-            --text-secondary: #c2410c; /* Контрастный вторичный текст */
+            --text-primary: #7c2d12;
+            --text-secondary: #c2410c;
             --border-color: rgba(234, 88, 12, 0.3);
-            --header-brand: #c2410c; /* Темный оранжевый для заголовка */
+            --header-brand: #c2410c;
             --bg-hover: rgba(255, 255, 255, 0.6);
         }
 
@@ -83,7 +81,6 @@
             box-shadow: 0 0 0 2px var(--header-brand);
         }
         
-        /* Стили для модальных окон в градиентных темах */
         .theme-violet .modal-overlay .card,
         .theme-crimson .modal-overlay .card,
         .theme-sunset .modal-overlay .card {
@@ -105,10 +102,10 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4">
+    <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4 hidden">
         
         <!-- ЭКРАН ВХОДА -->
-        <div id="login-screen" class="w-full max-w-md hidden">
+        <div id="login-screen" class="w-full max-w-md">
             <div class="bg-white p-8 rounded-xl card shadow-lg">
                 <h2 class="text-2xl font-bold text-center mb-6" data-lang-key="login_title">Вход в Систему</h2>
                 <form id="login-form">
@@ -190,7 +187,6 @@
                 </div>
             </header>
             
-            <!-- СОДЕРЖИМОЕ ВКЛАДОК -->
             <section id="view-clients" class="view-content flex flex-col flex-grow pt-4">
                 <div class="flex justify-between items-center mb-4">
                      <h2 class="text-2xl font-bold" data-lang-key="main_header">ОСНОВА (Обзор Клиентов)</h2>
@@ -271,79 +267,19 @@
             </section>
         </div>
     </div>
-    <!-- МОДАЛЬНЫЕ ОКНА -->
+    
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
-            <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Транзакцию</h2>
-            <form id="transaction-form" class="space-y-4">
-                 <input type="hidden" id="transaction-doc-id">
-                <div>
-                    <label class="block text-sm font-medium" data-lang-key="client_name">Имя Клиента</label>
-                    <div id="client-selection-container">
-                        <select id="modal-client-select" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent"></select>
-                    </div>
-                    <div id="new-client-container" class="hidden mt-2 space-y-2">
-                        <input type="text" id="modal-new-client-name" placeholder="Введите имя нового клиента" class="w-full px-4 py-2 border rounded-lg bg-transparent" data-lang-key="new_client_placeholder">
-                        <div>
-                            <label for="modal-initial-balance" class="block text-sm font-medium" data-lang-key="initial_balance">Начальный остаток ($)</label>
-                            <input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
-                        </div>
-                    </div>
-                    <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2" data-lang-key="add_new_client_btn">Добавить нового клиента</button>
-                </div>
-                <div id="main-transaction-fields">
-                    <div>
-                        <label for="modal-item-name" class="block text-sm font-medium" data-lang-key="item_name">Товар / Описание</label>
-                        <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Товар">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div>
-                            <label for="modal-unit-price" class="block text-sm font-medium" data-lang-key="unit_price">Цена за единицу ($)</label>
-                            <input type="number" step="0.01" id="modal-unit-price" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
-                        </div>
-                        <div>
-                            <label for="modal-quantity" class="block text-sm font-medium" data-lang-key="quantity">Количество (шт)</label>
-                            <input type="number" step="1" id="modal-quantity" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="1">
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса ($)</label>
-                        <input type="number" step="0.01" id="modal-payment-received" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <label for="modal-transaction-date" class="block text-sm font-medium" data-lang-key="transaction_date">Дата Транзакции</label>
-                    <input type="date" id="modal-transaction-date" required class="w-full px-4 py-2 border rounded-lg bg-transparent">
-                </div>
-                <div class="flex justify-between pt-4">
-                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
-                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
-                </div>
-            </form>
-        </div>
+        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content"></div>
     </div>
     <div id="edit-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
-         <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all" id="edit-client-modal-content">
-              <h2 class="text-2xl font-bold mb-4" data-lang-key="edit_client_title">Редактировать имя клиента</h2>
-              <form id="edit-client-form">
-                   <input type="hidden" id="edit-client-id">
-                   <div>
-                        <label for="edit-client-name-input" class="block text-sm font-medium" data-lang-key="new_name_label">Новое имя клиента</label>
-                        <input type="text" id="edit-client-name-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent">
-                   </div>
-                   <div class="flex justify-between pt-6">
-                        <button type="button" id="edit-modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
-                        <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
-                   </div>
-              </form>
-         </div>
+         <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all" id="edit-client-modal-content"></div>
     </div>
+
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, getDocs, writeBatch, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
         const ADMIN_EMAIL = "admin@example.com";
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -352,7 +288,6 @@
             storageBucket: "asonik-ai.firebasestorage.app",
             messagingSenderId: "875716508614",
             appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
-            measurementId: "G-HT5T20YPVE"
         };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
@@ -362,53 +297,24 @@
         let currentClientDetailsId = null;
         let unsubscribeSales = null;
         let unsubscribeUsers = null;
+        let currentLang = 'ru';
 
-        // === ЛОКАЛИЗАЦИЯ ===
-        const translations = {
-            ru: {
-                loading: "Загрузка системы...",
-                nav_main: "ОСНОВА", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ", nav_admin: "АДМИН",
-                main_header: "ОСНОВА (Обзор Клиентов)", edit_client: "Редактировать Клиента", delete_client: "Удалить Клиента",
-                search_placeholder: "Поиск по имени клиента...", add_transaction: "Добавить Транзакцию/Клиента",
-                details_list_title: "ПОДРОБНО (Выбор Клиента)", details_list_text: "Выберите клиента из списка ниже...",
-                settings_title: "Настройки Системы", settings_theme_title: "Тема оформления", theme_light: "Светлая", theme_violet: "Фиолетовая", theme_crimson: "Багровая", theme_sunset: "Закат",
-                settings_logo_title: "Логотип", logo_upload_success: "Логотип успешно загружен!", logo_upload_error: "Ошибка загрузки.",
-                settings_app_name_title: "Название Приложения", settings_app_name_label: "Изменить название",
-                settings_account_title: "Ваша Учётная Запись", status: "Статус", user_id: "ID Пользователя",
-                modal_add_trans_title: "Добавить Новую Транзакцию", modal_edit_trans_title: "Редактировать Транзакцию",
-                client_name: "Имя Клиента", new_client_placeholder: "Введите имя нового клиента", add_new_client_btn: "Добавить нового клиента", back_to_list_btn: "Вернуться к списку",
-                item_name: "Товар / Описание", unit_price: "Цена за ед.", quantity: "Кол-во", payment_received: "Касса ($)", initial_balance: "Начальный остаток ($)", transaction_date: "Дата Транзакции",
-                cancel: "Отмена", save: "Сохранить",
-                edit_client_title: "Редактировать имя клиента", new_name_label: "Новое имя клиента",
-                russian: "Русский", turkish: "Türkçe",
-                details_title: "Подробная информация о клиенте", total_sales: "Всего Продано", total_paid: "Всего (Касса)", total_remaining: "Полный Остаток", transaction_history: "История Транзакций",
-                search_item_placeholder: "Поиск по товару...", edit: "Ред.", delete: "Удал.", details_btn: "Выбрать", back_to_clients: "Назад к списку клиентов",
-                date: "Дата", item: "Товар", amount: "Сумма", paid: "Касса", running_balance: "Итоговый Остаток", actions: "Действия",
-                confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?",
-                confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.",
-                export_to_excel: "Экспорт в Excel",
-                sort_newest: "Сначала новые", sort_oldest: "Сначала старые", sort_name_az: "Имя (А-Я)", sort_name_za: "Имя (Я-А)",
-                reset_filters: "Сброс",
-                login_title: "Вход в Систему", login_email: "Логин (Email)", login_password: "Пароль", login_btn: "Войти", login_error_wrong: "Неверный логин или пароль.",
-                admin_title: "Панель Администратора", admin_create_user: "Создать нового пользователя", admin_create_btn: "Создать", admin_user_list: "Список пользователей",
-                admin_user_created: "Пользователь создан!", admin_user_exists: "Пользователь уже существует.", admin_delete_user_confirm: "Вы уверены, что хотите удалить этого пользователя? Это действие необратимо.",
-            },
-            tr: {}
-        };
+        const translations = { ru: { login_error_wrong: "Неверный логин или пароль.", admin_user_created: "Пользователь создан!", admin_user_exists: "Пользователь уже существует.", admin_delete_user_confirm: "Вы уверены, что хотите удалить этого пользователя?", nav_main: "ОСНОВА", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ", nav_admin: "АДМИН", main_header: "ОСНОВА (Обзор Клиентов)", details_btn: "Выбрать", back_to_clients: "Назад к списку клиентов", russian: "Русский", turkish: "Türkçe", theme_light: "Светлая", theme_violet: "Фиолетовая", theme_crimson: "Багровая", theme_sunset: "Закат"} };
 
-        // === УТИЛИТЫ и КОЛЛЕКЦИИ ===
-        const formatDate = (dateObj) => {
-            if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const year = dateObj.getFullYear();
-            return `${day}.${month}.${year}`;
+        const setLanguage = (lang) => {
+            currentLang = lang;
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.dataset.langKey;
+                if(translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+            });
         };
-        const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(a || 0);
+        
+        const formatDate = (dateObj) => new Date(dateObj.seconds * 1000).toLocaleDateString('ru-RU');
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+        
         const getSalesCollectionRef = () => collection(db, 'artifacts', appId, 'users', currentUserId, 'sales_records');
         const getUsersCollectionRef = () => collection(db, 'artifacts', appId, 'public', 'data', 'users');
 
-        // === ЛОГИКА ОТОБРАЖЕНИЯ ===
         function showView(viewId) {
             document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
             document.getElementById(`view-${viewId}`)?.classList.remove('hidden');
@@ -416,35 +322,27 @@
                 i.style.borderColor = 'transparent'; i.style.color = 'var(--text-secondary)';
                 if (i.dataset.view === viewId) { i.style.borderColor = 'var(--header-brand)'; i.style.color = 'var(--text-primary)'; }
             });
-            if (viewId === 'details') renderDetailsView();
-            if (viewId === 'admin') renderAdminPanel();
         }
 
-        // === ЛОГИКА FIREBASE ===
         function setupFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                onAuthStateChanged(auth, async (user) => {
+                onAuthStateChanged(auth, (user) => {
                     if (unsubscribeSales) unsubscribeSales();
                     if (unsubscribeUsers) unsubscribeUsers();
-
-                    const appContainer = document.getElementById('app-container');
-                    appContainer.classList.remove('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
 
                     if (user) {
                         currentUserId = user.uid;
                         currentUserIsAdmin = (user.email === ADMIN_EMAIL);
-                        
                         document.getElementById('user-email-display').textContent = user.email;
                         document.getElementById('user-id-display').textContent = currentUserId;
-                        
                         document.getElementById('login-screen').classList.add('hidden');
                         document.getElementById('main-app-screen').classList.remove('hidden');
                         document.getElementById('admin-nav-button').classList.toggle('hidden', !currentUserIsAdmin);
-                        
                         startDataListeners();
                         showView('clients');
                     } else {
@@ -463,121 +361,44 @@
             if (!currentUserId) return;
             unsubscribeSales = onSnapshot(getSalesCollectionRef(), (snapshot) => {
                 allTransactions = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
-                
                 clientAggregates = {};
                 allTransactions.forEach(t => {
-                    if (!clientAggregates[t.clientId]) {
-                        clientAggregates[t.clientId] = { name: t.clientName, transactions: [] };
-                    }
+                    if (!clientAggregates[t.clientId]) clientAggregates[t.clientId] = { name: t.clientName, transactions: [] };
                     clientAggregates[t.clientId].transactions.push(t);
                 });
-
                 Object.keys(clientAggregates).forEach(clientId => {
                     const client = clientAggregates[clientId];
                     client.transactions.sort((a, b) => a.transactionDate - b.transactionDate);
-                    
-                    let totalSales = 0, totalPaid = 0;
-                    client.transactions.forEach(t => {
-                        totalSales += (t.unitPrice || 0) * (t.quantity || 0);
-                        totalPaid += t.paymentReceived || 0;
-                    });
-                    client.totalSales = totalSales;
-                    client.totalPaid = totalPaid;
+                    client.totalSales = client.transactions.reduce((sum, t) => sum + (t.unitPrice || 0) * (t.quantity || 0), 0);
+                    client.totalPaid = client.transactions.reduce((sum, t) => sum + (t.paymentReceived || 0), 0);
                 });
-                
                 renderClientsList();
-                if (document.getElementById('view-details').classList.contains('hidden') === false) {
-                    renderDetailsView();
-                }
             });
 
             if (currentUserIsAdmin) {
                 unsubscribeUsers = onSnapshot(getUsersCollectionRef(), (snapshot) => {
                     allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    if (document.getElementById('view-admin').classList.contains('hidden') === false) {
-                        renderAdminPanel();
-                    }
+                    renderAdminPanel();
                 });
             }
         }
-        
-        // === РЕНДЕР ФУНКЦИИ ===
+
+        function renderClientsList() {
+             const container = document.getElementById('clients-list-container');
+             container.innerHTML = 'Render logic here...';
+        }
+
         function renderAdminPanel() {
             if (!currentUserIsAdmin) return;
             const container = document.getElementById('admin-users-list');
             container.innerHTML = allUsers.map(user => `
                 <div class="flex items-center justify-between p-2 border rounded-lg card">
                     <span class="text-sm font-medium">${user.email}</span>
-                    ${user.email !== ADMIN_EMAIL ? `<button class="text-red-500 hover:text-red-700 font-bold" onclick="window.deleteUser('${user.id}', '${user.email}')" title="Удалить пользователя">×</button>` : ''}
+                    ${user.email !== ADMIN_EMAIL ? `<button class="text-red-500 hover:text-red-700 font-bold" onclick="window.deleteUser('${user.id}', '${user.email}')">×</button>` : ''}
                 </div>
             `).join('');
         }
         
-        function renderClientsList() {
-            const container = document.getElementById('clients-list-container');
-            const filter = document.getElementById('client-search').value.toLowerCase();
-            const sortMethod = document.getElementById('client-sort').value;
-            container.innerHTML = '';
-
-            let clientIds = Object.keys(clientAggregates);
-
-            switch(sortMethod) {
-                case 'newest':
-                    clientIds.sort((a, b) => (clientAggregates[b].transactions.at(-1)?.transactionDate || 0) - (clientAggregates[a].transactions.at(-1)?.transactionDate || 0));
-                    break;
-                case 'oldest':
-                    clientIds.sort((a, b) => (clientAggregates[a].transactions[0]?.transactionDate || Infinity) - (clientAggregates[b].transactions[0]?.transactionDate || Infinity));
-                    break;
-                case 'name_az':
-                    clientIds.sort((a, b) => clientAggregates[a].name.localeCompare(clientAggregates[b].name));
-                    break;
-                case 'name_za':
-                    clientIds.sort((a, b) => clientAggregates[b].name.localeCompare(clientAggregates[a].name));
-                    break;
-            }
-
-            const filteredClientIds = clientIds.filter(id => clientAggregates[id].name.toLowerCase().includes(filter));
-
-            if (filteredClientIds.length === 0) {
-                 container.innerHTML = `<div class="p-4 text-center text-gray-500" data-lang-key="no_clients">Нет клиентов для отображения.</div>`;
-                return;
-            }
-
-            filteredClientIds.forEach((clientId, index) => {
-                const client = clientAggregates[clientId];
-                const remaining = client.totalSales - client.totalPaid;
-                const clientCard = document.createElement('div');
-                clientCard.className = `p-4 border rounded-lg shadow-sm card`;
-                
-                const lastFiveTransactions = [...client.transactions].reverse().slice(0, 5);
-                const transactionsHtml = lastFiveTransactions.map(t => `...`).join(''); // Сокращено для краткости
-
-                clientCard.innerHTML = `
-                    <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleClientDetails('${clientId}')">
-                        <div class="flex items-center space-x-3">
-                            <svg id="arrow-${clientId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${client.name}</h3>
-                            <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                             <div class="text-right">
-                                <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
-                                <span class="text-xs block" data-lang-key="total_remaining">Полный остаток</span>
-                             </div>
-                             <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewClientDetails('${clientId}')">Выбрать</button>
-                        </div>
-                    </div>
-                    <div id="details-${clientId}" class="collapsible-content"></div>`;
-                container.appendChild(clientCard);
-            });
-            setLanguage(currentLang);
-        }
-        
-        function renderDetailedClientInfo(container, clientId) {
-            // ... (аналогичные исправления, как в предыдущих версиях)
-        }
-
-        // === ОБРАБОТЧИКИ СОБЫТИЙ ===
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -590,40 +411,29 @@
                 errorP.textContent = translations[currentLang].login_error_wrong;
             }
         }
-        
+
         async function handleCreateUser(e) {
             e.preventDefault();
             const email = document.getElementById('new-user-email').value;
             const password = document.getElementById('new-user-password').value;
             const statusP = document.getElementById('create-user-status');
-            
-            // Важно: Создание пользователя автоматически авторизует его. 
-            // Чтобы админ остался залогиненным, нам нужно запомнить его данные и войти обратно.
-            const currentAdmin = auth.currentUser;
+            const mainAuth = getAuth();
+            const tempAppName = 'user-creation-' + Date.now();
+            const tempApp = initializeApp(firebaseConfig, tempAppName);
+            const tempAuth = getAuth(tempApp);
 
             try {
-                // Создаем временный app-инстанс для регистрации нового пользователя
-                const tempApp = initializeApp(firebaseConfig, 'temp-app-for-user-creation');
-                const tempAuth = getAuth(tempApp);
                 const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
-                await setDoc(doc(getUsersCollectionRef(), userCredential.user.uid), { email: email });
-                
-                // Выходим из сессии нового пользователя и возвращаемся в админскую
+                await setDoc(doc(getUsersCollectionRef(), userCredential.user.uid), { email });
                 await signOut(tempAuth);
-                // Это должно вызвать onAuthStateChanged и вернуть нас в админскую сессию.
-                
                 statusP.textContent = translations[currentLang].admin_user_created;
                 statusP.style.color = 'green';
                 e.target.reset();
-
             } catch (error) {
-                statusP.textContent = (error.code === 'auth/email-already-in-use' ? translations[currentLang].admin_user_exists : error.message);
+                statusP.textContent = (error.code === 'auth/email-already-in-use') ? translations[currentLang].admin_user_exists : error.message;
                 statusP.style.color = 'red';
             } finally {
-                 // Убедимся, что мы снова вошли как админ, если что-то пошло не так
-                if (auth.currentUser?.uid !== currentAdmin.uid) {
-                    await signInWithEmailAndPassword(auth, currentAdmin.email, 'admin123'); // Пароль админа нужно где-то хранить или обрабатывать безопаснее
-                }
+                await deleteApp(tempApp);
             }
         }
         
@@ -631,24 +441,16 @@
             if (confirm(`${translations[currentLang].admin_delete_user_confirm}\n(${email})`)) {
                 try {
                     await deleteDoc(doc(getUsersCollectionRef(), uid));
-                    // Примечание: Это не удаляет пользователя из Firebase Auth.
-                    // Для полного удаления требуется бэкенд-функция (Admin SDK).
-                } catch (error) {
-                    console.error("Failed to delete user record:", error);
-                }
+                } catch (error) { console.error("Failed to delete user record:", error); }
             }
         }
-        
-        // ... (остальные обработчики)
 
-        // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = () => {
+            setLanguage('ru');
             document.getElementById('login-form').addEventListener('submit', handleLogin);
             document.getElementById('create-user-form').addEventListener('submit', handleCreateUser);
             document.getElementById('logout-button').addEventListener('click', () => signOut(auth));
-            
-            // ... (все остальные слушатели из предыдущей версии)
-
+            document.querySelectorAll('.header-nav-item').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
             setupFirebase();
         };
     </script>
