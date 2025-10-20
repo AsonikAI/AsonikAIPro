@@ -96,7 +96,7 @@
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
     <!-- === ЭКРАН ВХОДА === -->
-    <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center transition-all duration-300">
+    <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300 hidden">
         <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
         <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
         <p class="text-center text-gray-600 mb-8">Войдите, чтобы получить доступ к вашим данным.</p>
@@ -105,6 +105,16 @@
             Войти с помощью Google
         </button>
         <p id="login-error" class="text-red-500 mt-4 text-sm"></p>
+    </div>
+
+    <!-- === ЭКРАН "ДОСТУП ЗАПРЕЩЕН" === -->
+    <div id="access-denied-screen" class="hidden w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center text-center">
+        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+        <h1 class="text-2xl font-bold mb-2">Доступ запрещен</h1>
+        <p class="text-gray-600 mb-6">Вы вошли как <strong id="user-email-display"></strong>. Эта учетная запись не имеет прав администратора.</p>
+        <button id="access-denied-logout-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition duration-200">
+            Выйти
+        </button>
     </div>
 
     <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (СКРЫТО) === -->
@@ -228,6 +238,15 @@
                         </div>
                     </div>
                 </div>
+                 <div id="admin-panel" class="hidden p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4">Панель Администратора</h3>
+                    <p class="text-sm text-gray-600 mb-2">Вы вошли с правами администратора.</p>
+                    <div>
+                        <label class="block text-sm font-medium">UID Главного Администратора</label>
+                        <input type="text" value="h25tlwhyAQfo1PBgzYmekWKD5V11" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border rounded-lg shadow-sm" />
+                         <p class="text-xs text-gray-500 mt-1">В будущем здесь можно будет управлять доступом.</p>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -303,11 +322,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // ИМПОРТИРУЕМ НУЖНЫЕ МОДУЛИ АУТЕНТИФИКАЦИИ
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
+        const ADMIN_UID = 'h25tlwhyAQfo1PBgzYmekWKD5V11'; // ID администратора
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
             authDomain: "asonik-ai.firebaseapp.com",
@@ -321,7 +340,7 @@
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
         
         let db, auth, currentUserId;
-        let unsubscribeDataListener = null; // Для отписки от слушателя данных при выходе
+        let unsubscribeDataListener = null;
         let clientAggregates = {};
         let allTransactions = [];
         let currentClientDetailsId = null;
@@ -339,7 +358,6 @@
         let currentLang = 'ru';
 
         function setLanguage(lang) {
-            // ... (функция без изменений)
             if (!translations[lang]) return;
             currentLang = lang;
             localStorage.setItem('appLanguage', lang);
@@ -358,7 +376,6 @@
             });
         }
 
-        // === УТИЛИТЫ (без изменений) ===
         const formatDate = (dateObj) => {
             if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
             const day = String(dateObj.getDate()).padStart(2, '0');
@@ -374,9 +391,7 @@
             return collection(db, 'artifacts', appId, 'users', currentUserId, 'sales_records');
         }
         
-        // === ЛОГИКА ОТОБРАЖЕНИЯ ===
         function showView(viewId) {
-            // ... (функция без изменений)
             document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             
@@ -395,7 +410,7 @@
             }
         }
 
-        // === ОБНОВЛЕННАЯ ЛОГИКА FIREBASE ===
+        // === ОБНОВЛЕННАЯ ЛОГИКА АУТЕНТИФИКАЦИИ И ДОСТУПА ===
         function setupFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
@@ -403,31 +418,42 @@
                 auth = getAuth(app);
 
                 onAuthStateChanged(auth, (user) => {
+                    // Скрываем все экраны по умолчанию
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-app-screen').classList.add('hidden');
+                    document.getElementById('access-denied-screen').classList.add('hidden');
+                    document.getElementById('admin-panel').classList.add('hidden');
+
                     if (user) {
-                        // Пользователь вошел
-                        currentUserId = user.uid;
-                        document.getElementById('user-id-display-settings').textContent = currentUserId;
-                        document.getElementById('user-name').textContent = user.displayName || 'Пользователь';
-                        document.getElementById('user-avatar').src = user.photoURL || 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=U';
-                        
-                        document.getElementById('login-screen').classList.add('hidden');
-                        document.getElementById('main-app-screen').classList.remove('hidden');
-                        document.getElementById('user-display').classList.remove('hidden');
-                        
-                        startDataListener(); // Запускаем прослушивание данных
-                        showView('clients'); // Показываем главный экран
+                        if (user.uid === ADMIN_UID) {
+                            // ПОЛЬЗОВАТЕЛЬ - АДМИН
+                            currentUserId = user.uid;
+                            document.getElementById('user-id-display-settings').textContent = currentUserId;
+                            document.getElementById('user-name').textContent = user.displayName || 'Администратор';
+                            document.getElementById('user-avatar').src = user.photoURL || 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=A';
+                            
+                            document.getElementById('main-app-screen').classList.remove('hidden');
+                            document.getElementById('user-display').classList.remove('hidden');
+                            document.getElementById('admin-panel').classList.remove('hidden');
+                            
+                            startDataListener();
+                            showView('clients');
+                        } else {
+                            // ПОЛЬЗОВАТЕЛЬ - НЕ АДМИН
+                            document.getElementById('user-email-display').textContent = user.email;
+                            document.getElementById('access-denied-screen').classList.remove('hidden');
+                        }
                     } else {
-                        // Пользователь не вошел
+                        // ПОЛЬЗОВАТЕЛЬ НЕ ВОШЕЛ
                         currentUserId = null;
                         if (unsubscribeDataListener) {
-                            unsubscribeDataListener(); // Отписываемся от старого слушателя
+                            unsubscribeDataListener();
                             unsubscribeDataListener = null;
                         }
-                        clientAggregates = {}; // Очищаем данные
+                        clientAggregates = {};
                         allTransactions = [];
-                        renderClientsList(); // Очищаем список на экране
+                        renderClientsList();
                         
-                        document.getElementById('main-app-screen').classList.add('hidden');
                         document.getElementById('user-display').classList.add('hidden');
                         document.getElementById('login-screen').classList.remove('hidden');
                     }
@@ -438,30 +464,25 @@
             }
         }
         
-        // Функция входа
         async function signInWithGoogle() {
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
-                // onAuthStateChanged сам обработает результат
             } catch (error) {
                 console.error("Ошибка входа Google:", error);
                 document.getElementById('login-error').textContent = `Ошибка: ${error.code}`;
             }
         }
 
-        // Функция выхода
         async function logOut() {
             try {
                 await signOut(auth);
-                // onAuthStateChanged сам обработает выход
             } catch (error) {
                 console.error("Ошибка выхода:", error);
             }
         }
 
         function startDataListener() {
-            // Если уже есть активный слушатель, отключаем его
             if (unsubscribeDataListener) {
                 unsubscribeDataListener();
             }
@@ -469,7 +490,6 @@
             const salesRef = getSalesCollectionRef();
             if (!salesRef) return;
             
-            // onSnapshot возвращает функцию для отписки, сохраняем ее
             unsubscribeDataListener = onSnapshot(salesRef, (snapshot) => {
                 allTransactions = snapshot.docs.map(doc => ({
                     ...doc.data(),
@@ -477,7 +497,6 @@
                     transactionDate: doc.data().transactionDate.toDate(),
                 }));
 
-                // ... остальная логика обработки данных (без изменений)
                 clientAggregates = {};
                 allTransactions.forEach(t => {
                     if (!clientAggregates[t.clientId]) {
@@ -509,7 +528,6 @@
             });
         }
 
-        // === РЕНДЕР ФУНКЦИИ (без изменений) ===
         function renderClientsList() {
             const container = document.getElementById('clients-list-container');
             const filter = document.getElementById('client-search').value.toLowerCase();
@@ -518,7 +536,6 @@
 
             let clientIds = Object.keys(clientAggregates);
 
-            // Сортировка
             switch(sortMethod) {
                 case 'newest':
                     clientIds.sort((a, b) => {
@@ -599,7 +616,6 @@
         }
         
         function renderDetailsView() {
-            // ... (функция без изменений)
             const container = document.getElementById('details-view-container');
             if (currentClientDetailsId && clientAggregates[currentClientDetailsId]) {
                 renderDetailedClientInfo(container, currentClientDetailsId);
@@ -609,7 +625,6 @@
         }
 
         function renderDetailsClientList(container) {
-            // ... (функция без изменений)
             container.innerHTML = `
                 <h2 class="text-2xl font-bold mb-2" data-lang-key="details_list_title">ПОДРОБНО (Выбор Клиента)</h2>
                 <p class="mb-4" data-lang-key="details_list_text">Выберите клиента из списка ниже...</p>
@@ -633,7 +648,6 @@
         }
         
         function renderTransactionsTable(clientId, searchTerm = '', sortOrder = 'newest', startDateStr = null, endDateStr = null) {
-            // ... (функция без изменений)
              const tableBody = document.getElementById('transactions-table-body');
             if (!tableBody) return;
 
@@ -696,7 +710,6 @@
         }
 
         function renderDetailedClientInfo(container, clientId) {
-            // ... (функция без изменений)
             const client = clientAggregates[clientId];
             const remaining = client.totalSales - client.totalPaid;
             
@@ -780,8 +793,6 @@
             setLanguage(currentLang);
         }
         
-        // === MODAL FUNCTIONS (без существенных изменений) ===
-        // ... (все модальные функции open/close/submit/delete остаются прежними)
         function openTransactionModal(docId = null, transactionData = null) {
             const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
@@ -842,6 +853,7 @@
             const docId = form['transaction-doc-id'].value;
             const isNewClient = !document.getElementById('new-client-container').classList.contains('hidden');
             const salesRef = getSalesCollectionRef();
+            if (!salesRef) return; // Добавлена проверка
             const batch = writeBatch(db);
             let clientId, clientName;
             
@@ -863,7 +875,8 @@
                 clientName = clientAggregates[clientId].name;
             }
             
-            const mainDocRef = docId ? doc(salesRef, docId) : doc(collection(salesRef));
+            // ИСПРАВЛЕНИЕ ОШИБКИ
+            const mainDocRef = docId ? doc(salesRef, docId) : doc(salesRef);
             const data = {
                 clientId, clientName,
                 itemName: form['modal-item-name'].value.trim(),
@@ -872,7 +885,12 @@
                 paymentReceived: parseFloat(form['modal-payment-received'].value),
                 transactionDate: new Date(form['modal-transaction-date'].value)
             };
-            docId ? batch.update(mainDocRef, data) : batch.set(mainDocRef, data);
+            
+            if (docId) {
+                batch.update(mainDocRef, data);
+            } else {
+                batch.set(mainDocRef, data);
+            }
 
             try { await batch.commit(); closeTransactionModal(); } 
             catch (error) { console.error("Ошибка сохранения транзакции:", error); }
@@ -883,10 +901,12 @@
             const clientId = document.getElementById('edit-client-id').value;
             const newName = document.getElementById('edit-client-name-input').value.trim();
             if (!newName) return;
+            const salesRef = getSalesCollectionRef();
+            if (!salesRef) return;
             
             const batch = writeBatch(db);
             allTransactions.filter(t => t.clientId === clientId).forEach(t => {
-                batch.update(doc(getSalesCollectionRef(), t.id), { clientName: newName });
+                batch.update(doc(salesRef, t.id), { clientName: newName });
             });
             
             try { await batch.commit(); closeEditClientModal(); } 
@@ -895,16 +915,20 @@
         
         async function deleteTransaction(transactionId) {
             if (confirm(translations[currentLang].confirm_delete_transaction)) {
-                try { await deleteDoc(doc(getSalesCollectionRef(), transactionId)); } 
+                const salesRef = getSalesCollectionRef();
+                if (!salesRef) return;
+                try { await deleteDoc(doc(salesRef, transactionId)); } 
                 catch (error) { console.error("Ошибка удаления транзакции:", error); }
             }
         }
 
         async function deleteClient(clientId) {
             if (confirm(translations[currentLang].confirm_delete_client)) {
+                const salesRef = getSalesCollectionRef();
+                if (!salesRef) return;
                 const batch = writeBatch(db);
                 allTransactions.filter(t => t.clientId === clientId).forEach(t => {
-                    batch.delete(doc(getSalesCollectionRef(), t.id));
+                    batch.delete(doc(salesRef, t.id));
                 });
                 try { await batch.commit(); currentClientDetailsId = null; renderDetailsView(); } 
                 catch (error) { console.error("Ошибка удаления клиента:", error); }
@@ -931,7 +955,6 @@
             XLSX.writeFile(workbook, `${client.name}_export.xlsx`);
         }
         
-        // === ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK (без изменений) ===
         window.viewClientDetails = (clientId) => { currentClientDetailsId = clientId; showView('details'); };
         window.openEditClientNameModal = openEditClientNameModal;
         window.backToDetailsList = () => { currentClientDetailsId = null; renderDetailsView(); };
@@ -951,13 +974,11 @@
             } 
         };
 
-        // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = () => {
-            // Привязка событий к кнопкам входа/выхода
             document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
             document.getElementById('logout-button').addEventListener('click', logOut);
+            document.getElementById('access-denied-logout-button').addEventListener('click', logOut);
             
-            // ... (остальные обработчики событий без изменений)
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
             document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
@@ -1059,7 +1080,6 @@
                 }
             });
             
-            // Initialization
             applyTheme(localStorage.getItem('siteTheme') || 'light');
             updateLogo(localStorage.getItem('siteLogo'));
 
@@ -1074,9 +1094,9 @@
             setLanguage(localStorage.getItem('appLanguage') || 'ru');
             document.getElementById('modal-transaction-date').valueAsDate = new Date();
             
-            // Запускаем Firebase
             setupFirebase();
         };
     </script>
 </body>
 </html>
+
