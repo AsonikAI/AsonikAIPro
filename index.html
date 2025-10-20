@@ -19,16 +19,14 @@
             --bg-hover: #f3f4f6;
         }
 
-        /* --- ИСПРАВЛЕННЫЕ ГРАДИЕНТНЫЕ ТЕМЫ --- */
-
         .theme-violet {
             --bg-main-start: #a78bfa; 
             --bg-main-end: #ddd6fe;
             --bg-card: rgba(255, 255, 255, 0.4);
-            --text-primary: #1e1b4b; /* Темный текст для читаемости */
-            --text-secondary: #4338ca; /* Контрастный вторичный текст */
+            --text-primary: #1e1b4b;
+            --text-secondary: #4338ca;
             --border-color: rgba(99, 102, 241, 0.3);
-            --header-brand: #4338ca; /* Темный фиолетовый для заголовка */
+            --header-brand: #4338ca;
             --bg-hover: rgba(255, 255, 255, 0.6);
         }
 
@@ -36,10 +34,10 @@
             --bg-main-start: #fb7185;
             --bg-main-end: #fecdd3;
             --bg-card: rgba(255, 255, 255, 0.4);
-            --text-primary: #881337; /* Темный текст */
-            --text-secondary: #be123c; /* Контрастный вторичный текст */
+            --text-primary: #881337;
+            --text-secondary: #be123c;
             --border-color: rgba(225, 29, 72, 0.3);
-            --header-brand: #be123c; /* Темный красный для заголовка */
+            --header-brand: #be123c;
             --bg-hover: rgba(255, 255, 255, 0.6);
         }
         
@@ -47,10 +45,10 @@
             --bg-main-start: #fb923c;
             --bg-main-end: #fed7aa;
             --bg-card: rgba(255, 255, 255, 0.4);
-            --text-primary: #7c2d12; /* Темный текст */
-            --text-secondary: #c2410c; /* Контрастный вторичный текст */
+            --text-primary: #7c2d12;
+            --text-secondary: #c2410c;
             --border-color: rgba(234, 88, 12, 0.3);
-            --header-brand: #c2410c; /* Темный оранжевый для заголовка */
+            --header-brand: #c2410c;
             --bg-hover: rgba(255, 255, 255, 0.6);
         }
 
@@ -79,11 +77,8 @@
         #transaction-modal, #edit-client-modal { z-index: 50; }
         .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
         
-        .theme-btn.active {
-            box-shadow: 0 0 0 2px var(--header-brand);
-        }
+        .theme-btn.active { box-shadow: 0 0 0 2px var(--header-brand); }
         
-        /* Стили для модальных окон в градиентных темах */
         .theme-violet .modal-overlay .card,
         .theme-crimson .modal-overlay .card,
         .theme-sunset .modal-overlay .card {
@@ -95,148 +90,149 @@
          .theme-sunset .modal-overlay .bg-transparent {
             background-color: rgba(255, 255, 255, 0.05);
          }
-        mark {
-            background-color: #fde047;
-            color: black;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
+        mark { background-color: #fde047; color: black; padding: 0 2px; border-radius: 2px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div id="app-container" class="flex-grow flex flex-col justify-center items-center p-4">
-
-        <div id="loading-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center transition-all duration-300">
-            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-4 text-lg font-medium" data-lang-key="loading">Загрузка системы...</p>
-        </div>
-
-        <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
-
-            <header class="flex items-center justify-between border-b pb-4 mb-4">
-                <div class="flex items-center space-x-3">
-                    <img id="site-logo" src="" alt="Logo" class="h-16 hidden">
-                    <h1 class="text-3xl font-bold" id="site-title-display" style="color: var(--header-brand);">CYTC.COM SYSTEM</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button data-view="clients" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                        <span data-lang-key="nav_main">ОСНОВА</span>
-                    </button>
-                    <button data-view="details" id="details-nav-button" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
-                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path></svg>
-                        <span data-lang-key="nav_details">ПОДРОБНО</span>
-                    </button>
-                    <button data-view="settings" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span data-lang-key="nav_settings">НАСТРОЙКИ</span>
-                    </button>
-                     <div class="relative">
-                        <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="language-menu-button">
-                            <span id="current-lang-text" class="font-semibold">RU</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                        <div id="language-dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
-                            <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                                <span>🇷🇺</span><span data-lang-key="russian">Русский</span>
-                            </button>
-                            <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
-                                <span>🇹🇷</span><span data-lang-key="turkish">Türkçe</span>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- ПЕРЕМЕЩЕННЫЙ ВЫБОР ТЕМЫ -->
-                    <div class="relative">
-                        <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="theme-menu-button" title="Сменить тему">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
-                        </button>
-                        <div id="theme-dropdown" class="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
-                            <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="light">
-                                <span data-lang-key="theme_light">Светлая</span> <div class="w-4 h-4 rounded-full bg-gray-200 border"></div>
-                            </button>
-                            <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="violet">
-                                <span data-lang-key="theme_violet">Фиолетовая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #a78bfa, #ddd6fe)"></div>
-                            </button>
-                            <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="crimson">
-                                <span data-lang-key="theme_crimson">Багровая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb7185, #fecdd3)"></div>
-                            </button>
-                            <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="sunset">
-                                <span data-lang-key="theme_sunset">Закат</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb923c, #fed7aa)"></div>
-                            </button>
-                        </div>
-                    </div>
-                    <button id="logout-button-desktop" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    </button>
-                </div>
-            </header>
-
-            <section id="view-clients" class="view-content flex flex-col flex-grow pt-4">
-                <div class="flex justify-between items-center mb-4">
-                     <h2 class="text-2xl font-bold" data-lang-key="main_header">ОСНОВА (Обзор Клиентов)</h2>
-                </div>
-                
-                <div class="flex flex-col md:flex-row gap-3 mb-4">
-                    <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent" data-lang-key="search_placeholder">
-                    <select id="client-sort" class="px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
-                        <option value="newest" data-lang-key="sort_newest">Сначала новые</option>
-                        <option value="oldest" data-lang-key="sort_oldest">Сначала старые</option>
-                        <option value="name_az" data-lang-key="sort_name_az">Имя (А-Я)</option>
-                        <option value="name_za" data-lang-key="sort_name_za">Имя (Я-А)</option>
-                    </select>
-                    <button id="add-transaction-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        <span data-lang-key="add_transaction">Добавить Транзакцию/Клиента</span>
-                    </button>
-                </div>
-                
-                <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4">
-                     <div class="w-full h-64 flex items-center justify-center opacity-25">
-                        <img id="logo-bg-duplicate" src="" alt="Logo Background" class="max-h-full">
-                     </div>
-                </div>
-            </section>
-
-            <section id="view-details" class="view-content hidden flex-col flex-grow pt-4">
-                 <div id="details-view-container"></div>
-            </section>
-
-            <section id="view-settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
-                <h1 class="text-3xl font-bold mb-6" data-lang-key="settings_title">Настройки Системы</h1>
-                <div class="space-y-8 max-w-2xl">
-                    <!-- РАЗДЕЛ ТЕМ УДАЛЕН ОТСЮДА -->
-                    <div class="p-6 rounded-xl border card">
-                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_logo_title">Логотип</h3>
-                        <div id="logo-preview-container" class="mb-4 flex items-center justify-center h-20"></div>
-                        <input type="file" id="logo-upload-input" accept="image/*" class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                        <p id="logo-upload-status" class="text-sm mt-2 text-center"></p>
-                    </div>
-                    <div class="p-6 rounded-xl border card">
-                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_app_name_title">Название Приложения</h3>
-                        <label for="app-name-input" class="block text-sm font-medium" data-lang-key="settings_app_name_label">Изменить название</label>
-                        <input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent" placeholder="CYTC.COM SYSTEM"/>
-                    </div>
-                     <div class="p-6 rounded-xl border card">
-                        <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_account_title">Ваша Учётная Запись</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium" data-lang-key="status">Статус</label>
-                                <input type="text" value="Анонимный/Токеновый Вход" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg shadow-sm focus:outline-none" />
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium" data-lang-key="user_id">ID Пользователя</label>
-                                <code id="user-id-display-settings" class="block bg-gray-100 p-2 rounded text-sm break-all">...</code>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
+    <!-- === ЭКРАН ВХОДА === -->
+    <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center transition-all duration-300">
+        <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
+        <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
+        <p class="text-center text-gray-600 mb-8">Войдите, чтобы получить доступ к вашим данным.</p>
+        <button id="google-signin-button" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg shadow-sm hover:bg-gray-50 transition duration-200">
+            <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+            Войти с помощью Google
+        </button>
+        <p id="login-error" class="text-red-500 mt-4 text-sm"></p>
     </div>
+
+    <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (СКРЫТО) === -->
+    <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
+        <header class="flex items-center justify-between border-b pb-4 mb-4">
+            <div class="flex items-center space-x-3">
+                <img id="site-logo" src="" alt="Logo" class="h-16 hidden">
+                <h1 class="text-3xl font-bold" id="site-title-display" style="color: var(--header-brand);">CYTC.COM SYSTEM</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="user-display" class="hidden items-center space-x-3">
+                    <img id="user-avatar" src="" class="w-10 h-10 rounded-full">
+                    <span id="user-name" class="font-semibold"></span>
+                </div>
+                <button data-view="clients" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <span data-lang-key="nav_main">ОСНОВА</span>
+                </button>
+                <button data-view="details" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path></svg>
+                    <span data-lang-key="nav_details">ПОДРОБНО</span>
+                </button>
+                <button data-view="settings" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span data-lang-key="nav_settings">НАСТРОЙКИ</span>
+                </button>
+                 <div class="relative">
+                    <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="language-menu-button">
+                        <span id="current-lang-text" class="font-semibold">RU</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="language-dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                        <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
+                            <span>🇷🇺</span><span data-lang-key="russian">Русский</span>
+                        </button>
+                        <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg">
+                            <span>🇹🇷</span><span data-lang-key="turkish">Türkçe</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="theme-menu-button" title="Сменить тему">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    </button>
+                    <div id="theme-dropdown" class="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="light">
+                            <span data-lang-key="theme_light">Светлая</span> <div class="w-4 h-4 rounded-full bg-gray-200 border"></div>
+                        </button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="violet">
+                            <span data-lang-key="theme_violet">Фиолетовая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #a78bfa, #ddd6fe)"></div>
+                        </button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="crimson">
+                            <span data-lang-key="theme_crimson">Багровая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb7185, #fecdd3)"></div>
+                        </button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="sunset">
+                            <span data-lang-key="theme_sunset">Закат</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb923c, #fed7aa)"></div>
+                        </button>
+                    </div>
+                </div>
+                <button id="logout-button" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Содержимое вкладок (ОСНОВА, ПОДРОБНО, НАСТРОЙКИ) -->
+        <section id="view-clients" class="view-content flex flex-col flex-grow pt-4">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-bold" data-lang-key="main_header">ОСНОВА (Обзор Клиентов)</h2>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-3 mb-4">
+                <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent" data-lang-key="search_placeholder">
+                <select id="client-sort" class="px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
+                    <option value="newest" data-lang-key="sort_newest">Сначала новые</option>
+                    <option value="oldest" data-lang-key="sort_oldest">Сначала старые</option>
+                    <option value="name_az" data-lang-key="sort_name_az">Имя (А-Я)</option>
+                    <option value="name_za" data-lang-key="sort_name_za">Имя (Я-А)</option>
+                </select>
+                <button id="add-transaction-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span data-lang-key="add_transaction">Добавить Транзакцию/Клиента</span>
+                </button>
+            </div>
+            
+            <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4">
+                 <div class="w-full h-64 flex items-center justify-center opacity-25">
+                    <img id="logo-bg-duplicate" src="" alt="Logo Background" class="max-h-full">
+                 </div>
+            </div>
+        </section>
+
+        <section id="view-details" class="view-content hidden flex-col flex-grow pt-4">
+             <div id="details-view-container"></div>
+        </section>
+
+        <section id="view-settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
+            <h1 class="text-3xl font-bold mb-6" data-lang-key="settings_title">Настройки Системы</h1>
+            <div class="space-y-8 max-w-2xl">
+                <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_logo_title">Логотип</h3>
+                    <div id="logo-preview-container" class="mb-4 flex items-center justify-center h-20"></div>
+                    <input type="file" id="logo-upload-input" accept="image/*" class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                    <p id="logo-upload-status" class="text-sm mt-2 text-center"></p>
+                </div>
+                <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_app_name_title">Название Приложения</h3>
+                    <label for="app-name-input" class="block text-sm font-medium" data-lang-key="settings_app_name_label">Изменить название</label>
+                    <input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent" placeholder="CYTC.COM SYSTEM"/>
+                </div>
+                 <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_account_title">Ваша Учётная Запись</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium" data-lang-key="status">Статус</label>
+                            <input type="text" value="Вошли через Google" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg shadow-sm focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium" data-lang-key="user_id">ID Пользователя</label>
+                            <code id="user-id-display-settings" class="block bg-gray-100 p-2 rounded text-sm break-all">...</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Модальные окна остаются без изменений -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
             <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Транзакцию</h2>
@@ -304,10 +300,12 @@
               </form>
          </div>
     </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, query, where, addDoc, updateDoc, deleteDoc, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // ИМПОРТИРУЕМ НУЖНЫЕ МОДУЛИ АУТЕНТИФИКАЦИИ
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
         const CUSTOM_FIREBASE_CONFIG = {
@@ -321,166 +319,27 @@
         };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
+        
         let db, auth, currentUserId;
+        let unsubscribeDataListener = null; // Для отписки от слушателя данных при выходе
         let clientAggregates = {};
         let allTransactions = [];
         let currentClientDetailsId = null;
 
-        // === ЛОКАЛИЗАЦИЯ ===
+        // Локализация (без изменений)
         const translations = {
             ru: {
-                loading: "Загрузка системы...",
-                nav_main: "ОСНОВА",
-                nav_details: "ПОДРОБНО",
-                nav_settings: "НАСТРОЙКИ",
-                main_header: "ОСНОВА (Обзор Клиентов)",
-                edit_client: "Редактировать Клиента",
-                delete_client: "Удалить Клиента",
-                search_placeholder: "Поиск по имени клиента...",
-                add_transaction: "Добавить Транзакцию/Клиента",
-                details_placeholder_title: "Клиент не выбран",
-                details_placeholder_text: "Пожалуйста, выберите клиента, чтобы просмотреть его детали.",
-                details_list_title: "ПОДРОБНО (Выбор Клиента)",
-                details_list_text: "Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.",
-                settings_title: "Настройки Системы",
-                settings_theme_title: "Тема оформления",
-                theme_light: "Светлая",
-                theme_violet: "Фиолетовая",
-                theme_crimson: "Багровая",
-                theme_sunset: "Закат",
-                settings_logo_title: "Логотип",
-                logo_upload_placeholder: "Загрузить логотип",
-                logo_uploading: "Загрузка...",
-                logo_upload_success: "Логотип успешно загружен!",
-                logo_upload_error: "Ошибка загрузки.",
-                settings_app_name_title: "Название Приложения",
-                settings_app_name_label: "Изменить название",
-                settings_account_title: "Ваша Учётная Запись",
-                status: "Статус",
-                user_id: "ID Пользователя",
-                modal_add_trans_title: "Добавить Новую Транзакцию",
-                modal_edit_trans_title: "Редактировать Транзакцию",
-                client_name: "Имя Клиента",
-                new_client_placeholder: "Введите имя нового клиента",
-                add_new_client_btn: "Добавить нового клиента",
-                back_to_list_btn: "Вернуться к списку",
-                item_name: "Товар / Описание",
-                unit_price: "Цена за ед.",
-                quantity: "Кол-во",
-                payment_received: "Касса ($)",
-                initial_balance: "Начальный остаток ($)",
-                transaction_date: "Дата Транзакции",
-                cancel: "Отмена",
-                save: "Сохранить",
-                edit_client_title: "Редактировать имя клиента",
-                new_name_label: "Новое имя клиента",
-                russian: "Русский",
-                turkish: "Türkçe",
-                details_title: "Подробная информация о клиенте",
-                total_sales: "Всего Продано",
-                total_paid: "Всего (Касса)",
-                total_remaining: "Полный Остаток",
-                transaction_history: "История Транзакций",
-                search_item_placeholder: "Поиск по товару...",
-                edit: "Ред.",
-                delete: "Удал.",
-                details_btn: "Выбрать",
-                back_to_clients: "Назад к списку клиентов",
-                date: "Дата",
-                item: "Товар",
-                amount: "Сумма",
-                paid: "Касса",
-                running_balance: "Итоговый Остаток",
-                actions: "Действия",
-                confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?",
-                confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.",
-                export_to_excel: "Экспорт в Excel",
-                sort_newest: "Сначала новые",
-                sort_oldest: "Сначала старые",
-                sort_name_az: "Имя (А-Я)",
-                sort_name_za: "Имя (Я-А)",
-                reset_filters: "Сброс",
+                loading: "Загрузка системы...", nav_main: "ОСНОВА", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ", main_header: "ОСНОВА (Обзор Клиентов)", edit_client: "Редактировать Клиента", delete_client: "Удалить Клиента", search_placeholder: "Поиск по имени клиента...", add_transaction: "Добавить Транзакцию/Клиента", details_placeholder_title: "Клиент не выбран", details_placeholder_text: "Пожалуйста, выберите клиента, чтобы просмотреть его детали.", details_list_title: "ПОДРОБНО (Выбор Клиента)", details_list_text: "Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.", settings_title: "Настройки Системы", settings_theme_title: "Тема оформления", theme_light: "Светлая", theme_violet: "Фиолетовая", theme_crimson: "Багровая", theme_sunset: "Закат", settings_logo_title: "Логотип", logo_upload_placeholder: "Загрузить логотип", logo_uploading: "Загрузка...", logo_upload_success: "Логотип успешно загружен!", logo_upload_error: "Ошибка загрузки.", settings_app_name_title: "Название Приложения", settings_app_name_label: "Изменить название", settings_account_title: "Ваша Учётная Запись", status: "Статус", user_id: "ID Пользователя", modal_add_trans_title: "Добавить Новую Транзакцию", modal_edit_trans_title: "Редактировать Транзакцию", client_name: "Имя Клиента", new_client_placeholder: "Введите имя нового клиента", add_new_client_btn: "Добавить нового клиента", back_to_list_btn: "Вернуться к списку", item_name: "Товар / Описание", unit_price: "Цена за ед.", quantity: "Кол-во", payment_received: "Касса ($)", initial_balance: "Начальный остаток ($)", transaction_date: "Дата Транзакции", cancel: "Отмена", save: "Сохранить", edit_client_title: "Редактировать имя клиента", new_name_label: "Новое имя клиента", russian: "Русский", turkish: "Türkçe", details_title: "Подробная информация о клиенте", total_sales: "Всего Продано", total_paid: "Всего (Касса)", total_remaining: "Полный Остаток", transaction_history: "История Транзакций", search_item_placeholder: "Поиск по товару...", edit: "Ред.", delete: "Удал.", details_btn: "Выбрать", back_to_clients: "Назад к списку клиентов", date: "Дата", item: "Товар", amount: "Сумма", paid: "Касса", running_balance: "Итоговый Остаток", actions: "Действия", confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?", confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.", export_to_excel: "Экспорт в Excel", sort_newest: "Сначала новые", sort_oldest: "Сначала старые", sort_name_az: "Имя (А-Я)", sort_name_za: "Имя (Я-А)", reset_filters: "Сброс",
             },
             tr: {
-                loading: "Sistem yükleniyor...",
-                nav_main: "ANA SAYFA",
-                nav_details: "DETAYLAR",
-                nav_settings: "AYARLAR",
-                main_header: "ANA SAYFA (Müşteri Genel Bakış)",
-                edit_client: "Müşteriyi Düzenle",
-                delete_client: "Müşteriyi Sil",
-                search_placeholder: "Müşteri adına göre ara...",
-                add_transaction: "İşlem/Müşteri Ekle",
-                details_placeholder_title: "Müşteri Seçilmedi",
-                details_placeholder_text: "Lütfen detayları görüntülemek için bir müşteri seçin.",
-                details_list_title: "DETAYLAR (Müşteri Seçimi)",
-                details_list_text: "Tüm işlem geçmişini görüntülemek için aşağıdaki listeden bir müşteri seçin.",
-                settings_title: "Sistem Ayarları",
-                settings_theme_title: "Tema",
-                theme_light: "Açık",
-                theme_violet: "Mor",
-                theme_crimson: "Koyu Kırmızı",
-                theme_sunset: "Gün Batımı",
-                settings_logo_title: "Logo",
-                logo_upload_placeholder: "Logo yükle",
-                logo_uploading: "Yükleniyor...",
-                logo_upload_success: "Logo başarıyla yüklendi!",
-                logo_upload_error: "Yükleme hatası.",
-                settings_app_name_title: "Uygulama Adı",
-                settings_app_name_label: "Adı değiştir",
-                settings_account_title: "Hesabınız",
-                status: "Durum",
-                user_id: "Kullanıcı ID",
-                modal_add_trans_title: "Yeni İşlem Ekle",
-                modal_edit_trans_title: "İşlemi Düzenle",
-                client_name: "Müşteri Adı",
-                new_client_placeholder: "Yeni müşteri adını girin",
-                add_new_client_btn: "Yeni müşteri ekle",
-                back_to_list_btn: "Listeye dön",
-                item_name: "Ürün / Açıklama",
-                unit_price: "Birim Fiyat",
-                quantity: "Miktar",
-                payment_received: "Kasa ($)",
-                initial_balance: "Başlangıç Bakiyesi ($)",
-                transaction_date: "İşlem Tarihi",
-                cancel: "İptal",
-                save: "Kaydet",
-                edit_client_title: "Müşteri Adını Düzenle",
-                new_name_label: "Yeni müşteri adı",
-                russian: "Русский",
-                turkish: "Türkçe",
-                details_title: "Müşteri Detayları",
-                total_sales: "Toplam Satış",
-                total_paid: "Toplam (Kasa)",
-                total_remaining: "Toplam Kalan",
-                transaction_history: "İşlem Geçmişi",
-                search_item_placeholder: "Ürüne göre ara...",
-                edit: "Düz.",
-                delete: "Sil",
-                details_btn: "Seç",
-                back_to_clients: "Müşteri listesine geri dön",
-                date: "Tarih",
-                item: "Ürün",
-                amount: "Tutar",
-                paid: "Kasa",
-                running_balance: "Genel Bakiye",
-                actions: "Eylemler",
-                confirm_delete_transaction: "Bu işlemi silmek istediğinizden emin misiniz?",
-                confirm_delete_client: "DİKKAT! Müşteriyi ve TÜM işlemlerini gerçekten silmek istiyor musunuz? Bu işlem geri alınamaz.",
-                export_to_excel: "Excel'e Aktar",
-                sort_newest: "Önce en yeni",
-                sort_oldest: "Önce en eski",
-                sort_name_az: "İsim (A-Z)",
-                sort_name_za: "İsim (Z-A)",
-                reset_filters: "Sıfırla",
+                loading: "Sistem yükleniyor...", nav_main: "ANA SAYFA", nav_details: "DETAYLAR", nav_settings: "AYARLAR", main_header: "ANA SAYFA (Müşteri Genel Bakış)", edit_client: "Müşteriyi Düzenle", delete_client: "Müşteriyi Sil", search_placeholder: "Müşteri adına göre ara...", add_transaction: "İşlem/Müşteri Ekle", details_placeholder_title: "Müşteri Seçilmedi", details_placeholder_text: "Lütfen detayları görüntülemek için bir müşteri seçin.", details_list_title: "DETAYLAR (Müşteri Seçimi)", details_list_text: "Tüm işlem geçmişini görüntülemek için aşağıdaki listeden bir müşteri seçin.", settings_title: "Sistem Ayarları", settings_theme_title: "Tema", theme_light: "Açık", theme_violet: "Mor", theme_crimson: "Koyu Kırmızı", theme_sunset: "Gün Batımı", settings_logo_title: "Logo", logo_upload_placeholder: "Logo yükle", logo_uploading: "Yükleniyor...", logo_upload_success: "Logo başarıyla yüklendi!", logo_upload_error: "Yükleme hatası.", settings_app_name_title: "Uygulama Adı", settings_app_name_label: "Adı değiştir", settings_account_title: "Hesabınız", status: "Durum", user_id: "Kullanıcı ID", modal_add_trans_title: "Yeni İşlem Ekle", modal_edit_trans_title: "İşlemi Düzenle", client_name: "Müşteri Adı", new_client_placeholder: "Yeni müşteri adını girin", add_new_client_btn: "Yeni müşteri ekle", back_to_list_btn: "Listeye dön", item_name: "Ürün / Açıklama", unit_price: "Birim Fiyat", quantity: "Miktar", payment_received: "Kasa ($)", initial_balance: "Başlangıç Bakiyesi ($)", transaction_date: "İşlem Tarihi", cancel: "İptal", save: "Kaydet", edit_client_title: "Müşteri Adını Düzenle", new_name_label: "Yeni müşteri adı", russian: "Русский", turkish: "Türkçe", details_title: "Müşteri Detayları", total_sales: "Toplam Satış", total_paid: "Toplam (Kasa)", total_remaining: "Toplam Kalan", transaction_history: "İşlem Geçmişi", search_item_placeholder: "Ürüne göre ara...", edit: "Düz.", delete: "Sil", details_btn: "Seç", back_to_clients: "Müşteri listesine geri dön", date: "Tarih", item: "Ürün", amount: "Tutar", paid: "Kasa", running_balance: "Genel Bakiye", actions: "Eylemler", confirm_delete_transaction: "Bu işlemi silmek istediğinizden emin misiniz?", confirm_delete_client: "DİKKAT! Müşteriyi ve TÜM işlemlerini gerçekten silmek istiyor musunuz? Bu işlem geri alınamaz.", export_to_excel: "Excel'e Aktar", sort_newest: "Önce en yeni", sort_oldest: "Önce en eski", sort_name_az: "İsim (A-Z)", sort_name_za: "İsim (Z-A)", reset_filters: "Sıfırla",
             }
         };
 
         let currentLang = 'ru';
 
         function setLanguage(lang) {
+            // ... (функция без изменений)
             if (!translations[lang]) return;
             currentLang = lang;
             localStorage.setItem('appLanguage', lang);
@@ -499,7 +358,7 @@
             });
         }
 
-        // === УТИЛИТЫ ===
+        // === УТИЛИТЫ (без изменений) ===
         const formatDate = (dateObj) => {
             if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
             const day = String(dateObj.getDate()).padStart(2, '0');
@@ -507,7 +366,6 @@
             const year = dateObj.getFullYear();
             return `${day}.${month}.${year}`;
         };
-
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
         }
@@ -518,6 +376,7 @@
         
         // === ЛОГИКА ОТОБРАЖЕНИЯ ===
         function showView(viewId) {
+            // ... (функция без изменений)
             document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             
@@ -536,42 +395,89 @@
             }
         }
 
-        // === ЛОГИКА FIREBASE ===
+        // === ОБНОВЛЕННАЯ ЛОГИКА FIREBASE ===
         function setupFirebase() {
             try {
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                onAuthStateChanged(auth, async (user) => {
+                onAuthStateChanged(auth, (user) => {
                     if (user) {
+                        // Пользователь вошел
                         currentUserId = user.uid;
                         document.getElementById('user-id-display-settings').textContent = currentUserId;
-                        document.getElementById('loading-screen').classList.add('hidden');
+                        document.getElementById('user-name').textContent = user.displayName || 'Пользователь';
+                        document.getElementById('user-avatar').src = user.photoURL || 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=U';
+                        
+                        document.getElementById('login-screen').classList.add('hidden');
                         document.getElementById('main-app-screen').classList.remove('hidden');
-                        startDataListener();
-                        showView('clients');
+                        document.getElementById('user-display').classList.remove('hidden');
+                        
+                        startDataListener(); // Запускаем прослушивание данных
+                        showView('clients'); // Показываем главный экран
                     } else {
-                        await (initialAuthToken ? signInWithCustomToken(auth, initialAuthToken) : signInAnonymously(auth));
+                        // Пользователь не вошел
+                        currentUserId = null;
+                        if (unsubscribeDataListener) {
+                            unsubscribeDataListener(); // Отписываемся от старого слушателя
+                            unsubscribeDataListener = null;
+                        }
+                        clientAggregates = {}; // Очищаем данные
+                        allTransactions = [];
+                        renderClientsList(); // Очищаем список на экране
+                        
+                        document.getElementById('main-app-screen').classList.add('hidden');
+                        document.getElementById('user-display').classList.add('hidden');
+                        document.getElementById('login-screen').classList.remove('hidden');
                     }
                 });
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                document.getElementById('loading-screen').innerHTML = `<p class="text-red-500">Ошибка: ${error.message}</p>`;
+                document.getElementById('login-screen').innerHTML = `<p class="text-red-500">Ошибка инициализации: ${error.message}</p>`;
+            }
+        }
+        
+        // Функция входа
+        async function signInWithGoogle() {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+                // onAuthStateChanged сам обработает результат
+            } catch (error) {
+                console.error("Ошибка входа Google:", error);
+                document.getElementById('login-error').textContent = `Ошибка: ${error.code}`;
+            }
+        }
+
+        // Функция выхода
+        async function logOut() {
+            try {
+                await signOut(auth);
+                // onAuthStateChanged сам обработает выход
+            } catch (error) {
+                console.error("Ошибка выхода:", error);
             }
         }
 
         function startDataListener() {
+            // Если уже есть активный слушатель, отключаем его
+            if (unsubscribeDataListener) {
+                unsubscribeDataListener();
+            }
+            
             const salesRef = getSalesCollectionRef();
             if (!salesRef) return;
-
-            onSnapshot(salesRef, (snapshot) => {
+            
+            // onSnapshot возвращает функцию для отписки, сохраняем ее
+            unsubscribeDataListener = onSnapshot(salesRef, (snapshot) => {
                 allTransactions = snapshot.docs.map(doc => ({
                     ...doc.data(),
                     id: doc.id,
                     transactionDate: doc.data().transactionDate.toDate(),
                 }));
 
+                // ... остальная логика обработки данных (без изменений)
                 clientAggregates = {};
                 allTransactions.forEach(t => {
                     if (!clientAggregates[t.clientId]) {
@@ -603,7 +509,7 @@
             });
         }
 
-        // === РЕНДЕР ФУНКЦИИ ===
+        // === РЕНДЕР ФУНКЦИИ (без изменений) ===
         function renderClientsList() {
             const container = document.getElementById('clients-list-container');
             const filter = document.getElementById('client-search').value.toLowerCase();
@@ -693,6 +599,7 @@
         }
         
         function renderDetailsView() {
+            // ... (функция без изменений)
             const container = document.getElementById('details-view-container');
             if (currentClientDetailsId && clientAggregates[currentClientDetailsId]) {
                 renderDetailedClientInfo(container, currentClientDetailsId);
@@ -702,6 +609,7 @@
         }
 
         function renderDetailsClientList(container) {
+            // ... (функция без изменений)
             container.innerHTML = `
                 <h2 class="text-2xl font-bold mb-2" data-lang-key="details_list_title">ПОДРОБНО (Выбор Клиента)</h2>
                 <p class="mb-4" data-lang-key="details_list_text">Выберите клиента из списка ниже...</p>
@@ -725,7 +633,8 @@
         }
         
         function renderTransactionsTable(clientId, searchTerm = '', sortOrder = 'newest', startDateStr = null, endDateStr = null) {
-            const tableBody = document.getElementById('transactions-table-body');
+            // ... (функция без изменений)
+             const tableBody = document.getElementById('transactions-table-body');
             if (!tableBody) return;
 
             const client = clientAggregates[clientId];
@@ -787,6 +696,7 @@
         }
 
         function renderDetailedClientInfo(container, clientId) {
+            // ... (функция без изменений)
             const client = clientAggregates[clientId];
             const remaining = client.totalSales - client.totalPaid;
             
@@ -870,7 +780,8 @@
             setLanguage(currentLang);
         }
         
-        // === MODAL FUNCTIONS ===
+        // === MODAL FUNCTIONS (без существенных изменений) ===
+        // ... (все модальные функции open/close/submit/delete остаются прежними)
         function openTransactionModal(docId = null, transactionData = null) {
             const modal = document.getElementById('transaction-modal');
             const modalContent = document.getElementById('transaction-modal-content');
@@ -952,7 +863,7 @@
                 clientName = clientAggregates[clientId].name;
             }
             
-            const mainDocRef = docId ? doc(salesRef, docId) : doc(salesRef);
+            const mainDocRef = docId ? doc(salesRef, docId) : doc(collection(salesRef));
             const data = {
                 clientId, clientName,
                 itemName: form['modal-item-name'].value.trim(),
@@ -1019,8 +930,8 @@
             
             XLSX.writeFile(workbook, `${client.name}_export.xlsx`);
         }
-
-        // === ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK ===
+        
+        // === ГЛОБАЛЬНЫЕ ФУНКЦИИ ДЛЯ ONCLICK (без изменений) ===
         window.viewClientDetails = (clientId) => { currentClientDetailsId = clientId; showView('details'); };
         window.openEditClientNameModal = openEditClientNameModal;
         window.backToDetailsList = () => { currentClientDetailsId = null; renderDetailsView(); };
@@ -1042,27 +953,28 @@
 
         // === ИНИЦИАЛИЗАЦИЯ ===
         window.onload = () => {
+            // Привязка событий к кнопкам входа/выхода
+            document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
+            document.getElementById('logout-button').addEventListener('click', logOut);
+            
+            // ... (остальные обработчики событий без изменений)
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
             document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
             document.getElementById('edit-client-form').addEventListener('submit', handleUpdateClientName);
             document.getElementById('edit-modal-close-button').addEventListener('click', closeEditClientModal);
             document.querySelectorAll('.header-nav-item').forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
-            document.getElementById('logout-button-desktop').addEventListener('click', () => signOut(auth));
             document.getElementById('client-search').addEventListener('input', renderClientsList);
             document.getElementById('client-sort').addEventListener('change', renderClientsList);
             
-            // Language Switcher
             const langButton = document.getElementById('language-menu-button');
             const langDropdown = document.getElementById('language-dropdown');
             langButton.addEventListener('click', (e) => { e.stopPropagation(); langDropdown.classList.toggle('hidden'); });
             
-            // Theme Switcher
             const themeButton = document.getElementById('theme-menu-button');
             const themeDropdown = document.getElementById('theme-dropdown');
             themeButton.addEventListener('click', (e) => { e.stopPropagation(); themeDropdown.classList.toggle('hidden'); });
 
-            // Close dropdowns on outside click
             document.addEventListener('click', () => {
                 langDropdown.classList.add('hidden');
                 themeDropdown.classList.add('hidden');
@@ -1085,7 +997,7 @@
             });
 
             const applyTheme = (theme) => {
-                document.body.className = 'min-h-screen flex flex-col';
+                document.body.className = 'min-h-screen flex flex-col items-center justify-center p-4';
                 if (theme !== 'light') document.body.classList.add(`theme-${theme}`);
                 
                 localStorage.setItem('siteTheme', theme);
@@ -1104,18 +1016,22 @@
             }));
             
             const updateLogo = (url) => {
-                const logoImg = document.getElementById('site-logo');
+                const loginLogo = document.getElementById('login-logo');
+                const siteLogo = document.getElementById('site-logo');
                 const title = document.getElementById('site-title-display');
                 const logoBg = document.getElementById('logo-bg-duplicate');
                 
                 if (url) {
-                    logoImg.src = url;
-                    logoImg.classList.remove('hidden');
-                    title.classList.remove('hidden'); 
-                    if (logoBg) logoBg.src = url;
+                    loginLogo.src = url;
+                    siteLogo.src = url;
+                    loginLogo.classList.remove('hidden');
+                    siteLogo.classList.remove('hidden');
+                    title.classList.remove('hidden');
+                    if(logoBg) logoBg.src = url;
                     document.getElementById('logo-preview-container').innerHTML = `<img src="${url}" class="h-16 mx-auto">`;
                 } else {
-                    logoImg.classList.add('hidden');
+                    loginLogo.classList.add('hidden');
+                    siteLogo.classList.add('hidden');
                     title.classList.remove('hidden');
                     if (logoBg) logoBg.src = '';
                 }
@@ -1150,15 +1066,17 @@
             const savedTitle = localStorage.getItem('siteTitle');
             if (savedTitle) {
                 document.getElementById('site-title-display').textContent = savedTitle;
+                document.getElementById('login-title').textContent = `Добро пожаловать в ${savedTitle}`;
                 document.getElementById('site-title-tag').textContent = savedTitle;
                 document.getElementById('app-name-input').value = savedTitle;
             }
 
             setLanguage(localStorage.getItem('appLanguage') || 'ru');
             document.getElementById('modal-transaction-date').valueAsDate = new Date();
+            
+            // Запускаем Firebase
             setupFirebase();
         };
     </script>
 </body>
 </html>
-
