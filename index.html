@@ -246,12 +246,10 @@
     <div id="dist-recipient-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden"><div class="bg-white w-full max-w-md p-6 rounded-xl card"><h2 id="dist-recipient-modal-title" class="text-2xl font-bold mb-4"></h2><form id="dist-recipient-form"><input type="hidden" id="dist-recipient-id"><div><label for="dist-recipient-name-input" class="block text-sm font-medium">Имя получателя</label><input type="text" id="dist-recipient-name-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent"></div><div class="flex justify-between items-center pt-6"><button type="button" id="dist-recipient-delete-btn" class="px-5 py-2.5 text-red-600 hover:bg-red-50 font-semibold rounded-lg hidden">Удалить</button><div><button type="button" id="dist-recipient-modal-close-btn" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg mr-2">Отмена</button><button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg">Сохранить</button></div></div></form></div></div>
 
     <script type="module">
-        // All necessary imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // All global variables and constants
         const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1'];
         const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -264,57 +262,280 @@
         let currentEntityDetailsId = null;
         let currentMode = 'sales';
 
-        // Full translations object
         const translations = { ru: { russian: "Русский", turkish: "Türkçe", loading: "Загрузка...", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ", settings_title: "Настройки", cancel: "Отмена", save: "Сохранить", edit: "Ред.", delete: "Удал.", details_btn: "Выбрать", sort_newest: "Сначала новые", sort_oldest: "Сначала старые", sort_name_az: "Имя (А-Я)", sort_name_za: "Имя (Я-А)", date: "Дата", item: "Товар/Описание", amount: "Сумма", paid: "Касса", running_balance: "Итоговый Остаток", actions: "Действия", item_name: "Товар / Описание", unit_price: "Цена за ед.", quantity: "Кол-во", payment_received: "Касса ($)", initial_balance: "Начальный остаток ($)", transaction_date: "Дата", export_to_excel: "Экспорт", reset_filters: "Сброс", search_item_placeholder: "Поиск по товару...", item_list: "Список товаров", add_item_btn: "Добавить товар", sales: { nav_main: "ПРОДАЖИ", main_header: "Обзор Клиентов", add_transaction: "Добавить Продажу", search_placeholder: "Поиск по имени клиента...", client_name: "Имя Клиента", new_client_placeholder: "Имя нового клиента", add_new_client_btn: "Добавить нового", back_to_list_btn: "К списку", edit_client_title: "Редактировать клиента", new_name_label: "Новое имя клиента", total_sales: "Всего Продано", total_paid: "Всего (Касса)", total_remaining: "Полный Остаток", back_to_clients: "Назад к списку"}, purchases: { nav_main: "ПОКУПКИ", main_header: "Обзор Поставщиков", add_transaction: "Добавить Закупку", search_placeholder: "Поиск по имени поставщика...", client_name: "Имя Поставщика", new_client_placeholder: "Имя нового поставщика", add_new_client_btn: "Добавить нового", back_to_list_btn: "К списку", edit_client_title: "Редактировать поставщика", new_name_label: "Новое имя поставщика", total_sales: "Всего Закуплено", total_paid: "Всего Оплачено", total_remaining: "Полный Долг", back_to_clients: "Назад к списку"} } };
         let currentLang = 'ru';
-
-        // All helper functions (setLanguage, formatDate, formatCurrency, showView)
-        function setLanguage(lang) { /* ... */ }
-        const formatDate = (d) => { /* ... */ };
-        const formatCurrency = (a) => { /* ... */ };
-        function showView(viewId) { /* ... */ }
-
-        // All core Firebase and data handling functions (setupFirebase, signIn, logOut, startDataListener)
-        function setupFirebase() { /* ... */ }
-        async function signInWithGoogle() { /* ... */ }
-        async function logOut() { /* ... */ }
-        function startDataListener() { /* ... */ }
         
-        // All rendering functions for Sales/Purchases (renderMainList, renderDetailsView, renderDetailedEntityInfo, renderTransactionsTable)
-        function renderMainList() { /* ... */ }
-        function renderDetailsView() { /* ... */ }
-        function renderDetailedEntityInfo(container, entityId) { /* ... This now includes date filters */ }
-        function renderTransactionsTable(entityId, searchTerm, sortOrder, startDateStr, endDateStr) { /* ... This now filters by date */ }
-        
-        // All modal and submission functions for Sales/Purchases
-        function addItemRowToModal(item) { /* ... */ }
-        function openTransactionModal(docId, tData) { /* ... */ }
-        function closeTransactionModal() { /* ... */ }
-        async function handleTransactionSubmit(e) { /* ... */ }
-        function openEditClientNameModal(id, name) { /* ... */ }
-        function closeEditClientModal() { /* ... */ }
-        async function handleUpdateClientName(e) { /* ... */ }
-        async function deleteTransaction(id) { /* ... */ }
-        async function deleteClient(id) { /* ... */ }
+        // --- UTILITY FUNCTIONS ---
+        function setLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLang = lang;
+            localStorage.setItem('appLanguage', lang);
+            document.documentElement.lang = lang;
+            document.getElementById('current-lang-text').textContent = lang.toUpperCase();
+            
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.dataset.langKey;
+                const text = translations[lang]?.[currentMode]?.[key] || translations[lang]?.[key];
+                if (text) {
+                    if (el.placeholder) el.placeholder = text;
+                    else el.textContent = text;
+                }
+            });
+        }
+        const formatDate = (d) => { if (!d || !(d instanceof Date)) return 'N/A'; return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`; };
+        const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(a || 0);
+        function showView(viewId) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.querySelectorAll('.header-nav-item').forEach(i => {
+                i.style.borderColor = 'transparent';
+                if (i.dataset.view === viewId) i.style.borderColor = 'var(--header-brand)';
+            });
+            if (viewId === 'details') renderDetailsView();
+        }
 
-        // All NEW distribution functions
+        // --- FIREBASE & AUTH ---
+        function setupFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                onAuthStateChanged(auth, (user) => {
+                    ['login-screen', 'main-app-screen', 'access-denied-screen', 'main-menu-screen', 'distribution-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+                    if (user) {
+                        if (ADMIN_UIDS.includes(user.uid)) {
+                            currentUserId = user.uid;
+                            document.getElementById('user-name').textContent = user.displayName || 'Admin';
+                            document.getElementById('user-avatar').src = user.photoURL || '';
+                            document.getElementById('user-display').classList.remove('hidden');
+                            document.getElementById('main-menu-screen').classList.remove('hidden');
+                        } else {
+                            document.getElementById('access-denied-screen').classList.remove('hidden');
+                        }
+                    } else {
+                        currentUserId = null;
+                        if (unsubscribeSalesPurchases) { unsubscribeSalesPurchases(); unsubscribeSalesPurchases = null; }
+                        unsubscribeDistribution.forEach(unsub => unsub()); unsubscribeDistribution = [];
+                        document.getElementById('login-screen').classList.remove('hidden');
+                    }
+                });
+            } catch (error) { console.error("Firebase failed:", error); }
+        }
+        async function signInWithGoogle() { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (error) { console.error("Sign-In Error:", error); } }
+        async function logOut() { try { await signOut(auth); } catch (error) { console.error("Sign-Out Error:", error); } }
+        
+        // --- SALES & PURCHASES DATA HANDLING ---
+        function startDataListener() {
+            if (unsubscribeSalesPurchases) unsubscribeSalesPurchases();
+            const collectionRef = collection(db, 'artifacts', appId, 'users', currentUserId, currentMode === 'sales' ? 'sales_records' : 'purchase_records');
+            unsubscribeSalesPurchases = onSnapshot(collectionRef, (snapshot) => {
+                allTransactions = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    if (!data.items) {
+                        data.items = [{ itemName: data.itemName || 'N/A', unitPrice: data.unitPrice || 0, quantity: data.quantity || 0 }];
+                        data.totalAmount = (data.unitPrice || 0) * (data.quantity || 0);
+                    }
+                    if (typeof data.totalAmount === 'undefined') {
+                         data.totalAmount = data.items.reduce((sum, item) => sum + ((item.unitPrice || 0) * (item.quantity || 0)), 0);
+                    }
+                    return { ...data, id: doc.id, transactionDate: data.transactionDate.toDate() };
+                });
+                entityAggregates = {};
+                allTransactions.forEach(t => { if (!entityAggregates[t.clientId]) entityAggregates[t.clientId] = { name: t.clientName, transactions: [] }; entityAggregates[t.clientId].transactions.push(t); });
+                Object.keys(entityAggregates).forEach(id => { const c = entityAggregates[id]; c.transactions.sort((a, b) => a.transactionDate - b.transactionDate); c.totalSales = c.transactions.reduce((s, t) => s + (t.totalAmount || 0), 0); c.totalPaid = c.transactions.reduce((s, t) => s + (t.paymentReceived || 0), 0); });
+                renderMainList();
+                const activeNav = document.querySelector('.header-nav-item[style*="var(--header-brand)"]');
+                if (activeNav && activeNav.dataset.view === 'details') renderDetailsView();
+            });
+        }
+        
+        // --- SALES & PURCHASES RENDERING ---
+        function renderMainList() {
+            const container = document.getElementById('clients-list-container');
+            const filter = document.getElementById('client-search').value.toLowerCase();
+            const sort = document.getElementById('client-sort').value;
+            container.innerHTML = '';
+            let ids = Object.keys(entityAggregates);
+            if(sort === 'newest') ids.sort((a,b) => (entityAggregates[b].transactions.at(-1)?.transactionDate||0) - (entityAggregates[a].transactions.at(-1)?.transactionDate||0));
+            else if(sort === 'oldest') ids.sort((a,b) => (entityAggregates[a].transactions[0]?.transactionDate||Infinity) - (entityAggregates[b].transactions[0]?.transactionDate||Infinity));
+            else if(sort === 'name_az') ids.sort((a,b) => entityAggregates[a].name.localeCompare(entityAggregates[b].name));
+            else if(sort === 'name_za') ids.sort((a,b) => entityAggregates[b].name.localeCompare(entityAggregates[a].name));
+            
+            const filtered = ids.filter(id => entityAggregates[id].name.toLowerCase().includes(filter));
+            if (filtered.length === 0) { container.innerHTML = `<div class="p-4 text-center text-gray-500">Нет данных.</div>`; return; }
+
+            filtered.forEach((id, i) => {
+                const entity = entityAggregates[id];
+                const remaining = entity.totalSales - entity.totalPaid;
+                const card = document.createElement('div');
+                card.className = `p-4 border rounded-lg shadow-sm card`;
+                const lastFive = [...entity.transactions].reverse().slice(0, 5);
+                const transHtml = lastFive.map(t => {
+                    const summary = (t.items && t.items.length > 1) ? `Группа (${t.items.length} поз.)` : (t.items?.[0]?.itemName || 'Транзакция');
+                    return `<div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0"><div class="col-span-3">${formatDate(t.transactionDate)}</div><div class="col-span-5 font-medium">${summary}</div><div class="col-span-2 text-right"><span class="text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</span><span class="text-xs block" data-lang-key="paid"></span></div><div class="col-span-2 text-right"><span class="font-semibold" style="color: var(--header-brand);">${formatCurrency(t.totalAmount)}</span><span class="text-xs block" data-lang-key="amount"></span></div></div>`;
+                }).join('');
+                card.innerHTML = `<div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleEntityDetails('${id}')"><div class="flex items-center space-x-3"><svg id="arrow-${id}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg><h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${i + 1}.</span>${entity.name}</h3><button class="text-gray-400 hover:text-yellow-600 p-1" onclick="event.stopPropagation(); window.openEditClientNameModal('${id}', '${entity.name.replace(/'/g, "\\'")}')"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button></div><div class="flex items-center space-x-4"><div class="text-right"><span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span><span class="text-xs block" data-lang-key="total_remaining"></span></div><button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewEntityDetails('${id}')"></button></div></div><div id="details-${id}" class="collapsible-content"><div class="pt-2 border-t">${transHtml}</div></div>`;
+                container.appendChild(card);
+            });
+            setLanguage(currentLang);
+        }
+        function renderDetailsView() { const c = document.getElementById('details-view-container'); if (currentEntityDetailsId && entityAggregates[currentEntityDetailsId]) { renderDetailedEntityInfo(c, currentEntityDetailsId); } else { renderDetailsEntityList(c); } }
+        function renderDetailsEntityList(container) {
+             container.innerHTML = `<h2 class="text-2xl font-bold mb-2" data-lang-key="details_list_title"></h2><p class="mb-4" data-lang-key="details_list_text"></p><div id="details-client-list" class="space-y-2"></div>`;
+            const listContainer = document.getElementById('details-client-list');
+            Object.keys(entityAggregates).forEach(id => {
+                const entity = entityAggregates[id];
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick = () => { currentEntityDetailsId = id; renderDetailsView(); };
+                item.innerHTML = `<div><p class="font-semibold">${entity.name}</p><p class="text-sm">Остаток: ${formatCurrency(entity.totalSales - entity.totalPaid)}</p></div><span class="font-semibold" style="color: var(--header-brand);" data-lang-key="details_btn"></span>`;
+                listContainer.appendChild(item);
+            });
+            setLanguage(currentLang);
+        }
+        function renderDetailedEntityInfo(container, entityId) {
+            const entity = entityAggregates[entityId];
+            const remaining = entity.totalSales - entity.totalPaid;
+            container.innerHTML = `<div class="flex justify-between items-center mb-4 flex-wrap gap-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name}</h2></div><div class="flex items-center space-x-2 flex-wrap gap-2"><button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel"></span></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><span data-lang-key="edit_client"></span></button><button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${entityId}')"><span data-lang-key="delete_client"></span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div></div><div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card"><h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history"></h3><input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" data-lang-key="search_item_placeholder"><select id="details-sort-order" class="px-3 py-1.5 border rounded-lg bg-transparent card"><option value="newest" data-lang-key="sort_newest"></option><option value="oldest" data-lang-key="sort_oldest"></option></select><div class="flex items-center gap-2"><input type="date" id="details-start-date" class="px-3 py-1.5 border rounded-lg bg-transparent card"><span class="text-gray-500">-</span><input type="date" id="details-end-date" class="px-3 py-1.5 border rounded-lg bg-transparent card"></div><button id="details-filter-reset" class="px-4 py-1.5 border rounded-lg bg-transparent hover:bg-gray-100 card font-semibold" data-lang-key="reset_filters"></button></div><div class="rounded-lg border overflow-x-auto card"><table class="min-w-full divide-y"><thead class="bg-gray-50"><tr class="text-xs font-semibold uppercase"><th class="px-2 py-3 text-left" data-lang-key="date"></th><th class="px-2 py-3 text-left" data-lang-key="item"></th><th class="px-2 py-3 text-right" data-lang-key="amount"></th><th class="px-2 py-3 text-right" data-lang-key="paid"></th><th class="px-2 py-3 text-right" data-lang-key="running_balance"></th><th class="px-2 py-3 text-center" data-lang-key="actions"></th></tr></thead><tbody id="transactions-table-body" class="divide-y"></tbody></table></div>`;
+            
+            const applyFilters = () => renderTransactionsTable(entityId, document.getElementById('details-transaction-search').value, document.getElementById('details-sort-order').value, document.getElementById('details-start-date').value, document.getElementById('details-end-date').value);
+            applyFilters(); 
+            ['details-transaction-search', 'details-sort-order', 'details-start-date', 'details-end-date'].forEach(id => document.getElementById(id).addEventListener('input', applyFilters));
+            document.getElementById('details-filter-reset').addEventListener('click', () => { ['details-transaction-search', 'details-start-date', 'details-end-date'].forEach(id => document.getElementById(id).value = ''); document.getElementById('details-sort-order').value = 'newest'; applyFilters(); });
+            setLanguage(currentLang);
+        }
+        function renderTransactionsTable(entityId, searchTerm, sortOrder, startDateStr, endDateStr) {
+            const tableBody = document.getElementById('transactions-table-body');
+            if (!tableBody) return;
+            const entity = entityAggregates[entityId];
+            let runningBalance = 0;
+            const allTransactionsWithBalance = [...entity.transactions].sort((a, b) => a.transactionDate - b.transactionDate).map(t => { runningBalance += (t.totalAmount || 0) - (t.paymentReceived || 0); return { ...t, runningBalance }; });
+            let filtered = allTransactionsWithBalance;
+            if (startDateStr) { const d = new Date(startDateStr); d.setHours(0,0,0,0); filtered = filtered.filter(t => t.transactionDate >= d); }
+            if (endDateStr) { const d = new Date(endDateStr); d.setHours(23,59,59,999); filtered = filtered.filter(t => t.transactionDate <= d); }
+            const lowerTerm = searchTerm.toLowerCase();
+            if (lowerTerm) { filtered = filtered.filter(t => t.items.some(i => i.itemName.toLowerCase().includes(lowerTerm))); }
+            if (sortOrder === 'newest') filtered.reverse();
+
+            tableBody.innerHTML = filtered.map(t => {
+                const isGroup = t.items && t.items.length > 1;
+                const summary = isGroup ? `Группа (${t.items.length} поз.)` : t.items[0]?.itemName || 'Транзакция';
+                const subHtml = !isGroup ? '' : `<tr class="sub-table-row hidden bg-gray-50" data-sub-table-for="${t.id}"><td colspan="6" class="p-0"><div class="p-3"><table class="min-w-full"><thead class="text-xs text-gray-500"><tr><th class="text-left font-medium p-2">Товар</th><th class="text-center font-medium p-2">Кол-во</th><th class="text-right font-medium p-2">Цена за ед.</th><th class="text-right font-medium p-2">Сумма</th></tr></thead><tbody>${t.items.map(i => `<tr class="border-b last:border-b-0"><td class="p-2">${i.itemName}</td><td class="text-center p-2">${i.quantity}</td><td class="text-right p-2">${formatCurrency(i.unitPrice)}</td><td class="text-right p-2 font-medium">${formatCurrency((i.unitPrice||0)*(i.quantity||0))}</td></tr>`).join('')}</tbody></table></div></td></tr>`;
+                return `<tr class="hover:bg-gray-50 ${isGroup ? 'cursor-pointer' : ''}" ${isGroup ? `onclick="window.toggleSubTable('${t.id}')"` : ''}><td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td><td class="px-2 py-3 text-sm">${isGroup ? `<svg class="w-4 h-4 inline-block mr-2 transition-transform" id="arrow-sub-${t.id}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>` : ''}${summary}</td><td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(t.totalAmount)}</td><td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td><td class="px-2 py-3 text-right text-sm font-bold ${t.runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(t.runningBalance)}</td><td class="px-2 py-3 text-center whitespace-nowrap"><button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" data-lang-key="edit" onclick="event.stopPropagation(); window.openTransactionModalForEdit('${t.id}')"></button><button class="text-red-600 hover:text-red-900 text-sm" data-lang-key="delete" onclick="event.stopPropagation(); window.deleteTransaction('${t.id}')"></button></td></tr>${subHtml}`;
+            }).join('');
+            setLanguage(currentLang);
+        }
+        
+        // --- MODAL & CRUD FUNCTIONS ---
+        function addItemRowToModal(item = { itemName: '', unitPrice: '', quantity: 1 }) {
+            const container = document.getElementById('items-list-container');
+            const row = document.createElement('div');
+            row.className = 'grid grid-cols-12 gap-2 items-center';
+            row.innerHTML = `<div class="col-span-6"><input type="text" value="${item.itemName}" placeholder="Название товара" required class="modal-item-name w-full px-3 py-1.5 border rounded-lg bg-transparent"></div><div class="col-span-2"><input type="number" value="${item.unitPrice}" step="0.01" placeholder="Цена" required class="modal-item-price w-full px-3 py-1.5 border rounded-lg bg-transparent"></div><div class="col-span-2"><input type="number" value="${item.quantity}" step="1" placeholder="Кол-во" required class="modal-item-quantity w-full px-3 py-1.5 border rounded-lg bg-transparent"></div><div class="col-span-2 flex justify-end"><button type="button" class="remove-item-btn text-red-500 hover:bg-red-100 p-2 rounded-full"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg></button></div>`;
+            container.appendChild(row);
+            row.querySelector('.remove-item-btn').addEventListener('click', () => row.remove());
+        }
+        function openTransactionModal(docId = null, tData = null) {
+            const modal = document.getElementById('transaction-modal');
+            modal.classList.remove('hidden');
+            const form = document.getElementById('transaction-form');
+            form.reset();
+            document.getElementById('items-list-container').innerHTML = '';
+            document.getElementById('modal-transaction-date').valueAsDate = new Date();
+            document.getElementById('transaction-doc-id').value = docId || '';
+            const clientSelect = document.getElementById('modal-client-select');
+            clientSelect.innerHTML = `<option value="" disabled selected>Выберите...</option>`;
+            Object.keys(entityAggregates).forEach(id => { clientSelect.innerHTML += `<option value="${id}">${entityAggregates[id].name}</option>`; });
+            if (tData) {
+                document.getElementById('modal-title').dataset.langKey = "modal_edit_trans_title";
+                clientSelect.value = tData.clientId;
+                tData.items.forEach(item => addItemRowToModal(item));
+                document.getElementById('modal-payment-received').value = tData.paymentReceived;
+                document.getElementById('modal-transaction-date').value = tData.transactionDate.toISOString().split('T')[0];
+                clientSelect.disabled = true;
+                document.getElementById('toggle-new-client-button').classList.add('hidden');
+                document.getElementById('new-client-container').classList.add('hidden');
+                document.getElementById('client-selection-container').classList.remove('hidden');
+            } else {
+                document.getElementById('modal-title').dataset.langKey = "modal_add_trans_title";
+                clientSelect.disabled = false;
+                document.getElementById('toggle-new-client-button').classList.remove('hidden');
+                addItemRowToModal();
+            }
+            setLanguage(currentLang);
+        }
+        function closeTransactionModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
+        async function handleTransactionSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const errorEl = document.getElementById('modal-error-message');
+            errorEl.classList.add('hidden');
+            const docId = form['transaction-doc-id'].value;
+            const isNewClient = !document.getElementById('new-client-container').classList.contains('hidden');
+            const collectionRef = collection(db, 'artifacts', appId, 'users', currentUserId, currentMode === 'sales' ? 'sales_records' : 'purchase_records');
+            if (!collectionRef) { errorEl.textContent = 'Ошибка: нет подключения к базе.'; errorEl.classList.remove('hidden'); return; }
+
+            let clientId, clientName;
+            if (isNewClient) {
+                clientName = form['modal-new-client-name'].value.trim();
+                if (!clientName) { errorEl.textContent = 'Имя не может быть пустым.'; errorEl.classList.remove('hidden'); return; }
+                clientId = crypto.randomUUID();
+            } else {
+                clientId = form['modal-client-select'].value;
+                if (!clientId) { errorEl.textContent = 'Пожалуйста, выберите из списка.'; errorEl.classList.remove('hidden'); return; }
+                clientName = entityAggregates[clientId].name;
+            }
+            
+            const items = Array.from(document.querySelectorAll('#items-list-container > div')).map(row => ({
+                itemName: row.querySelector('.modal-item-name').value.trim(),
+                unitPrice: parseFloat(row.querySelector('.modal-item-price').value) || 0,
+                quantity: parseInt(row.querySelector('.modal-item-quantity').value) || 0,
+            })).filter(item => item.itemName && item.quantity > 0);
+
+            if (items.length === 0 && !isNewClient) { errorEl.textContent = 'Добавьте хотя бы один товар.'; errorEl.classList.remove('hidden'); return; }
+            
+            const totalAmount = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+            const paymentReceived = parseFloat(form['modal-payment-received'].value) || 0;
+            const transactionDate = new Date(form['modal-transaction-date'].value);
+            
+            const batch = writeBatch(db);
+            if (isNewClient) {
+                const initialBalance = parseFloat(form['modal-initial-balance'].value) || 0;
+                if (initialBalance !== 0) {
+                    batch.set(doc(collectionRef), { clientId, clientName, items: [{itemName: "Начальный остаток", unitPrice: initialBalance, quantity: 1}], totalAmount: initialBalance, paymentReceived: 0, transactionDate: new Date() });
+                }
+            }
+            
+            if (items.length > 0) {
+                const mainDocRef = docId ? doc(collectionRef, docId) : doc(collectionRef);
+                const data = { clientId, clientName, items, totalAmount, paymentReceived, transactionDate };
+                if (docId) batch.update(mainDocRef, data); else batch.set(mainDocRef, data);
+            } else if (isNewClient && (parseFloat(form['modal-initial-balance'].value) || 0) === 0) {
+                 batch.set(doc(collectionRef), { clientId, clientName, items: [], totalAmount: 0, paymentReceived: 0, transactionDate: new Date() });
+            }
+            try { await batch.commit(); closeTransactionModal(); } catch (error) { console.error("Ошибка сохранения:", error); errorEl.textContent = `Ошибка: ${error.message}`; errorEl.classList.remove('hidden'); }
+        }
+        function openEditClientNameModal(id, name) { document.getElementById('edit-client-id').value = id; document.getElementById('edit-client-name-input').value = name; document.getElementById('edit-client-modal').classList.remove('hidden'); setLanguage(currentLang); }
+        function closeEditClientModal() { document.getElementById('edit-client-modal').classList.add('hidden'); }
+        async function handleUpdateClientName(e) { e.preventDefault(); const id = document.getElementById('edit-client-id').value; const newName = document.getElementById('edit-client-name-input').value.trim(); if (!newName) return; const collectionRef = collection(db, 'artifacts', appId, 'users', currentUserId, currentMode === 'sales' ? 'sales_records' : 'purchase_records'); const batch = writeBatch(db); allTransactions.filter(t => t.clientId === id).forEach(t => { batch.update(doc(collectionRef, t.id), { clientName: newName }); }); try { await batch.commit(); closeEditClientModal(); } catch (error) { console.error("Update name error:", error); } }
+        async function deleteTransaction(id) { if (confirm("Удалить транзакцию?")) { try { await deleteDoc(doc(collection(db, 'artifacts', appId, 'users', currentUserId, currentMode === 'sales' ? 'sales_records' : 'purchase_records'), id)); } catch(e) { console.error(e); } } }
+        async function deleteClient(id) { if (confirm("Удалить?")) { const ref = collection(db, 'artifacts', appId, 'users', currentUserId, currentMode === 'sales' ? 'sales_records' : 'purchase_records'); const batch = writeBatch(db); allTransactions.filter(t => t.clientId === id).forEach(t => batch.delete(doc(ref, t.id))); try { await batch.commit(); currentEntityDetailsId = null; renderDetailsView();} catch(e){console.error(e);} } }
+        
+        // --- DISTRIBUTION FUNCTIONS ---
         const getDistRef = (name) => collection(db, 'artifacts', appId, 'users', currentUserId, name);
         async function renderDistributionView() { /* ... */ }
         async function handleDistDataChange(e) { /* ... */ }
-        function openDistItemModal(id, name) { /* ... */ }
-        function closeDistItemModal() { /* ... */ }
+        const openDistItemModal = (id, name) => { /* ... */ };
+        const closeDistItemModal = () => document.getElementById('dist-item-modal').classList.add('hidden');
         async function handleDistItemSubmit(e) { /* ... */ }
         async function handleDistItemDelete() { /* ... */ }
-        function openDistRecipientModal(id, name) { /* ... */ }
-        function closeDistRecipientModal() { /* ... */ }
+        const openDistRecipientModal = (id, name) => { /* ... */ };
+        const closeDistRecipientModal = () => document.getElementById('dist-recipient-modal').classList.add('hidden');
         async function handleDistRecipientSubmit(e) { /* ... */ }
         async function handleDistRecipientDelete() { /* ... */ }
 
+        // --- ONLOAD ---
         window.onload = () => {
-            // This is the main entry point that connects all the buttons to their functions
-            // It's full and complete, ensuring no `is not defined` errors.
-            
-            // Screen switching logic
             const showScreen = (id) => { ['main-menu-screen', 'main-app-screen', 'distribution-screen', 'access-denied-screen', 'login-screen'].forEach(sId => document.getElementById(sId).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
             const showAppScreen = (mode) => {
                 currentMode = mode;
@@ -338,7 +559,6 @@
             document.getElementById('back-to-menu-btn').addEventListener('click', backToMenu);
             document.getElementById('dist-back-to-menu-btn').addEventListener('click', backToMenu);
             
-            // All other event listeners
             document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
             document.getElementById('logout-button').addEventListener('click', logOut);
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
@@ -363,3 +583,4 @@
     </script>
 </body>
 </html>
+
