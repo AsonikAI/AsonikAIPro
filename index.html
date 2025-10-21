@@ -95,7 +95,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300 hidden">
+    <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300">
         <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
         <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
         <p class="text-center text-gray-600 mb-8">Войдите, чтобы получить доступ к вашим данным.</p>
@@ -287,7 +287,7 @@
              <div id="purchases-details-view-container"></div>
         </section>
 
-        <section data-app="purchases" data-view="settings" class="view-content hidden flex-col flex-grow pt-4">
+        <section data-app="purchases" data-view="settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
              <div class="flex items-center space-x-4">
                  <div class="relative">
                     <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card purchases-theme-lang-btn" id="purchases-language-menu-button">
@@ -459,7 +459,7 @@
         import { getFirestore, doc, collection, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1']; 
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1']; 
         
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -858,6 +858,24 @@
             }
         }
         
+        window.toggleClientDetails = (clientId) => {
+            const detailsDiv = document.getElementById(`details-${clientId}`);
+            const arrow = document.getElementById(`arrow-${clientId}`);
+            if (detailsDiv.style.maxHeight) {
+                detailsDiv.style.maxHeight = null;
+                arrow.classList.remove('rotate-180');
+            } else {
+                detailsDiv.style.maxHeight = detailsDiv.scrollHeight + "px";
+                arrow.classList.add('rotate-180');
+            } 
+        };
+        window.openEditClientNameModal = openEditClientNameModal;
+        window.viewClientDetails = (clientId) => { currentClientDetailsId = clientId; showAppView('sales', 'details'); };
+        window.backToSalesDetailsList = () => { currentClientDetailsId = null; renderSalesDetailsView(); };
+        window.openTransactionModalForEdit = (id) => openTransactionModal(id, allTransactions.find(t => t.id === id));
+        window.deleteTransaction = deleteTransaction;
+        window.deleteClient = deleteClient;
+
         // --- ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПОКУПКИ" ---
 
         function startPurchasesListener() {
@@ -895,6 +913,7 @@
         
         function renderSuppliersList() {
             const container = document.getElementById('suppliers-list-container');
+             if (!container) return;
             const filter = document.getElementById('supplier-search').value.toLowerCase();
             const sortMethod = document.getElementById('supplier-sort').value;
             container.innerHTML = '';
@@ -950,17 +969,221 @@
             });
         }
         
-        function renderPurchasesDetailsView() { /* ... (similar to sales) */ }
-        function openPurchaseModal(docId = null, purchaseData = null) { /* ... */ }
+        function renderPurchasesDetailsView() {
+             const container = document.getElementById('purchases-details-view-container');
+            if (currentSupplierDetailsId && supplierAggregates[currentSupplierDetailsId]) {
+                renderDetailedSupplierInfo(container, currentSupplierDetailsId);
+            } else {
+                renderPurchasesSupplierList(container);
+            }
+        }
+        
+        function renderPurchasesSupplierList(container) {
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-2">Подробнее (Выбор Поставщика)</h2>
+                <p class="mb-4">Выберите поставщика из списка ниже, чтобы просмотреть его полную историю закупок.</p>
+                <div id="details-supplier-list" class="space-y-2"></div>`;
+            const listContainer = document.getElementById('details-supplier-list');
+            Object.keys(supplierAggregates).forEach(supplierId => {
+                const supplier = supplierAggregates[supplierId];
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick = () => { currentSupplierDetailsId = supplierId; renderPurchasesDetailsView(); };
+                item.innerHTML = `<div><p class="font-semibold">${supplier.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function renderDetailedSupplierInfo(container, supplierId) {
+            const supplier = supplierAggregates[supplierId];
+            const remaining = supplier.totalPurchased - supplier.totalPaid;
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToPurchasesDetailsList()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            <span>Назад к списку поставщиков</span>
+                        </button>
+                        <h2 class="text-3xl font-bold">${supplier.name}</h2>
+                    </div>
+                    <div>
+                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteSupplier('${supplierId}')">Удалить Поставщика</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800">Всего Закуплено</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(supplier.totalPurchased)}</p></div>
+                    <div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800">Всего Оплачено</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(supplier.totalPaid)}</p></div>
+                    <div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800">Наш Долг</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
+                </div>
+                <div class="rounded-lg border overflow-x-auto card">
+                     <table class="min-w-full divide-y">
+                        <thead class="bg-gray-50"><tr>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Дата</th>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Товар</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Сумма</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Оплачено</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Итоговый Баланс</th>
+                            <th class="px-2 py-3 text-center text-xs font-semibold uppercase">Действия</th>
+                        </tr></thead>
+                        <tbody id="purchases-transactions-table-body" class="divide-y"></tbody>
+                    </table>
+                </div>`;
+            
+            const tableBody = document.getElementById('purchases-transactions-table-body');
+            let runningBalance = 0;
+            const transactionsHtml = supplier.transactions.map(t => {
+                const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
+                runningBalance += transactionTotal - (t.paymentMade || 0);
+                return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity || 0})</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(transactionTotal)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium text-red-600">${formatCurrency(t.paymentMade)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(runningBalance)}</td>
+                    <td class="px-2 py-3 text-center whitespace-nowrap">
+                        <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" onclick="window.openPurchaseModalForEdit('${t.id}')">Ред.</button>
+                        <button class="text-red-600 hover:text-red-900 text-sm" onclick="window.deletePurchase('${t.id}')">Удал.</button>
+                    </td>
+                </tr>`;
+            }).join('');
+            tableBody.innerHTML = transactionsHtml;
+        }
+
+        function openPurchaseModal(docId = null, purchaseData = null) {
+            const modal = document.getElementById('purchase-modal');
+            modal.classList.remove('hidden');
+            const form = document.getElementById('purchase-form');
+            form.reset();
+            document.getElementById('modal-purchase-date').valueAsDate = new Date();
+            document.getElementById('purchase-doc-id').value = docId || '';
+            
+            const supplierSelect = document.getElementById('modal-supplier-select');
+            supplierSelect.innerHTML = `<option value="" disabled selected>Выберите поставщика</option>`;
+            Object.keys(supplierAggregates).forEach(id => { supplierSelect.innerHTML += `<option value="${id}">${supplierAggregates[id].name}</option>`; });
+            
+            if (purchaseData) {
+                supplierSelect.value = purchaseData.supplierId;
+                document.getElementById('modal-purchase-item-name').value = purchaseData.itemName;
+                document.getElementById('modal-purchase-unit-price').value = purchaseData.unitPrice;
+                document.getElementById('modal-purchase-quantity').value = purchaseData.quantity;
+                document.getElementById('modal-payment-made').value = purchaseData.paymentMade;
+                document.getElementById('modal-purchase-date').value = purchaseData.transactionDate.toISOString().split('T')[0];
+                supplierSelect.disabled = true;
+                document.getElementById('toggle-new-supplier-button').classList.add('hidden');
+            } else {
+                supplierSelect.disabled = false;
+                document.getElementById('toggle-new-supplier-button').classList.remove('hidden');
+            }
+        }
+        
         function closePurchaseModal() { document.getElementById('purchase-modal').classList.add('hidden'); }
-        function openEditSupplierNameModal(supplierId, currentName) { /* ... */ }
+        function openEditSupplierNameModal(supplierId, currentName) {
+            document.getElementById('edit-supplier-id').value = supplierId;
+            document.getElementById('edit-supplier-name-input').value = currentName;
+            document.getElementById('edit-supplier-modal').classList.remove('hidden');
+        }
         function closeEditSupplierModal() { document.getElementById('edit-supplier-modal').classList.add('hidden'); }
-        async function handlePurchaseSubmit(e) { e.preventDefault(); /* ... */ }
-        async function handleUpdateSupplierName(e) { e.preventDefault(); /* ... */ }
-        async function deletePurchase(purchaseId) { /* ... */ }
-        async function deleteSupplier(supplierId) { /* ... */ }
+
+        async function handlePurchaseSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const errorEl = document.getElementById('purchase-modal-error-message');
+            errorEl.classList.add('hidden');
+            const purchasesRef = getCollectionRef('purchase_records');
+            if (!purchasesRef) return;
+            
+            const isNewSupplier = !document.getElementById('new-supplier-container').classList.contains('hidden');
+            let supplierId, supplierName;
+            if (isNewSupplier) {
+                supplierName = form['modal-new-supplier-name'].value.trim();
+                if (!supplierName) { errorEl.textContent = 'Имя нового поставщика не может быть пустым.'; errorEl.classList.remove('hidden'); return; }
+                supplierId = crypto.randomUUID();
+            } else {
+                supplierId = form['modal-supplier-select'].value;
+                if (!supplierId) { errorEl.textContent = 'Пожалуйста, выберите поставщика.'; errorEl.classList.remove('hidden'); return; }
+                supplierName = supplierAggregates[supplierId].name;
+            }
+
+            const batch = writeBatch(db);
+            let operations = 0;
+            const itemName = form['modal-purchase-item-name'].value.trim();
+
+            if (isNewSupplier) {
+                const initialBalance = parseFloat(form['modal-initial-purchase-balance'].value) || 0;
+                if (initialBalance !== 0) {
+                    batch.set(doc(purchasesRef), { supplierId, supplierName, itemName: "Начальный баланс", unitPrice: initialBalance, quantity: 1, paymentMade: 0, transactionDate: new Date() });
+                    operations++;
+                }
+            }
+            
+            if (itemName && (itemName !== "Закупка" || isNewSupplier)) {
+                const data = {
+                    supplierId, supplierName,
+                    itemName,
+                    unitPrice: parseFloat(form['modal-purchase-unit-price'].value),
+                    quantity: parseInt(form['modal-purchase-quantity'].value),
+                    paymentMade: parseFloat(form['modal-payment-made'].value),
+                    transactionDate: new Date(form['modal-purchase-date'].value)
+                };
+                const docId = form['purchase-doc-id'].value;
+                const docRef = docId ? doc(purchasesRef, docId) : doc(purchasesRef);
+                if (docId) { batch.update(docRef, data); } else { batch.set(docRef, data); }
+                operations++;
+            }
+            
+            if (operations === 0 && isNewSupplier) {
+                 batch.set(doc(purchasesRef), { supplierId, supplierName, itemName: "Создание поставщика", unitPrice: 0, quantity: 0, paymentMade: 0, transactionDate: new Date() });
+                 operations++;
+            }
+            
+            if (operations > 0) {
+                try { await batch.commit(); closePurchaseModal(); }
+                catch (error) { errorEl.textContent = `Ошибка: ${error.message}`; errorEl.classList.remove('hidden'); }
+            } else {
+                errorEl.textContent = 'Нечего сохранять.'; errorEl.classList.remove('hidden');
+            }
+        }
+        
+        async function handleUpdateSupplierName(e) {
+            e.preventDefault();
+            const supplierId = document.getElementById('edit-supplier-id').value;
+            const newName = document.getElementById('edit-supplier-name-input').value.trim();
+            if (!newName) return;
+            
+            const purchasesRef = getCollectionRef('purchase_records');
+            const batch = writeBatch(db);
+            allPurchases.filter(p => p.supplierId === supplierId).forEach(p => {
+                batch.update(doc(purchasesRef, p.id), { supplierName: newName });
+            });
+            try { await batch.commit(); closeEditSupplierModal(); } 
+            catch (error) { console.error("Ошибка обновления имени поставщика:", error); }
+        }
+
+        async function deletePurchase(purchaseId) {
+            if (confirm('Вы уверены, что хотите удалить эту закупку?')) {
+                try { await deleteDoc(doc(getCollectionRef('purchase_records'), purchaseId)); } 
+                catch (error) { console.error("Ошибка удаления закупки:", error); }
+            }
+        }
+        
+        async function deleteSupplier(supplierId) {
+            if (confirm('ВНИМАНИЕ! Вы действительно хотите удалить поставщика и ВСЕ его закупки? Это действие необратимо.')) {
+                const purchasesRef = getCollectionRef('purchase_records');
+                const batch = writeBatch(db);
+                allPurchases.filter(p => p.supplierId === supplierId).forEach(p => batch.delete(doc(purchasesRef, p.id)));
+                try { await batch.commit(); currentSupplierDetailsId = null; renderPurchasesDetailsView(); }
+                catch (error) { console.error("Ошибка удаления поставщика:", error); }
+            }
+        }
+
         window.openEditSupplierNameModal = openEditSupplierNameModal;
         window.viewSupplierDetails = (supplierId) => { currentSupplierDetailsId = supplierId; showAppView('purchases', 'details'); };
+        window.backToPurchasesDetailsList = () => { currentSupplierDetailsId = null; renderPurchasesDetailsView(); };
+        window.openPurchaseModalForEdit = (id) => openPurchaseModal(id, allPurchases.find(p => p.id === id));
+        window.deletePurchase = deletePurchase;
+        window.deleteSupplier = deleteSupplier;
+        
         
         // --- ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ---
         window.onload = () => {
@@ -1064,7 +1287,8 @@
             
             document.addEventListener('click', () => {
                 ['sales-theme-dropdown', 'sales-language-dropdown', 'purchases-theme-dropdown', 'purchases-language-dropdown'].forEach(id => {
-                    document.getElementById(id)?.classList.add('hidden');
+                    const el = document.getElementById(id);
+                    if(el) el.classList.add('hidden');
                 });
             });
 
