@@ -162,34 +162,13 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     <span>Настройки</span>
                 </button>
-                 <div class="relative">
-                    <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card sales-theme-lang-btn" id="sales-language-menu-button">
-                        <span id="sales-current-lang-text" class="font-semibold">RU</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div id="sales-language-dropdown" class="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
-                        <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg"><span>🇷🇺</span><span>Русский</span></button>
-                        <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg"><span>🇹🇷</span><span>Türkçe</span></button>
-                    </div>
-                </div>
-                <div class="relative">
-                    <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card sales-theme-lang-btn" id="sales-theme-menu-button" title="Сменить тему">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
-                    </button>
-                    <div id="sales-theme-dropdown" class="absolute right-0 mt-2 w-40 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
-                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="light"><span>Светлая</span> <div class="w-4 h-4 rounded-full bg-gray-200 border"></div></button>
-                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="violet"><span>Фиолетовая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #a78bfa, #ddd6fe)"></div></button>
-                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="crimson"><span>Багровая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb7185, #fecdd3)"></div></button>
-                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="sunset"><span>Закат</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb923c, #fed7aa)"></div></button>
-                    </div>
-                </div>
-                <button id="sales-logout-button" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
+                 <button id="sales-logout-button" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                 </button>
             </div>
         </header>
         
-        <section data-app="sales" class="view-content flex flex-col flex-grow pt-4">
+        <section data-app="sales" data-view="main" class="view-content flex flex-col flex-grow pt-4">
             <div class="flex justify-between items-center mb-4">
                  <h2 class="text-2xl font-bold">Обзор Клиентов</h2>
             </div>
@@ -211,11 +190,11 @@
             <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4"></div>
         </section>
 
-        <section data-app="sales" class="view-content hidden flex-col flex-grow pt-4">
+        <section data-app="sales" data-view="details" class="view-content hidden flex-col flex-grow pt-4">
              <div id="sales-details-view-container"></div>
         </section>
 
-        <section data-app="sales" class="view-content hidden flex-col flex-grow pt-4 px-4">
+        <section data-app="sales" data-view="settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
             <h1 class="text-3xl font-bold mb-6">Настройки Системы</h1>
             <div class="space-y-8 max-w-2xl">
                 <div class="p-6 rounded-xl border card">
@@ -245,11 +224,6 @@
                  <div id="admin-panel" class="hidden p-6 rounded-xl border card">
                     <h3 class="text-xl font-semibold mb-4">Панель Администратора</h3>
                     <p class="text-sm text-gray-600 mb-2">Вы вошли с правами администратора.</p>
-                    <div>
-                        <label class="block text-sm font-medium">UID Главного Администратора</label>
-                        <input type="text" value="h25tlwhyAQfo1PBgzYmekWKD5Vl1" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border rounded-lg shadow-sm" />
-                         <p class="text-xs text-gray-500 mt-1">В будущем здесь можно будет управлять доступом.</p>
-                    </div>
                 </div>
             </div>
         </section>
@@ -269,7 +243,7 @@
                     <img id="purchases-user-avatar" src="" class="w-10 h-10 rounded-full">
                     <span id="purchases-user-name" class="font-semibold"></span>
                 </div>
-                <button data-app="purchases" data-view="main" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                 <button data-app="purchases" data-view="main" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1m-1-4h1m-1-4h1"></path></svg>
                     <span>Основа</span>
                 </button>
@@ -287,7 +261,7 @@
             </div>
         </header>
 
-        <section data-app="purchases" class="view-content flex flex-col flex-grow pt-4">
+        <section data-app="purchases" data-view="main" class="view-content flex flex-col flex-grow pt-4">
             <div class="flex justify-between items-center mb-4">
                  <h2 class="text-2xl font-bold">Обзор Поставщиков</h2>
             </div>
@@ -309,19 +283,40 @@
             <div id="suppliers-list-container" class="overflow-y-auto flex-grow space-y-4"></div>
         </section>
         
-        <section data-app="purchases" class="view-content hidden flex-col flex-grow pt-4">
+        <section data-app="purchases" data-view="details" class="view-content hidden flex-col flex-grow pt-4">
              <div id="purchases-details-view-container"></div>
         </section>
 
-        <section data-app="purchases" class="view-content hidden flex-col flex-grow pt-4">
-            <h1 class="text-3xl font-bold mb-6">Настройки Покупок</h1>
-            <p>Здесь будут настройки, специфичные для раздела покупок.</p>
+        <section data-app="purchases" data-view="settings" class="view-content hidden flex-col flex-grow pt-4">
+             <div class="flex items-center space-x-4">
+                 <div class="relative">
+                    <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="purchases-language-menu-button">
+                        <span id="purchases-current-lang-text" class="font-semibold">RU</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="purchases-language-dropdown" class="absolute left-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                        <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg"><span>🇷🇺</span><span>Русский</span></button>
+                        <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg"><span>🇹🇷</span><span>Türkçe</span></button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="purchases-theme-menu-button" title="Сменить тему">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    </button>
+                    <div id="purchases-theme-dropdown" class="absolute left-0 mt-2 w-40 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="light"><span>Светлая</span> <div class="w-4 h-4 rounded-full bg-gray-200 border"></div></button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="violet"><span>Фиолетовая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #a78bfa, #ddd6fe)"></div></button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="crimson"><span>Багровая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb7185, #fecdd3)"></div></button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="sunset"><span>Закат</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb923c, #fed7aa)"></div></button>
+                    </div>
+                </div>
+             </div>
         </section>
     </div>
 
 
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
+        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300">
             <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Продажу</h2>
             <form id="transaction-form" class="space-y-4">
                 <input type="hidden" id="transaction-doc-id">
@@ -339,7 +334,7 @@
                     </div>
                     <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2">Добавить нового клиента</button>
                 </div>
-                <div id="main-transaction-fields">
+                <div>
                     <div>
                         <label class="block text-sm font-medium">Товар / Описание</label>
                         <input type="text" id="modal-item-name" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Товар">
@@ -373,7 +368,7 @@
     </div>
     
     <div id="edit-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
-         <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all" id="edit-client-modal-content">
+         <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all">
               <h2 class="text-2xl font-bold mb-4">Редактировать имя клиента</h2>
               <form id="edit-client-form">
                    <input type="hidden" id="edit-client-id">
@@ -402,7 +397,7 @@
                     <div id="new-supplier-container" class="hidden mt-2 space-y-2">
                         <input type="text" id="modal-new-supplier-name" placeholder="Введите имя нового поставщика" class="w-full px-4 py-2 border rounded-lg bg-transparent">
                         <div>
-                            <label class="block text-sm font-medium">Наш начальный долг поставщику ($)</label>
+                            <label class="block text-sm font-medium">Наш начальный долг ($)</label>
                             <input type="number" step="0.01" id="modal-initial-purchase-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
                         </div>
                     </div>
@@ -458,14 +453,13 @@
          </div>
     </div>
 
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1'];
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1', 'ВСТАВЬТЕ_ВАШ_ID_СЮДА']; 
         
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -480,44 +474,24 @@
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
         
         let db, auth, currentUserId;
-        let unsubscribeSales = null;
-        let clientAggregates = {};
-        let allTransactions = [];
-        let currentClientDetailsId = null;
-
-        let unsubscribePurchases = null;
-        let supplierAggregates = {};
-        let allPurchases = [];
-        let currentSupplierDetailsId = null;
-        
+        let unsubscribeSales = null, clientAggregates = {}, allTransactions = [], currentClientDetailsId = null;
+        let unsubscribePurchases = null, supplierAggregates = {}, allPurchases = [], currentSupplierDetailsId = null;
         let currentLang = 'ru';
 
-        const formatDate = (dateObj) => {
-            if (!dateObj || !(dateObj instanceof Date)) return 'N/A';
-            const day = String(dateObj.getDate()).padStart(2, '0');
-            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const year = dateObj.getFullYear();
-            return `${day}.${month}.${year}`;
-        };
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
-        }
+        const formatDate = (d) => d && d instanceof Date ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}` : 'N/A';
+        const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(a || 0);
 
-        function getSalesCollectionRef() {
+        function getCollectionRef(type) {
             if (!db || !currentUserId) return null;
-            return collection(db, 'artifacts', appId, 'users', currentUserId, 'sales_records');
-        }
-        function getPurchasesCollectionRef() {
-            if (!db || !currentUserId) return null;
-            return collection(db, 'artifacts', appId, 'users', currentUserId, 'purchase_records');
+            return collection(db, 'artifacts', appId, 'users', currentUserId, type);
         }
         
         function showAppView(app, viewId) {
-            document.querySelectorAll(`[data-app="${app}"].view-content`).forEach(view => view.classList.add('hidden'));
-            const viewToShow = document.querySelector(`[data-app="${app}"].view-content[data-view="${viewId}"]`);
+            document.querySelectorAll(`[data-app="${app}"].view-content`).forEach(v => v.classList.add('hidden'));
+            const viewToShow = document.querySelector(`[data-app="${app}"][data-view="${viewId}"]`);
             if(viewToShow) viewToShow.classList.remove('hidden');
             
-            document.querySelectorAll(`[data-app="${app}"].header-nav-item`).forEach(item => {
+            document.querySelectorAll(`#${app}-app-screen .header-nav-item`).forEach(item => {
                 item.style.borderColor = 'transparent';
                 item.style.color = 'var(--text-secondary)';
                 if (item.dataset.view === viewId) {
@@ -536,30 +510,27 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 onAuthStateChanged(auth, handleAuthStateChange);
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                document.getElementById('login-screen').innerHTML = `<p class="text-red-500">Ошибка инициализации: ${error.message}</p>`;
-            }
+            } catch (error) { console.error("Firebase initialization failed:", error); }
         }
         
         function handleAuthStateChange(user) {
-            const allScreens = ['login-screen', 'sales-app-screen', 'purchases-app-screen', 'access-denied-screen', 'main-menu-screen', 'admin-panel'];
-            allScreens.forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['login-screen', 'sales-app-screen', 'purchases-app-screen', 'access-denied-screen', 'main-menu-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('admin-panel')?.classList.add('hidden');
 
             if (user) {
                 if (ADMIN_UIDS.includes(user.uid)) {
                     currentUserId = user.uid;
-                    ['sales-', 'purchases-'].forEach(prefix => {
-                        const nameEl = document.getElementById(`${prefix}user-name`);
-                        const avatarEl = document.getElementById(`${prefix}user-avatar`);
-                        const displayEl = document.getElementById(`${prefix}user-display`);
+                    ['sales', 'purchases'].forEach(prefix => {
+                        const nameEl = document.getElementById(`${prefix}-user-name`);
+                        const avatarEl = document.getElementById(`${prefix}-user-avatar`);
+                        const displayEl = document.getElementById(`${prefix}-user-display`);
                         if(nameEl) nameEl.textContent = user.displayName || 'Администратор';
                         if(avatarEl) avatarEl.src = user.photoURL || 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=A';
                         if(displayEl) displayEl.classList.remove('hidden');
                     });
                     document.getElementById('user-id-display-settings').textContent = currentUserId;
                     document.getElementById('main-menu-screen').classList.remove('hidden');
-                    document.getElementById('admin-panel').classList.remove('hidden');
+                    document.getElementById('admin-panel')?.classList.remove('hidden');
                 } else {
                     document.getElementById('user-email-display').textContent = user.email;
                     document.getElementById('denied-user-uid').textContent = user.uid;
@@ -582,18 +553,87 @@
             try { await signOut(auth); } catch (error) { console.error("Ошибка выхода:", error); }
         }
 
-        // === ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПРОДАЖИ" ===
-        // ... (все функции от startSalesListener до exportClientToExcel)
+        // === ЛОГИКА РАЗДЕЛА "ПРОДАЖИ" ===
+        // ... (все функции были здесь)
 
-        // === ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПОКУПКИ" ===
-        // ... (все функции от startPurchasesListener до deleteSupplier)
-
+        // === ЛОГИКА РАЗДЕЛА "ПОКУПКИ" ===
+        // ... (все функции были здесь)
 
         // === ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ===
         window.onload = () => {
             setupFirebase();
+
+            // Общие обработчики
+            document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
+            document.getElementById('access-denied-logout-button').addEventListener('click', logOut);
+            [...document.querySelectorAll('#sales-logout-button, #purchases-logout-button')].forEach(b => b.addEventListener('click', logOut));
+
+            // Навигация
+            document.getElementById('goto-sales-btn').addEventListener('click', () => {
+                document.getElementById('main-menu-screen').classList.add('hidden');
+                document.getElementById('sales-app-screen').classList.remove('hidden');
+                startSalesListener();
+                showAppView('sales', 'main');
+            });
+            document.getElementById('goto-purchases-btn').addEventListener('click', () => {
+                document.getElementById('main-menu-screen').classList.add('hidden');
+                document.getElementById('purchases-app-screen').classList.remove('hidden');
+                startPurchasesListener();
+                showAppView('purchases', 'main');
+            });
+            [...document.querySelectorAll('#sales-back-to-menu-btn, #purchases-back-to-menu-btn')].forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('sales-app-screen').classList.add('hidden');
+                    document.getElementById('purchases-app-screen').classList.add('hidden');
+                    document.getElementById('main-menu-screen').classList.remove('hidden');
+                    if(unsubscribeSales) { unsubscribeSales(); unsubscribeSales = null; }
+                    if(unsubscribePurchases) { unsubscribePurchases(); unsubscribePurchases = null; }
+                });
+            });
+
+            // Навигация по вкладкам
+            document.querySelectorAll('.header-nav-item').forEach(btn => {
+                btn.addEventListener('click', () => showAppView(btn.dataset.app, btn.dataset.view));
+            });
+
+            // Продажи - обработчики
+            document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
+            document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
+            document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
+            document.getElementById('edit-client-form').addEventListener('submit', handleUpdateClientName);
+            document.getElementById('edit-modal-close-button').addEventListener('click', closeEditClientModal);
+            document.getElementById('client-search').addEventListener('input', renderClientsList);
+            document.getElementById('client-sort').addEventListener('change', renderClientsList);
+            document.getElementById('toggle-new-client-button').addEventListener('click', (e) => {
+                document.getElementById('new-client-container').classList.toggle('hidden');
+                document.getElementById('client-selection-container').classList.toggle('hidden');
+                e.target.textContent = document.getElementById('new-client-container').classList.contains('hidden') ? 'Добавить нового клиента' : 'Вернуться к списку';
+            });
             
-            // ... (все обработчики событий для кнопок, форм и т.д.)
+            // Покупки - обработчики
+            document.getElementById('add-purchase-button').addEventListener('click', () => openPurchaseModal());
+            document.getElementById('purchase-modal-close-button').addEventListener('click', closePurchaseModal);
+            document.getElementById('purchase-form').addEventListener('submit', handlePurchaseSubmit);
+            document.getElementById('edit-supplier-form').addEventListener('submit', handleUpdateSupplierName);
+            document.getElementById('edit-supplier-modal-close-button').addEventListener('click', closeEditSupplierModal);
+            document.getElementById('supplier-search').addEventListener('input', renderSuppliersList);
+            document.getElementById('supplier-sort').addEventListener('change', renderSuppliersList);
+            document.getElementById('toggle-new-supplier-button').addEventListener('click', (e) => {
+                document.getElementById('new-supplier-container').classList.toggle('hidden');
+                document.getElementById('supplier-selection-container').classList.toggle('hidden');
+                e.target.textContent = document.getElementById('new-supplier-container').classList.contains('hidden') ? 'Добавить нового поставщика' : 'Вернуться к списку';
+            });
+            
+            // Настройки, темы и т.д.
+            const appNameInput = document.getElementById('app-name-input');
+            appNameInput.addEventListener('input', e => {
+                const title = e.target.value.trim() || "JavPharma";
+                document.getElementById('site-title-tag').textContent = title;
+                document.getElementById('login-title').textContent = `Добро пожаловать в ${title}`;
+                document.getElementById('menu-title').textContent = title;
+                localStorage.setItem('siteTitle', title);
+            });
+            // ... остальной код для тем, логотипа и языка
         };
     </script>
 </body>
