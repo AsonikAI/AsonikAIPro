@@ -95,6 +95,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
+    <!-- === ЭКРАН ВХОДА === -->
     <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300">
         <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
         <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
@@ -106,6 +107,7 @@
         <p id="login-error" class="text-red-500 mt-4 text-sm"></p>
     </div>
 
+    <!-- === ЭКРАН "ДОСТУП ЗАПРЕЩЕН" === -->
     <div id="access-denied-screen" class="hidden w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center text-center">
         <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
         <h1 class="text-2xl font-bold mb-2">Доступ запрещен</h1>
@@ -116,6 +118,7 @@
         </button>
     </div>
 
+    <!-- === ЭКРАН ГЛАВНОГО МЕНЮ === -->
     <div id="main-menu-screen" class="hidden w-full max-w-4xl">
         <div class="p-8 rounded-xl card text-center">
              <img id="menu-logo" src="" alt="Logo" class="h-24 mx-auto mb-6 hidden">
@@ -136,6 +139,7 @@
         </div>
     </div>
 
+    <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (ПРОДАЖИ) === -->
     <div id="sales-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
         <header class="flex items-center justify-between border-b pb-4 mb-4">
             <div class="flex items-center space-x-3">
@@ -229,6 +233,7 @@
         </section>
     </div>
 
+    <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (ПОКУПКИ) === -->
     <div id="purchases-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
         <header class="flex items-center justify-between border-b pb-4 mb-4">
             <div class="flex items-center space-x-3">
@@ -288,6 +293,7 @@
         </section>
 
         <section data-app="purchases" data-view="settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
+             <h1 class="text-3xl font-bold mb-6">Настройки</h1>
              <div class="flex items-center space-x-4">
                  <div class="relative">
                     <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card purchases-theme-lang-btn" id="purchases-language-menu-button">
@@ -315,6 +321,7 @@
     </div>
 
 
+    <!-- === МОДАЛЬНЫЕ ОКНА: ПРОДАЖИ === -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300">
             <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Продажу</h2>
@@ -384,7 +391,8 @@
          </div>
     </div>
 
-    <div id="purchase-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+    <!-- === МОДАЛЬНЫЕ ОКНА: ПОКУПКИ === -->
+     <div id="purchase-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300">
             <h2 class="text-2xl font-bold mb-4">Добавить Новую Покупку</h2>
             <form id="purchase-form" class="space-y-4">
@@ -458,26 +466,15 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1']; 
-        
-        const CUSTOM_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
-            authDomain: "asonik-ai.firebaseapp.com",
-            projectId: "asonik-ai",
-            storageBucket: "asonik-ai.firebasestorage.app",
-            messagingSenderId: "875716508614",
-            appId: "1:875716508614:web:ad264fdd60a20eb7dd90c7",
-            measurementId: "G-HT5T20YPVE"
-        };
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1']; 
+        const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
         
         let db, auth, currentUserId;
         let unsubscribeSales = null, clientAggregates = {}, allTransactions = [], currentClientDetailsId = null;
         let unsubscribePurchases = null, supplierAggregates = {}, allPurchases = [], currentSupplierDetailsId = null;
-        let currentLang = 'ru';
-
+        
         const formatDate = (d) => d && d instanceof Date ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}` : 'N/A';
         const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(a || 0);
 
@@ -553,132 +550,111 @@
             try { await signOut(auth); } catch (error) { console.error("Ошибка выхода:", error); }
         }
 
-        // --- ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПРОДАЖИ" ---
-
-        function startSalesListener() {
-            if (unsubscribeSales) unsubscribeSales();
-            if (unsubscribePurchases) { unsubscribePurchases(); unsubscribePurchases = null; }
-
-            const salesRef = getCollectionRef('sales_records');
-            if (!salesRef) return;
-            
-            unsubscribeSales = onSnapshot(salesRef, (snapshot) => {
-                allTransactions = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
-                clientAggregates = {};
-                allTransactions.forEach(t => {
-                    if (!clientAggregates[t.clientId]) {
-                        clientAggregates[t.clientId] = { name: t.clientName, transactions: [] };
-                    }
-                    clientAggregates[t.clientId].transactions.push(t);
+        // --- ЛОГИКА ДЛЯ "ПРОДАЖ" ---
+        function startSalesListener(){
+            if(unsubscribeSales)unsubscribeSales();
+            if(unsubscribePurchases){unsubscribePurchases();unsubscribePurchases=null}
+            const salesRef=getCollectionRef('sales_records');
+            if(!salesRef)return;
+            unsubscribeSales=onSnapshot(salesRef,(snapshot)=>{
+                allTransactions=snapshot.docs.map(doc=>({...doc.data(),id:doc.id,transactionDate:doc.data().transactionDate.toDate()}));
+                clientAggregates={};
+                allTransactions.forEach(t=>{
+                    if(!clientAggregates[t.clientId]){clientAggregates[t.clientId]={name:t.clientName,transactions:[]}}
+                    clientAggregates[t.clientId].transactions.push(t)
                 });
-
-                Object.keys(clientAggregates).forEach(clientId => {
-                    const client = clientAggregates[clientId];
-                    client.transactions.sort((a, b) => a.transactionDate - b.transactionDate);
-                    let totalSales = 0, totalPaid = 0;
-                    client.transactions.forEach(t => {
-                        totalSales += (t.unitPrice || 0) * (t.quantity || 0);
-                        totalPaid += t.paymentReceived || 0;
+                Object.keys(clientAggregates).forEach(clientId=>{
+                    const client=clientAggregates[clientId];
+                    client.transactions.sort((a,b)=>a.transactionDate-b.transactionDate);
+                    let totalSales=0,totalPaid=0;
+                    client.transactions.forEach(t=>{
+                        totalSales+=(t.unitPrice||0)*(t.quantity||0);
+                        totalPaid+=t.paymentReceived||0
                     });
-                    client.totalSales = totalSales;
-                    client.totalPaid = totalPaid;
+                    client.totalSales=totalSales;
+                    client.totalPaid=totalPaid
                 });
                 renderClientsList();
-                 if (currentClientDetailsId) {
-                    renderSalesDetailsView();
-                }
-            });
+                if(currentClientDetailsId){renderSalesDetailsView()}
+            })
         }
-
-        function renderClientsList() {
-            const container = document.getElementById('clients-list-container');
-            if (!container) return;
-            const filter = document.getElementById('client-search').value.toLowerCase();
-            const sortMethod = document.getElementById('client-sort').value;
-            container.innerHTML = '';
-            let clientIds = Object.keys(clientAggregates);
-
-            switch(sortMethod) {
-                case 'newest': clientIds.sort((a, b) => (clientAggregates[b].transactions.at(-1)?.transactionDate || 0) - (clientAggregates[a].transactions.at(-1)?.transactionDate || 0)); break;
-                case 'oldest': clientIds.sort((a, b) => (clientAggregates[a].transactions[0]?.transactionDate || Infinity) - (clientAggregates[b].transactions[0]?.transactionDate || Infinity)); break;
-                case 'name_az': clientIds.sort((a, b) => clientAggregates[a].name.localeCompare(clientAggregates[b].name)); break;
-                case 'name_za': clientIds.sort((a, b) => clientAggregates[b].name.localeCompare(clientAggregates[a].name)); break;
+        function renderClientsList(){
+            const container=document.getElementById('clients-list-container');
+            if(!container)return;
+            const filter=document.getElementById('client-search').value.toLowerCase();
+            const sortMethod=document.getElementById('client-sort').value;
+            container.innerHTML='';
+            let clientIds=Object.keys(clientAggregates);
+            switch(sortMethod){
+                case 'newest':clientIds.sort((a,b)=>(clientAggregates[b].transactions.at(-1)?.transactionDate||0)-(clientAggregates[a].transactions.at(-1)?.transactionDate||0));break;
+                case 'oldest':clientIds.sort((a,b)=>(clientAggregates[a].transactions[0]?.transactionDate||Infinity)-(clientAggregates[b].transactions[0]?.transactionDate||Infinity));break;
+                case 'name_az':clientIds.sort((a,b)=>clientAggregates[a].name.localeCompare(clientAggregates[b].name));break;
+                case 'name_za':clientIds.sort((a,b)=>clientAggregates[b].name.localeCompare(clientAggregates[a].name));break
             }
-
-            const filteredClientIds = clientIds.filter(id => clientAggregates[id].name.toLowerCase().includes(filter));
-
-            if (filteredClientIds.length === 0) {
-                 const logoUrl = localStorage.getItem('siteLogo');
-                 container.innerHTML = logoUrl ? `<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>` : `<div class="p-4 text-center text-gray-500">Нет клиентов для отображения.</div>`;
-                return;
+            const filteredClientIds=clientIds.filter(id=>clientAggregates[id].name.toLowerCase().includes(filter));
+            if(filteredClientIds.length===0){
+                const logoUrl=localStorage.getItem('siteLogo');
+                container.innerHTML=logoUrl?`<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>`:`<div class="p-4 text-center text-gray-500">Нет клиентов для отображения.</div>`;
+                return
             }
-
-            filteredClientIds.forEach((clientId, index) => {
-                const client = clientAggregates[clientId];
-                const remaining = client.totalSales - client.totalPaid;
-                const clientCard = document.createElement('div');
-                clientCard.className = `p-4 border rounded-lg shadow-sm card`;
-                
-                const lastFiveTransactions = [...client.transactions].reverse().slice(0, 5);
-                const transactionsHtml = lastFiveTransactions.map(t => `
+            filteredClientIds.forEach((clientId,index)=>{
+                const client=clientAggregates[clientId];
+                const remaining=client.totalSales-client.totalPaid;
+                const clientCard=document.createElement('div');
+                clientCard.className=`p-4 border rounded-lg shadow-sm card`;
+                const lastFiveTransactions=[...client.transactions].reverse().slice(0,5);
+                const transactionsHtml=lastFiveTransactions.map(t=>`
                     <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
                         <div class="col-span-3">${formatDate(t.transactionDate)}</div>
-                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity || 0})</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity||0})</div>
                         <div class="col-span-2 text-right text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</div>
-                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</div>
+                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice||0)*(t.quantity||0))}</div>
                     </div>`).join('');
-
-                clientCard.innerHTML = `
+                clientCard.innerHTML=`
                     <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleClientDetails('${clientId}')">
                         <div class="flex items-center space-x-3">
                             <svg id="arrow-${clientId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${client.name}</h3>
-                            <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
+                            <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index+1}.</span>${client.name}</h3>
+                            <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g,"\\'")}')">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
                             </button>
                         </div>
                         <div class="flex items-center space-x-4">
                              <div class="text-right">
-                                <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
+                                <span class="text-lg font-bold ${remaining>0?'text-red-600':'text-green-600'}">${formatCurrency(remaining)}</span>
                                 <span class="text-xs block">Общий долг</span>
                              </div>
                              <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" onclick="event.stopPropagation(); window.viewClientDetails('${clientId}')">Детали</button>
                         </div>
                     </div>
                     <div id="details-${clientId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
-                container.appendChild(clientCard);
-            });
+                container.appendChild(clientCard)
+            })
         }
-        
-        function renderSalesDetailsView() {
-            const container = document.getElementById('sales-details-view-container');
-            if (currentClientDetailsId && clientAggregates[currentClientDetailsId]) {
-                renderDetailedClientInfo(container, currentClientDetailsId);
-            } else {
-                renderSalesClientList(container);
-            }
+        function renderSalesDetailsView(){
+            const container=document.getElementById('sales-details-view-container');
+            if(currentClientDetailsId&&clientAggregates[currentClientDetailsId]){renderDetailedClientInfo(container,currentClientDetailsId)}
+            else{renderSalesClientList(container)}
         }
-        
-        function renderSalesClientList(container) {
-            container.innerHTML = `
+        function renderSalesClientList(container){
+            container.innerHTML=`
                 <h2 class="text-2xl font-bold mb-2">Подробнее (Выбор Клиента)</h2>
                 <p class="mb-4">Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.</p>
                 <div id="details-client-list" class="space-y-2"></div>`;
-            const listContainer = document.getElementById('details-client-list');
-            Object.keys(clientAggregates).forEach(clientId => {
-                const client = clientAggregates[clientId];
-                const item = document.createElement('div');
-                item.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
-                item.onclick = () => { currentClientDetailsId = clientId; renderSalesDetailsView(); };
-                item.innerHTML = `<div><p class="font-semibold">${client.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
-                listContainer.appendChild(item);
-            });
+            const listContainer=document.getElementById('details-client-list');
+            Object.keys(clientAggregates).forEach(clientId=>{
+                const client=clientAggregates[clientId];
+                const item=document.createElement('div');
+                item.className='p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick=()=>{currentClientDetailsId=clientId;renderSalesDetailsView()};
+                item.innerHTML=`<div><p class="font-semibold">${client.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
+                listContainer.appendChild(item)
+            })
         }
-
-        function renderDetailedClientInfo(container, clientId) {
-            const client = clientAggregates[clientId];
-            const remaining = client.totalSales - client.totalPaid;
-            container.innerHTML = `
+        function renderDetailedClientInfo(container,clientId){
+            const client=clientAggregates[clientId];
+            const remaining=client.totalSales-client.totalPaid;
+            container.innerHTML=`
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center space-x-4">
                         <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToSalesDetailsList()">
@@ -709,295 +685,242 @@
                         <tbody id="sales-transactions-table-body" class="divide-y"></tbody>
                     </table>
                 </div>`;
-            
-            const tableBody = document.getElementById('sales-transactions-table-body');
-            let runningBalance = 0;
-            const transactionsHtml = client.transactions.map(t => {
-                const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
-                runningBalance += transactionTotal - (t.paymentReceived || 0);
+            const tableBody=document.getElementById('sales-transactions-table-body');
+            let runningBalance=0;
+            const transactionsHtml=client.transactions.map(t=>{
+                const transactionTotal=(t.unitPrice||0)*(t.quantity||0);
+                runningBalance+=transactionTotal-(t.paymentReceived||0);
                 return `
                 <tr class="hover:bg-gray-50">
                     <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
-                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity || 0})</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity||0})</td>
                     <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(transactionTotal)}</td>
                     <td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
-                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(runningBalance)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance>0?'text-red-600':'text-green-600'}">${formatCurrency(runningBalance)}</td>
                     <td class="px-2 py-3 text-center whitespace-nowrap">
                         <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
                         <button class="text-red-600 hover:text-red-900 text-sm" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
                     </td>
-                </tr>`;
+                </tr>`
             }).join('');
-            tableBody.innerHTML = transactionsHtml;
+            tableBody.innerHTML=transactionsHtml
         }
-
-        function openTransactionModal(docId = null, transactionData = null) {
-            const modal = document.getElementById('transaction-modal');
+        function openTransactionModal(docId=null,transactionData=null){
+            const modal=document.getElementById('transaction-modal');
             modal.classList.remove('hidden');
-            const form = document.getElementById('transaction-form');
+            const form=document.getElementById('transaction-form');
             form.reset();
-            document.getElementById('modal-transaction-date').valueAsDate = new Date();
-            document.getElementById('transaction-doc-id').value = docId || '';
-            
-            const clientSelect = document.getElementById('modal-client-select');
-            clientSelect.innerHTML = `<option value="" disabled selected>Выберите клиента</option>`;
-            Object.keys(clientAggregates).forEach(id => { clientSelect.innerHTML += `<option value="${id}">${clientAggregates[id].name}</option>`; });
-            
-            if (transactionData) {
-                clientSelect.value = transactionData.clientId;
-                document.getElementById('modal-item-name').value = transactionData.itemName;
-                document.getElementById('modal-unit-price').value = transactionData.unitPrice;
-                document.getElementById('modal-quantity').value = transactionData.quantity;
-                document.getElementById('modal-payment-received').value = transactionData.paymentReceived;
-                document.getElementById('modal-transaction-date').value = transactionData.transactionDate.toISOString().split('T')[0];
-                clientSelect.disabled = true;
-                document.getElementById('toggle-new-client-button').classList.add('hidden');
-            } else {
-                clientSelect.disabled = false;
-                document.getElementById('toggle-new-client-button').classList.remove('hidden');
+            document.getElementById('modal-transaction-date').valueAsDate=new Date();
+            document.getElementById('transaction-doc-id').value=docId||'';
+            const clientSelect=document.getElementById('modal-client-select');
+            clientSelect.innerHTML=`<option value="" disabled selected>Выберите клиента</option>`;
+            Object.keys(clientAggregates).forEach(id=>{clientSelect.innerHTML+=`<option value="${id}">${clientAggregates[id].name}</option>`});
+            if(transactionData){
+                clientSelect.value=transactionData.clientId;
+                document.getElementById('modal-item-name').value=transactionData.itemName;
+                document.getElementById('modal-unit-price').value=transactionData.unitPrice;
+                document.getElementById('modal-quantity').value=transactionData.quantity;
+                document.getElementById('modal-payment-received').value=transactionData.paymentReceived;
+                document.getElementById('modal-transaction-date').value=transactionData.transactionDate.toISOString().split('T')[0];
+                clientSelect.disabled=true;
+                document.getElementById('toggle-new-client-button').classList.add('hidden')
+            }else{
+                clientSelect.disabled=false;
+                document.getElementById('toggle-new-client-button').classList.remove('hidden')
             }
         }
-        
-        function closeTransactionModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
-        function openEditClientNameModal(clientId, currentName) {
-            document.getElementById('edit-client-id').value = clientId;
-            document.getElementById('edit-client-name-input').value = currentName;
-            document.getElementById('edit-client-modal').classList.remove('hidden');
+        function closeTransactionModal(){document.getElementById('transaction-modal').classList.add('hidden')}
+        function openEditClientNameModal(clientId,currentName){
+            document.getElementById('edit-client-id').value=clientId;
+            document.getElementById('edit-client-name-input').value=currentName;
+            document.getElementById('edit-client-modal').classList.remove('hidden')
         }
-        function closeEditClientModal() { document.getElementById('edit-client-modal').classList.add('hidden'); }
-
-        async function handleTransactionSubmit(e) {
+        function closeEditClientModal(){document.getElementById('edit-client-modal').classList.add('hidden')}
+        async function handleTransactionSubmit(e){
             e.preventDefault();
-            const form = e.target;
-            const errorEl = document.getElementById('modal-error-message');
+            const form=e.target;
+            const errorEl=document.getElementById('modal-error-message');
             errorEl.classList.add('hidden');
-            const salesRef = getCollectionRef('sales_records');
-            if (!salesRef) return;
-            
-            const isNewClient = !document.getElementById('new-client-container').classList.contains('hidden');
-            let clientId, clientName;
-            if (isNewClient) {
-                clientName = form['modal-new-client-name'].value.trim();
-                if (!clientName) { errorEl.textContent = 'Имя нового клиента не может быть пустым.'; errorEl.classList.remove('hidden'); return; }
-                clientId = crypto.randomUUID();
-            } else {
-                clientId = form['modal-client-select'].value;
-                if (!clientId) { errorEl.textContent = 'Пожалуйста, выберите клиента.'; errorEl.classList.remove('hidden'); return; }
-                clientName = clientAggregates[clientId].name;
+            const salesRef=getCollectionRef('sales_records');
+            if(!salesRef)return;
+            const isNewClient=!document.getElementById('new-client-container').classList.contains('hidden');
+            let clientId,clientName;
+            if(isNewClient){
+                clientName=form['modal-new-client-name'].value.trim();
+                if(!clientName){errorEl.textContent='Имя нового клиента не может быть пустым.';errorEl.classList.remove('hidden');return}
+                clientId=crypto.randomUUID()
+            }else{
+                clientId=form['modal-client-select'].value;
+                if(!clientId){errorEl.textContent='Пожалуйста, выберите клиента.';errorEl.classList.remove('hidden');return}
+                clientName=clientAggregates[clientId].name
             }
-
-            const batch = writeBatch(db);
-            let operations = 0;
-            const itemName = form['modal-item-name'].value.trim();
-
-            if (isNewClient) {
-                const initialBalance = parseFloat(form['modal-initial-balance'].value) || 0;
-                if (initialBalance !== 0) {
-                    batch.set(doc(salesRef), { clientId, clientName, itemName: "Начальный баланс", unitPrice: initialBalance, quantity: 1, paymentReceived: 0, transactionDate: new Date() });
-                    operations++;
+            const batch=writeBatch(db);
+            let operations=0;
+            const itemName=form['modal-item-name'].value.trim();
+            if(isNewClient){
+                const initialBalance=parseFloat(form['modal-initial-balance'].value)||0;
+                if(initialBalance!==0){
+                    batch.set(doc(salesRef),{clientId,clientName,itemName:"Начальный баланс",unitPrice:initialBalance,quantity:1,paymentReceived:0,transactionDate:new Date()});
+                    operations++
                 }
             }
-            
-            if (itemName && (itemName !== "Товар" || isNewClient)) {
-                const data = {
-                    clientId, clientName,
-                    itemName: itemName,
-                    unitPrice: parseFloat(form['modal-unit-price'].value),
-                    quantity: parseInt(form['modal-quantity'].value),
-                    paymentReceived: parseFloat(form['modal-payment-received'].value),
-                    transactionDate: new Date(form['modal-transaction-date'].value)
-                };
-                const docId = form['transaction-doc-id'].value;
-                const docRef = docId ? doc(salesRef, docId) : doc(salesRef);
-                if (docId) { batch.update(docRef, data); } else { batch.set(docRef, data); }
-                operations++;
+            if(itemName&&(itemName!=="Товар"||isNewClient)){
+                const data={clientId,clientName,itemName:itemName,unitPrice:parseFloat(form['modal-unit-price'].value),quantity:parseInt(form['modal-quantity'].value),paymentReceived:parseFloat(form['modal-payment-received'].value),transactionDate:new Date(form['modal-transaction-date'].value)};
+                const docId=form['transaction-doc-id'].value;
+                const docRef=docId?doc(salesRef,docId):doc(salesRef);
+                if(docId){batch.update(docRef,data)}else{batch.set(docRef,data)}
+                operations++
             }
-            
-            if (operations === 0 && isNewClient) {
-                 batch.set(doc(salesRef), { clientId, clientName, itemName: "Создание клиента", unitPrice: 0, quantity: 0, paymentReceived: 0, transactionDate: new Date() });
-                 operations++;
+            if(operations===0&&isNewClient){
+                batch.set(doc(salesRef),{clientId,clientName,itemName:"Создание клиента",unitPrice:0,quantity:0,paymentReceived:0,transactionDate:new Date()});
+                operations++
             }
-            
-            if (operations > 0) {
-                try { await batch.commit(); closeTransactionModal(); }
-                catch (error) { errorEl.textContent = `Ошибка: ${error.message}`; errorEl.classList.remove('hidden'); }
-            } else {
-                errorEl.textContent = 'Нечего сохранять.'; errorEl.classList.remove('hidden');
-            }
+            if(operations>0){try{await batch.commit();closeTransactionModal()}catch(error){errorEl.textContent=`Ошибка: ${error.message}`;errorEl.classList.remove('hidden')}}
+            else{errorEl.textContent='Нечего сохранять.';errorEl.classList.remove('hidden')}
         }
-        
-        async function handleUpdateClientName(e) {
+        async function handleUpdateClientName(e){
             e.preventDefault();
-            const clientId = document.getElementById('edit-client-id').value;
-            const newName = document.getElementById('edit-client-name-input').value.trim();
-            if (!newName) return;
-            
-            const salesRef = getCollectionRef('sales_records');
-            const batch = writeBatch(db);
-            allTransactions.filter(t => t.clientId === clientId).forEach(t => {
-                batch.update(doc(salesRef, t.id), { clientName: newName });
-            });
-            try { await batch.commit(); closeEditClientModal(); } 
-            catch (error) { console.error("Ошибка обновления имени клиента:", error); }
+            const clientId=document.getElementById('edit-client-id').value;
+            const newName=document.getElementById('edit-client-name-input').value.trim();
+            if(!newName)return;
+            const salesRef=getCollectionRef('sales_records');
+            const batch=writeBatch(db);
+            allTransactions.filter(t=>t.clientId===clientId).forEach(t=>{batch.update(doc(salesRef,t.id),{clientName:newName})});
+            try{await batch.commit();closeEditClientModal()}
+            catch(error){console.error("Ошибка обновления имени клиента:",error)}
         }
-
-        async function deleteTransaction(transactionId) {
-            if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-                try { await deleteDoc(doc(getCollectionRef('sales_records'), transactionId)); } 
-                catch (error) { console.error("Ошибка удаления транзакции:", error); }
+        async function deleteTransaction(transactionId){
+            if(confirm('Вы уверены, что хотите удалить эту транзакцию?')){
+                try{await deleteDoc(doc(getCollectionRef('sales_records'),transactionId))}
+                catch(error){console.error("Ошибка удаления транзакции:",error)}
             }
         }
-
-        async function deleteClient(clientId) {
-            if (confirm('ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.')) {
-                const salesRef = getCollectionRef('sales_records');
-                const batch = writeBatch(db);
-                allTransactions.filter(t => t.clientId === clientId).forEach(t => batch.delete(doc(salesRef, t.id)));
-                try { await batch.commit(); currentClientDetailsId = null; renderSalesDetailsView(); }
-                catch (error) { console.error("Ошибка удаления клиента:", error); }
+        async function deleteClient(clientId){
+            if(confirm('ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.')){
+                const salesRef=getCollectionRef('sales_records');
+                const batch=writeBatch(db);
+                allTransactions.filter(t=>t.clientId===clientId).forEach(t=>batch.delete(doc(salesRef,t.id)));
+                try{await batch.commit();currentClientDetailsId=null;renderSalesDetailsView()}
+                catch(error){console.error("Ошибка удаления клиента:",error)}
             }
         }
-        
-        window.toggleClientDetails = (clientId) => {
-            const detailsDiv = document.getElementById(`details-${clientId}`);
-            const arrow = document.getElementById(`arrow-${clientId}`);
-            if (detailsDiv.style.maxHeight) {
-                detailsDiv.style.maxHeight = null;
-                arrow.classList.remove('rotate-180');
-            } else {
-                detailsDiv.style.maxHeight = detailsDiv.scrollHeight + "px";
-                arrow.classList.add('rotate-180');
-            } 
+        window.toggleClientDetails=(clientId)=>{
+            const detailsDiv=document.getElementById(`details-${clientId}`);
+            const arrow=document.getElementById(`arrow-${clientId}`);
+            if(detailsDiv.style.maxHeight){detailsDiv.style.maxHeight=null;arrow.classList.remove('rotate-180')}
+            else{detailsDiv.style.maxHeight=detailsDiv.scrollHeight+"px";arrow.classList.add('rotate-180')}
         };
-        window.openEditClientNameModal = openEditClientNameModal;
-        window.viewClientDetails = (clientId) => { currentClientDetailsId = clientId; showAppView('sales', 'details'); };
-        window.backToSalesDetailsList = () => { currentClientDetailsId = null; renderSalesDetailsView(); };
-        window.openTransactionModalForEdit = (id) => openTransactionModal(id, allTransactions.find(t => t.id === id));
-        window.deleteTransaction = deleteTransaction;
-        window.deleteClient = deleteClient;
+        window.openEditClientNameModal=openEditClientNameModal;
+        window.viewClientDetails=(clientId)=>{currentClientDetailsId=clientId;showAppView('sales','details')};
+        window.backToSalesDetailsList=()=>{currentClientDetailsId=null;renderSalesDetailsView()};
+        window.openTransactionModalForEdit=(id)=>openTransactionModal(id,allTransactions.find(t=>t.id===id));
+        window.deleteTransaction=deleteTransaction;
+        window.deleteClient=deleteClient;
 
-        // --- ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПОКУПКИ" ---
-
-        function startPurchasesListener() {
-            if (unsubscribeSales) { unsubscribeSales(); unsubscribeSales = null; }
-            if (unsubscribePurchases) unsubscribePurchases();
-
-            const purchasesRef = getCollectionRef('purchase_records');
-            if (!purchasesRef) return;
-            
-            unsubscribePurchases = onSnapshot(purchasesRef, (snapshot) => {
-                allPurchases = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
-                supplierAggregates = {};
-                allPurchases.forEach(p => {
-                    if (!supplierAggregates[p.supplierId]) {
-                        supplierAggregates[p.supplierId] = { name: p.supplierName, transactions: [] };
-                    }
-                    supplierAggregates[p.supplierId].transactions.push(p);
+        // --- ЛОГИКА ДЛЯ "ПОКУПОК" ---
+        function startPurchasesListener(){
+            if(unsubscribeSales){unsubscribeSales();unsubscribeSales=null}
+            if(unsubscribePurchases)unsubscribePurchases();
+            const purchasesRef=getCollectionRef('purchase_records');
+            if(!purchasesRef)return;
+            unsubscribePurchases=onSnapshot(purchasesRef,(snapshot)=>{
+                allPurchases=snapshot.docs.map(doc=>({...doc.data(),id:doc.id,transactionDate:doc.data().transactionDate.toDate()}));
+                supplierAggregates={};
+                allPurchases.forEach(p=>{
+                    if(!supplierAggregates[p.supplierId]){supplierAggregates[p.supplierId]={name:p.supplierName,transactions:[]}}
+                    supplierAggregates[p.supplierId].transactions.push(p)
                 });
-
-                Object.keys(supplierAggregates).forEach(supplierId => {
-                    const supplier = supplierAggregates[supplierId];
-                    supplier.transactions.sort((a, b) => a.transactionDate - b.transactionDate);
-                    let totalPurchased = 0, totalPaid = 0;
-                    supplier.transactions.forEach(t => {
-                        totalPurchased += (t.unitPrice || 0) * (t.quantity || 0);
-                        totalPaid += t.paymentMade || 0;
+                Object.keys(supplierAggregates).forEach(supplierId=>{
+                    const supplier=supplierAggregates[supplierId];
+                    supplier.transactions.sort((a,b)=>a.transactionDate-b.transactionDate);
+                    let totalPurchased=0,totalPaid=0;
+                    supplier.transactions.forEach(t=>{
+                        totalPurchased+=(t.unitPrice||0)*(t.quantity||0);
+                        totalPaid+=t.paymentMade||0
                     });
-                    supplier.totalPurchased = totalPurchased;
-                    supplier.totalPaid = totalPaid;
+                    supplier.totalPurchased=totalPurchased;
+                    supplier.totalPaid=totalPaid
                 });
                 renderSuppliersList();
-                if(currentSupplierDetailsId) renderPurchasesDetailsView();
-            });
+                if(currentSupplierDetailsId)renderPurchasesDetailsView()
+            })
         }
-        
-        function renderSuppliersList() {
-            const container = document.getElementById('suppliers-list-container');
-             if (!container) return;
-            const filter = document.getElementById('supplier-search').value.toLowerCase();
-            const sortMethod = document.getElementById('supplier-sort').value;
-            container.innerHTML = '';
-            let supplierIds = Object.keys(supplierAggregates);
-
-            switch(sortMethod) {
-                case 'newest': supplierIds.sort((a, b) => (supplierAggregates[b].transactions.at(-1)?.transactionDate || 0) - (supplierAggregates[a].transactions.at(-1)?.transactionDate || 0)); break;
-                case 'oldest': supplierIds.sort((a, b) => (supplierAggregates[a].transactions[0]?.transactionDate || Infinity) - (supplierAggregates[b].transactions[0]?.transactionDate || Infinity)); break;
-                case 'name_az': supplierIds.sort((a, b) => supplierAggregates[a].name.localeCompare(supplierAggregates[b].name)); break;
-                case 'name_za': supplierIds.sort((a, b) => supplierAggregates[b].name.localeCompare(supplierAggregates[a].name)); break;
+        function renderSuppliersList(){
+            const container=document.getElementById('suppliers-list-container');
+            if(!container)return;
+            const filter=document.getElementById('supplier-search').value.toLowerCase();
+            const sortMethod=document.getElementById('supplier-sort').value;
+            container.innerHTML='';
+            let supplierIds=Object.keys(supplierAggregates);
+            switch(sortMethod){
+                case 'newest':supplierIds.sort((a,b)=>(supplierAggregates[b].transactions.at(-1)?.transactionDate||0)-(supplierAggregates[a].transactions.at(-1)?.transactionDate||0));break;
+                case 'oldest':supplierIds.sort((a,b)=>(supplierAggregates[a].transactions[0]?.transactionDate||Infinity)-(supplierAggregates[b].transactions[0]?.transactionDate||Infinity));break;
+                case 'name_az':supplierIds.sort((a,b)=>supplierAggregates[a].name.localeCompare(supplierAggregates[b].name));break;
+                case 'name_za':supplierIds.sort((a,b)=>supplierAggregates[b].name.localeCompare(supplierAggregates[a].name));break
             }
-
-            const filteredSupplierIds = supplierIds.filter(id => supplierAggregates[id].name.toLowerCase().includes(filter));
-            if (filteredSupplierIds.length === 0) {
-                 const logoUrl = localStorage.getItem('siteLogo');
-                 container.innerHTML = logoUrl ? `<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>` : `<div class="p-4 text-center text-gray-500">Нет поставщиков для отображения.</div>`;
-                return;
+            const filteredSupplierIds=supplierIds.filter(id=>supplierAggregates[id].name.toLowerCase().includes(filter));
+            if(filteredSupplierIds.length===0){
+                const logoUrl=localStorage.getItem('siteLogo');
+                container.innerHTML=logoUrl?`<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>`:`<div class="p-4 text-center text-gray-500">Нет поставщиков для отображения.</div>`;
+                return
             }
-
-            filteredSupplierIds.forEach((supplierId, index) => {
-                const supplier = supplierAggregates[supplierId];
-                const remaining = supplier.totalPurchased - supplier.totalPaid;
-                const supplierCard = document.createElement('div');
-                supplierCard.className = `p-4 border rounded-lg shadow-sm card`;
-                
-                const lastFivePurchases = [...supplier.transactions].reverse().slice(0, 5);
-                const purchasesHtml = lastFivePurchases.map(t => `
+            filteredSupplierIds.forEach((supplierId,index)=>{
+                const supplier=supplierAggregates[supplierId];
+                const remaining=supplier.totalPurchased-supplier.totalPaid;
+                const supplierCard=document.createElement('div');
+                supplierCard.className=`p-4 border rounded-lg shadow-sm card`;
+                const lastFivePurchases=[...supplier.transactions].reverse().slice(0,5);
+                const purchasesHtml=lastFivePurchases.map(t=>`
                      <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
                         <div class="col-span-3">${formatDate(t.transactionDate)}</div>
-                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity || 0})</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity||0})</div>
                         <div class="col-span-2 text-right text-red-600 font-semibold">${formatCurrency(t.paymentMade)}</div>
-                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</div>
+                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice||0)*(t.quantity||0))}</div>
                     </div>`).join('');
-
-                supplierCard.innerHTML = `
+                supplierCard.innerHTML=`
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center space-x-3">
-                             <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${supplier.name}</h3>
-                             <button class="text-gray-400 hover:text-yellow-600" onclick="window.openEditSupplierNameModal('${supplierId}', '${supplier.name.replace(/'/g, "\\'")}')">
+                             <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index+1}.</span>${supplier.name}</h3>
+                             <button class="text-gray-400 hover:text-yellow-600" onclick="window.openEditSupplierNameModal('${supplierId}', '${supplier.name.replace(/'/g,"\\'")}')">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
                             </button>
                         </div>
                         <div class="flex items-center space-x-4">
                             <div class="text-right">
-                                <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
+                                <span class="text-lg font-bold ${remaining>0?'text-red-600':'text-green-600'}">${formatCurrency(remaining)}</span>
                                 <span class="text-xs block">Наш долг</span>
                             </div>
                              <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" onclick="event.stopPropagation(); window.viewSupplierDetails('${supplierId}')">Детали</button>
                         </div>
                     </div>
                     <div class="pt-2 border-t">${purchasesHtml}</div>`;
-                container.appendChild(supplierCard);
-            });
+                container.appendChild(supplierCard)
+            })
         }
-        
-        function renderPurchasesDetailsView() {
-             const container = document.getElementById('purchases-details-view-container');
-            if (currentSupplierDetailsId && supplierAggregates[currentSupplierDetailsId]) {
-                renderDetailedSupplierInfo(container, currentSupplierDetailsId);
-            } else {
-                renderPurchasesSupplierList(container);
-            }
+        function renderPurchasesDetailsView(){
+            const container=document.getElementById('purchases-details-view-container');
+            if(currentSupplierDetailsId&&supplierAggregates[currentSupplierDetailsId]){renderDetailedSupplierInfo(container,currentSupplierDetailsId)}
+            else{renderPurchasesSupplierList(container)}
         }
-        
-        function renderPurchasesSupplierList(container) {
-            container.innerHTML = `
+        function renderPurchasesSupplierList(container){
+            container.innerHTML=`
                 <h2 class="text-2xl font-bold mb-2">Подробнее (Выбор Поставщика)</h2>
                 <p class="mb-4">Выберите поставщика из списка ниже, чтобы просмотреть его полную историю закупок.</p>
                 <div id="details-supplier-list" class="space-y-2"></div>`;
-            const listContainer = document.getElementById('details-supplier-list');
-            Object.keys(supplierAggregates).forEach(supplierId => {
-                const supplier = supplierAggregates[supplierId];
-                const item = document.createElement('div');
-                item.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
-                item.onclick = () => { currentSupplierDetailsId = supplierId; renderPurchasesDetailsView(); };
-                item.innerHTML = `<div><p class="font-semibold">${supplier.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
-                listContainer.appendChild(item);
-            });
+            const listContainer=document.getElementById('details-supplier-list');
+            Object.keys(supplierAggregates).forEach(supplierId=>{
+                const supplier=supplierAggregates[supplierId];
+                const item=document.createElement('div');
+                item.className='p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick=()=>{currentSupplierDetailsId=supplierId;renderPurchasesDetailsView()};
+                item.innerHTML=`<div><p class="font-semibold">${supplier.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
+                listContainer.appendChild(item)
+            })
         }
-
-        function renderDetailedSupplierInfo(container, supplierId) {
-            const supplier = supplierAggregates[supplierId];
-            const remaining = supplier.totalPurchased - supplier.totalPaid;
-            container.innerHTML = `
+        function renderDetailedSupplierInfo(container,supplierId){
+            const supplier=supplierAggregates[supplierId];
+            const remaining=supplier.totalPurchased-supplier.totalPaid;
+            container.innerHTML=`
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center space-x-4">
                         <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToPurchasesDetailsList()">
@@ -1028,315 +951,253 @@
                         <tbody id="purchases-transactions-table-body" class="divide-y"></tbody>
                     </table>
                 </div>`;
-            
-            const tableBody = document.getElementById('purchases-transactions-table-body');
-            let runningBalance = 0;
-            const transactionsHtml = supplier.transactions.map(t => {
-                const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
-                runningBalance += transactionTotal - (t.paymentMade || 0);
+            const tableBody=document.getElementById('purchases-transactions-table-body');
+            let runningBalance=0;
+            const transactionsHtml=supplier.transactions.map(t=>{
+                const transactionTotal=(t.unitPrice||0)*(t.quantity||0);
+                runningBalance+=transactionTotal-(t.paymentMade||0);
                 return `
                 <tr class="hover:bg-gray-50">
                     <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
-                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity || 0})</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity||0})</td>
                     <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(transactionTotal)}</td>
                     <td class="px-2 py-3 text-right text-sm font-medium text-red-600">${formatCurrency(t.paymentMade)}</td>
-                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(runningBalance)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance>0?'text-red-600':'text-green-600'}">${formatCurrency(runningBalance)}</td>
                     <td class="px-2 py-3 text-center whitespace-nowrap">
                         <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" onclick="window.openPurchaseModalForEdit('${t.id}')">Ред.</button>
                         <button class="text-red-600 hover:text-red-900 text-sm" onclick="window.deletePurchase('${t.id}')">Удал.</button>
                     </td>
-                </tr>`;
+                </tr>`
             }).join('');
-            tableBody.innerHTML = transactionsHtml;
+            tableBody.innerHTML=transactionsHtml
         }
-
-        function openPurchaseModal(docId = null, purchaseData = null) {
-            const modal = document.getElementById('purchase-modal');
+        function openPurchaseModal(docId=null,purchaseData=null){
+            const modal=document.getElementById('purchase-modal');
             modal.classList.remove('hidden');
-            const form = document.getElementById('purchase-form');
+            const form=document.getElementById('purchase-form');
             form.reset();
-            document.getElementById('modal-purchase-date').valueAsDate = new Date();
-            document.getElementById('purchase-doc-id').value = docId || '';
-            
-            const supplierSelect = document.getElementById('modal-supplier-select');
-            supplierSelect.innerHTML = `<option value="" disabled selected>Выберите поставщика</option>`;
-            Object.keys(supplierAggregates).forEach(id => { supplierSelect.innerHTML += `<option value="${id}">${supplierAggregates[id].name}</option>`; });
-            
-            if (purchaseData) {
-                supplierSelect.value = purchaseData.supplierId;
-                document.getElementById('modal-purchase-item-name').value = purchaseData.itemName;
-                document.getElementById('modal-purchase-unit-price').value = purchaseData.unitPrice;
-                document.getElementById('modal-purchase-quantity').value = purchaseData.quantity;
-                document.getElementById('modal-payment-made').value = purchaseData.paymentMade;
-                document.getElementById('modal-purchase-date').value = purchaseData.transactionDate.toISOString().split('T')[0];
-                supplierSelect.disabled = true;
-                document.getElementById('toggle-new-supplier-button').classList.add('hidden');
-            } else {
-                supplierSelect.disabled = false;
-                document.getElementById('toggle-new-supplier-button').classList.remove('hidden');
+            document.getElementById('modal-purchase-date').valueAsDate=new Date();
+            document.getElementById('purchase-doc-id').value=docId||'';
+            const supplierSelect=document.getElementById('modal-supplier-select');
+            supplierSelect.innerHTML=`<option value="" disabled selected>Выберите поставщика</option>`;
+            Object.keys(supplierAggregates).forEach(id=>{supplierSelect.innerHTML+=`<option value="${id}">${supplierAggregates[id].name}</option>`});
+            if(purchaseData){
+                supplierSelect.value=purchaseData.supplierId;
+                document.getElementById('modal-purchase-item-name').value=purchaseData.itemName;
+                document.getElementById('modal-purchase-unit-price').value=purchaseData.unitPrice;
+                document.getElementById('modal-purchase-quantity').value=purchaseData.quantity;
+                document.getElementById('modal-payment-made').value=purchaseData.paymentMade;
+                document.getElementById('modal-purchase-date').value=purchaseData.transactionDate.toISOString().split('T')[0];
+                supplierSelect.disabled=true;
+                document.getElementById('toggle-new-supplier-button').classList.add('hidden')
+            }else{
+                supplierSelect.disabled=false;
+                document.getElementById('toggle-new-supplier-button').classList.remove('hidden')
             }
         }
-        
-        function closePurchaseModal() { document.getElementById('purchase-modal').classList.add('hidden'); }
-        function openEditSupplierNameModal(supplierId, currentName) {
-            document.getElementById('edit-supplier-id').value = supplierId;
-            document.getElementById('edit-supplier-name-input').value = currentName;
-            document.getElementById('edit-supplier-modal').classList.remove('hidden');
+        function closePurchaseModal(){document.getElementById('purchase-modal').classList.add('hidden')}
+        function openEditSupplierNameModal(supplierId,currentName){
+            document.getElementById('edit-supplier-id').value=supplierId;
+            document.getElementById('edit-supplier-name-input').value=currentName;
+            document.getElementById('edit-supplier-modal').classList.remove('hidden')
         }
-        function closeEditSupplierModal() { document.getElementById('edit-supplier-modal').classList.add('hidden'); }
-
-        async function handlePurchaseSubmit(e) {
+        function closeEditSupplierModal(){document.getElementById('edit-supplier-modal').classList.add('hidden')}
+        async function handlePurchaseSubmit(e){
             e.preventDefault();
-            const form = e.target;
-            const errorEl = document.getElementById('purchase-modal-error-message');
+            const form=e.target;
+            const errorEl=document.getElementById('purchase-modal-error-message');
             errorEl.classList.add('hidden');
-            const purchasesRef = getCollectionRef('purchase_records');
-            if (!purchasesRef) return;
-            
-            const isNewSupplier = !document.getElementById('new-supplier-container').classList.contains('hidden');
-            let supplierId, supplierName;
-            if (isNewSupplier) {
-                supplierName = form['modal-new-supplier-name'].value.trim();
-                if (!supplierName) { errorEl.textContent = 'Имя нового поставщика не может быть пустым.'; errorEl.classList.remove('hidden'); return; }
-                supplierId = crypto.randomUUID();
-            } else {
-                supplierId = form['modal-supplier-select'].value;
-                if (!supplierId) { errorEl.textContent = 'Пожалуйста, выберите поставщика.'; errorEl.classList.remove('hidden'); return; }
-                supplierName = supplierAggregates[supplierId].name;
+            const purchasesRef=getCollectionRef('purchase_records');
+            if(!purchasesRef)return;
+            const isNewSupplier=!document.getElementById('new-supplier-container').classList.contains('hidden');
+            let supplierId,supplierName;
+            if(isNewSupplier){
+                supplierName=form['modal-new-supplier-name'].value.trim();
+                if(!supplierName){errorEl.textContent='Имя нового поставщика не может быть пустым.';errorEl.classList.remove('hidden');return}
+                supplierId=crypto.randomUUID()
+            }else{
+                supplierId=form['modal-supplier-select'].value;
+                if(!supplierId){errorEl.textContent='Пожалуйста, выберите поставщика.';errorEl.classList.remove('hidden');return}
+                supplierName=supplierAggregates[supplierId].name
             }
-
-            const batch = writeBatch(db);
-            let operations = 0;
-            const itemName = form['modal-purchase-item-name'].value.trim();
-
-            if (isNewSupplier) {
-                const initialBalance = parseFloat(form['modal-initial-purchase-balance'].value) || 0;
-                if (initialBalance !== 0) {
-                    batch.set(doc(purchasesRef), { supplierId, supplierName, itemName: "Начальный баланс", unitPrice: initialBalance, quantity: 1, paymentMade: 0, transactionDate: new Date() });
-                    operations++;
+            const batch=writeBatch(db);
+            let operations=0;
+            const itemName=form['modal-purchase-item-name'].value.trim();
+            if(isNewSupplier){
+                const initialBalance=parseFloat(form['modal-initial-purchase-balance'].value)||0;
+                if(initialBalance!==0){
+                    batch.set(doc(purchasesRef),{supplierId,supplierName,itemName:"Начальный баланс",unitPrice:initialBalance,quantity:1,paymentMade:0,transactionDate:new Date()});
+                    operations++
                 }
             }
-            
-            if (itemName && (itemName !== "Закупка" || isNewSupplier)) {
-                const data = {
-                    supplierId, supplierName,
-                    itemName,
-                    unitPrice: parseFloat(form['modal-purchase-unit-price'].value),
-                    quantity: parseInt(form['modal-purchase-quantity'].value),
-                    paymentMade: parseFloat(form['modal-payment-made'].value),
-                    transactionDate: new Date(form['modal-purchase-date'].value)
-                };
-                const docId = form['purchase-doc-id'].value;
-                const docRef = docId ? doc(purchasesRef, docId) : doc(purchasesRef);
-                if (docId) { batch.update(docRef, data); } else { batch.set(docRef, data); }
-                operations++;
+            if(itemName&&(itemName!=="Закупка"||isNewSupplier)){
+                const data={supplierId,supplierName,itemName,unitPrice:parseFloat(form['modal-purchase-unit-price'].value),quantity:parseInt(form['modal-purchase-quantity'].value),paymentMade:parseFloat(form['modal-payment-made'].value),transactionDate:new Date(form['modal-purchase-date'].value)};
+                const docId=form['purchase-doc-id'].value;
+                const docRef=docId?doc(purchasesRef,docId):doc(purchasesRef);
+                if(docId){batch.update(docRef,data)}else{batch.set(docRef,data)}
+                operations++
             }
-            
-            if (operations === 0 && isNewSupplier) {
-                 batch.set(doc(purchasesRef), { supplierId, supplierName, itemName: "Создание поставщика", unitPrice: 0, quantity: 0, paymentMade: 0, transactionDate: new Date() });
-                 operations++;
+            if(operations===0&&isNewSupplier){
+                batch.set(doc(purchasesRef),{supplierId,supplierName,itemName:"Создание поставщика",unitPrice:0,quantity:0,paymentMade:0,transactionDate:new Date()});
+                operations++
             }
-            
-            if (operations > 0) {
-                try { await batch.commit(); closePurchaseModal(); }
-                catch (error) { errorEl.textContent = `Ошибка: ${error.message}`; errorEl.classList.remove('hidden'); }
-            } else {
-                errorEl.textContent = 'Нечего сохранять.'; errorEl.classList.remove('hidden');
-            }
+            if(operations>0){try{await batch.commit();closePurchaseModal()}catch(error){errorEl.textContent=`Ошибка: ${error.message}`;errorEl.classList.remove('hidden')}}
+            else{errorEl.textContent='Нечего сохранять.';errorEl.classList.remove('hidden')}
         }
-        
-        async function handleUpdateSupplierName(e) {
+        async function handleUpdateSupplierName(e){
             e.preventDefault();
-            const supplierId = document.getElementById('edit-supplier-id').value;
-            const newName = document.getElementById('edit-supplier-name-input').value.trim();
-            if (!newName) return;
-            
-            const purchasesRef = getCollectionRef('purchase_records');
-            const batch = writeBatch(db);
-            allPurchases.filter(p => p.supplierId === supplierId).forEach(p => {
-                batch.update(doc(purchasesRef, p.id), { supplierName: newName });
-            });
-            try { await batch.commit(); closeEditSupplierModal(); } 
-            catch (error) { console.error("Ошибка обновления имени поставщика:", error); }
+            const supplierId=document.getElementById('edit-supplier-id').value;
+            const newName=document.getElementById('edit-supplier-name-input').value.trim();
+            if(!newName)return;
+            const purchasesRef=getCollectionRef('purchase_records');
+            const batch=writeBatch(db);
+            allPurchases.filter(p=>p.supplierId===supplierId).forEach(p=>{batch.update(doc(purchasesRef,p.id),{supplierName:newName})});
+            try{await batch.commit();closeEditSupplierModal()}
+            catch(error){console.error("Ошибка обновления имени поставщика:",error)}
         }
-
-        async function deletePurchase(purchaseId) {
-            if (confirm('Вы уверены, что хотите удалить эту закупку?')) {
-                try { await deleteDoc(doc(getCollectionRef('purchase_records'), purchaseId)); } 
-                catch (error) { console.error("Ошибка удаления закупки:", error); }
+        async function deletePurchase(purchaseId){
+            if(confirm('Вы уверены, что хотите удалить эту закупку?')){
+                try{await deleteDoc(doc(getCollectionRef('purchase_records'),purchaseId))}
+                catch(error){console.error("Ошибка удаления закупки:",error)}
             }
         }
-        
-        async function deleteSupplier(supplierId) {
-            if (confirm('ВНИМАНИЕ! Вы действительно хотите удалить поставщика и ВСЕ его закупки? Это действие необратимо.')) {
-                const purchasesRef = getCollectionRef('purchase_records');
-                const batch = writeBatch(db);
-                allPurchases.filter(p => p.supplierId === supplierId).forEach(p => batch.delete(doc(purchasesRef, p.id)));
-                try { await batch.commit(); currentSupplierDetailsId = null; renderPurchasesDetailsView(); }
-                catch (error) { console.error("Ошибка удаления поставщика:", error); }
+        async function deleteSupplier(supplierId){
+            if(confirm('ВНИМАНИЕ! Вы действительно хотите удалить поставщика и ВСЕ его закупки? Это действие необратимо.')){
+                const purchasesRef=getCollectionRef('purchase_records');
+                const batch=writeBatch(db);
+                allPurchases.filter(p=>p.supplierId===supplierId).forEach(p=>batch.delete(doc(purchasesRef,p.id)));
+                try{await batch.commit();currentSupplierDetailsId=null;renderPurchasesDetailsView()}
+                catch(error){console.error("Ошибка удаления поставщика:",error)}
             }
         }
-
-        window.openEditSupplierNameModal = openEditSupplierNameModal;
-        window.viewSupplierDetails = (supplierId) => { currentSupplierDetailsId = supplierId; showAppView('purchases', 'details'); };
-        window.backToPurchasesDetailsList = () => { currentSupplierDetailsId = null; renderPurchasesDetailsView(); };
-        window.openPurchaseModalForEdit = (id) => openPurchaseModal(id, allPurchases.find(p => p.id === id));
-        window.deletePurchase = deletePurchase;
-        window.deleteSupplier = deleteSupplier;
+        window.openEditSupplierNameModal=openEditSupplierNameModal;
+        window.viewSupplierDetails=(supplierId)=>{currentSupplierDetailsId=supplierId;showAppView('purchases','details')};
+        window.backToPurchasesDetailsList=()=>{currentSupplierDetailsId=null;renderPurchasesDetailsView()};
+        window.openPurchaseModalForEdit=(id)=>openPurchaseModal(id,allPurchases.find(p=>p.id===id));
+        window.deletePurchase=deletePurchase;
+        window.deleteSupplier=deleteSupplier;
         
-        
-        // --- ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ---
-        window.onload = () => {
+        window.onload=()=>{
             setupFirebase();
-
-            // Общие обработчики
-            document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
-            document.getElementById('access-denied-logout-button').addEventListener('click', logOut);
-            [...document.querySelectorAll('#sales-logout-button, #purchases-logout-button')].forEach(b => b.addEventListener('click', logOut));
-
-            // Навигация
-            document.getElementById('goto-sales-btn').addEventListener('click', () => {
+            document.getElementById('google-signin-button').addEventListener('click',signInWithGoogle);
+            document.getElementById('access-denied-logout-button').addEventListener('click',logOut);
+            [...document.querySelectorAll('#sales-logout-button, #purchases-logout-button')].forEach(b=>b.addEventListener('click',logOut));
+            document.getElementById('goto-sales-btn').addEventListener('click',()=>{
                 document.getElementById('main-menu-screen').classList.add('hidden');
                 document.getElementById('sales-app-screen').classList.remove('hidden');
                 startSalesListener();
-                showAppView('sales', 'main');
+                showAppView('sales','main')
             });
-            document.getElementById('goto-purchases-btn').addEventListener('click', () => {
+            document.getElementById('goto-purchases-btn').addEventListener('click',()=>{
                 document.getElementById('main-menu-screen').classList.add('hidden');
                 document.getElementById('purchases-app-screen').classList.remove('hidden');
                 startPurchasesListener();
-                showAppView('purchases', 'main');
+                showAppView('purchases','main')
             });
-            [...document.querySelectorAll('#sales-back-to-menu-btn, #purchases-back-to-menu-btn')].forEach(btn => {
-                btn.addEventListener('click', () => {
+            [...document.querySelectorAll('#sales-back-to-menu-btn, #purchases-back-to-menu-btn')].forEach(btn=>{
+                btn.addEventListener('click',()=>{
                     document.getElementById('sales-app-screen').classList.add('hidden');
                     document.getElementById('purchases-app-screen').classList.add('hidden');
                     document.getElementById('main-menu-screen').classList.remove('hidden');
-                    if(unsubscribeSales) { unsubscribeSales(); unsubscribeSales = null; }
-                    if(unsubscribePurchases) { unsubscribePurchases(); unsubscribePurchases = null; }
-                });
+                    if(unsubscribeSales){unsubscribeSales();unsubscribeSales=null}
+                    if(unsubscribePurchases){unsubscribePurchases();unsubscribePurchases=null}
+                })
             });
-
-            // Навигация по вкладкам
-            document.querySelectorAll('.header-nav-item').forEach(btn => {
-                btn.addEventListener('click', () => showAppView(btn.dataset.app, btn.dataset.view));
-            });
-
-            // Продажи - обработчики
-            document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
-            document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
-            document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
-            document.getElementById('edit-client-form').addEventListener('submit', handleUpdateClientName);
-            document.getElementById('edit-modal-close-button').addEventListener('click', closeEditClientModal);
-            document.getElementById('client-search').addEventListener('input', renderClientsList);
-            document.getElementById('client-sort').addEventListener('change', renderClientsList);
-            document.getElementById('toggle-new-client-button').addEventListener('click', (e) => {
+            document.querySelectorAll('.header-nav-item').forEach(btn=>{btn.addEventListener('click',()=>showAppView(btn.dataset.app,btn.dataset.view))});
+            document.getElementById('add-transaction-button').addEventListener('click',()=>openTransactionModal());
+            document.getElementById('modal-close-button').addEventListener('click',closeTransactionModal);
+            document.getElementById('transaction-form').addEventListener('submit',handleTransactionSubmit);
+            document.getElementById('edit-client-form').addEventListener('submit',handleUpdateClientName);
+            document.getElementById('edit-modal-close-button').addEventListener('click',closeEditClientModal);
+            document.getElementById('client-search').addEventListener('input',renderClientsList);
+            document.getElementById('client-sort').addEventListener('change',renderClientsList);
+            document.getElementById('toggle-new-client-button').addEventListener('click',(e)=>{
                 document.getElementById('new-client-container').classList.toggle('hidden');
                 document.getElementById('client-selection-container').classList.toggle('hidden');
-                e.target.textContent = document.getElementById('new-client-container').classList.contains('hidden') ? 'Добавить нового клиента' : 'Вернуться к списку';
+                e.target.textContent=document.getElementById('new-client-container').classList.contains('hidden')?'Добавить нового клиента':'Вернуться к списку'
             });
-            
-            // Покупки - обработчики
-            document.getElementById('add-purchase-button').addEventListener('click', () => openPurchaseModal());
-            document.getElementById('purchase-modal-close-button').addEventListener('click', closePurchaseModal);
-            document.getElementById('purchase-form').addEventListener('submit', handlePurchaseSubmit);
-            document.getElementById('edit-supplier-form').addEventListener('submit', handleUpdateSupplierName);
-            document.getElementById('edit-supplier-modal-close-button').addEventListener('click', closeEditSupplierModal);
-            document.getElementById('supplier-search').addEventListener('input', renderSuppliersList);
-            document.getElementById('supplier-sort').addEventListener('change', renderSuppliersList);
-             document.getElementById('toggle-new-supplier-button').addEventListener('click', (e) => {
+            document.getElementById('add-purchase-button').addEventListener('click',()=>openPurchaseModal());
+            document.getElementById('purchase-modal-close-button').addEventListener('click',closePurchaseModal);
+            document.getElementById('purchase-form').addEventListener('submit',handlePurchaseSubmit);
+            document.getElementById('edit-supplier-form').addEventListener('submit',handleUpdateSupplierName);
+            document.getElementById('edit-supplier-modal-close-button').addEventListener('click',closeEditSupplierModal);
+            document.getElementById('supplier-search').addEventListener('input',renderSuppliersList);
+            document.getElementById('supplier-sort').addEventListener('change',renderSuppliersList);
+            document.getElementById('toggle-new-supplier-button').addEventListener('click',(e)=>{
                 document.getElementById('new-supplier-container').classList.toggle('hidden');
                 document.getElementById('supplier-selection-container').classList.toggle('hidden');
-                e.target.textContent = document.getElementById('new-supplier-container').classList.contains('hidden') ? 'Добавить нового поставщика' : 'Вернуться к списку';
+                e.target.textContent=document.getElementById('new-supplier-container').classList.contains('hidden')?'Добавить нового поставщика':'Вернуться к списку'
             });
-            
-            // Настройки, темы и т.д.
-            const appNameInput = document.getElementById('app-name-input');
-            appNameInput.addEventListener('input', e => {
-                const title = e.target.value.trim() || "JavPharma";
-                document.getElementById('site-title-tag').textContent = title;
-                document.getElementById('login-title').textContent = `Добро пожаловать в ${title}`;
-                document.getElementById('menu-title').textContent = title;
-                localStorage.setItem('siteTitle', title);
+            const appNameInput=document.getElementById('app-name-input');
+            appNameInput.addEventListener('input',e=>{
+                const title=e.target.value.trim()||"JavPharma";
+                document.getElementById('site-title-tag').textContent=title;
+                document.getElementById('login-title').textContent=`Добро пожаловать в ${title}`;
+                document.getElementById('menu-title').textContent=title;
+                localStorage.setItem('siteTitle',title)
             });
-            
-            const applyTheme = (theme) => {
-                document.body.className = 'min-h-screen flex flex-col items-center justify-center p-4';
-                if (theme !== 'light') document.body.classList.add(`theme-${theme}`);
-                localStorage.setItem('siteTheme', theme);
-                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-                const activeBtn = document.querySelector(`.theme-btn[data-theme="${theme}"]`);
-                if(activeBtn) activeBtn.classList.add('active');
+            const applyTheme=(theme)=>{
+                document.body.className='min-h-screen flex flex-col items-center justify-center p-4';
+                if(theme!=='light')document.body.classList.add(`theme-${theme}`);
+                localStorage.setItem('siteTheme',theme);
+                document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+                document.querySelector(`.theme-btn[data-theme="${theme}"]`)?.classList.add('active')
             };
-
-            document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.theme-btn').forEach(btn=>btn.addEventListener('click',e=>{
                 e.stopPropagation();
                 applyTheme(btn.dataset.theme);
-                [...document.querySelectorAll('#sales-theme-dropdown, #purchases-theme-dropdown')].forEach(d => d.classList.add('hidden'));
+                [...document.querySelectorAll('#sales-theme-dropdown, #purchases-theme-dropdown')].forEach(d=>d.classList.add('hidden'))
             }));
-
-            ['sales', 'purchases'].forEach(app => {
-                const themeBtn = document.getElementById(`${app}-theme-menu-button`);
-                const langBtn = document.getElementById(`${app}-language-menu-button`);
-                const themeDropdown = document.getElementById(`${app}-theme-dropdown`);
-                const langDropdown = document.getElementById(`${app}-language-dropdown`);
-
-                if(themeBtn) themeBtn.addEventListener('click', e => { e.stopPropagation(); themeDropdown?.classList.toggle('hidden'); });
-                if(langBtn) langBtn.addEventListener('click', e => { e.stopPropagation(); langDropdown?.classList.toggle('hidden'); });
+            ['sales','purchases'].forEach(app=>{
+                const themeBtn=document.getElementById(`${app}-theme-menu-button`);
+                const langBtn=document.getElementById(`${app}-language-menu-button`);
+                const themeDropdown=document.getElementById(`${app}-theme-dropdown`);
+                const langDropdown=document.getElementById(`${app}-language-dropdown`);
+                if(themeBtn)themeBtn.addEventListener('click',e=>{e.stopPropagation();themeDropdown?.classList.toggle('hidden')});
+                if(langBtn)langBtn.addEventListener('click',e=>{e.stopPropagation();langDropdown?.classList.toggle('hidden')})
             });
-            
-            document.addEventListener('click', () => {
-                ['sales-theme-dropdown', 'sales-language-dropdown', 'purchases-theme-dropdown', 'purchases-language-dropdown'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.classList.add('hidden');
-                });
+            document.addEventListener('click',()=>{
+                ['sales-theme-dropdown','sales-language-dropdown','purchases-theme-dropdown','purchases-language-dropdown'].forEach(id=>{
+                    const el=document.getElementById(id);
+                    if(el)el.classList.add('hidden')
+                })
             });
-
-            const updateLogo = (url) => {
-                document.querySelectorAll('#login-logo, #menu-logo, #sales-site-logo, #purchases-site-logo').forEach(el => {
-                    if (url) {
-                        el.src = url;
-                        el.classList.remove('hidden');
-                    } else {
-                        el.classList.add('hidden');
-                    }
+            const updateLogo=(url)=>{
+                document.querySelectorAll('#login-logo, #menu-logo, #sales-site-logo, #purchases-site-logo').forEach(el=>{
+                    if(url){el.src=url;el.classList.remove('hidden')}
+                    else{el.classList.add('hidden')}
                 });
-                document.getElementById('logo-preview-container').innerHTML = url ? `<img src="${url}" class="h-16 mx-auto">` : '';
+                document.getElementById('logo-preview-container').innerHTML=url?`<img src="${url}" class="h-16 mx-auto">`:''
             };
-
-            const logoUploadInput = document.getElementById('logo-upload-input');
-            logoUploadInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const statusEl = document.getElementById('logo-upload-status');
-                statusEl.textContent = 'Загрузка...';
-                const formData = new FormData();
-                formData.append('image', file);
-                try {
-                    const res = await fetch('https://api.imgbb.com/1/upload?key=ef55a2f580a19821cd96845bc3f3cee1', { method: 'POST', body: formData });
-                    const result = await res.json();
-                    if (result.success) {
-                        const logoUrl = result.data.url;
-                        localStorage.setItem('siteLogo', logoUrl);
+            const logoUploadInput=document.getElementById('logo-upload-input');
+            logoUploadInput.addEventListener('change',async(e)=>{
+                const file=e.target.files[0];
+                if(!file)return;
+                const statusEl=document.getElementById('logo-upload-status');
+                statusEl.textContent='Загрузка...';
+                const formData=new FormData();
+                formData.append('image',file);
+                try{
+                    const res=await fetch('https://api.imgbb.com/1/upload?key=ef55a2f580a19821cd96845bc3f3cee1',{method:'POST',body:formData});
+                    const result=await res.json();
+                    if(result.success){
+                        const logoUrl=result.data.url;
+                        localStorage.setItem('siteLogo',logoUrl);
                         updateLogo(logoUrl);
-                        statusEl.textContent = 'Логотип успешно загружен!';
-                    } else { throw new Error(result.error.message); }
-                } catch (err) {
-                    statusEl.textContent = 'Ошибка загрузки.';
-                }
+                        statusEl.textContent='Логотип успешно загружен!'
+                    }else{throw new Error(result.error.message)}
+                }catch(err){statusEl.textContent='Ошибка загрузки.'}
             });
-            
-            applyTheme(localStorage.getItem('siteTheme') || 'light');
+            applyTheme(localStorage.getItem('siteTheme')||'light');
             updateLogo(localStorage.getItem('siteLogo'));
-
-            const savedTitle = localStorage.getItem('siteTitle');
-            if (savedTitle) {
-                document.getElementById('site-title-tag').textContent = savedTitle;
-                document.getElementById('login-title').textContent = `Добро пожаловать в ${savedTitle}`;
-                document.getElementById('menu-title').textContent = savedTitle;
-                appNameInput.value = savedTitle;
+            const savedTitle=localStorage.getItem('siteTitle');
+            if(savedTitle){
+                document.getElementById('site-title-tag').textContent=savedTitle;
+                document.getElementById('login-title').textContent=`Добро пожаловать в ${savedTitle}`;
+                document.getElementById('menu-title').textContent=savedTitle;
+                appNameInput.value=savedTitle
             }
-        };
+        }
     </script>
 </body>
 </html>
