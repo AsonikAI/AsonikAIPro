@@ -245,7 +245,7 @@
                     </div>
                     <div id="new-client-container" class="hidden mt-2 space-y-2">
                         <input type="text" id="modal-new-client-name" placeholder="Введите имя..." class="w-full px-4 py-2 border rounded-lg bg-transparent" data-lang-key="new_client_placeholder">
-                        <div><label for="modal-initial-balance" class="block text-sm font-medium" data-lang-key="initial_balance">Начальный остаток ($)</label><input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0"></div>
+                        <div><label for="modal-initial-balance" class="block text-sm font-medium" data-lang-key="initial_balance">Начальный остаток (₺)</label><input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0"></div>
                     </div>
                     <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2" data-lang-key="add_new_client_btn">Добавить нового</button>
                 </div>
@@ -262,7 +262,7 @@
 
                 <div class="grid grid-cols-2 gap-4 border-t pt-4">
                     <div>
-                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса ($)</label>
+                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса (₺)</label>
                         <input type="number" step="0.01" id="modal-payment-received" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
                     </div>
                     <div>
@@ -284,7 +284,7 @@
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1', 'mhPJz63xINVF6DnqITgI0bGuxgQ2'];
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1', 'mhPJz63xINVF6DnqITgI0bGuxgQ2'];
         const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
@@ -367,7 +367,10 @@
         }
         
         const formatDate = (dateObj) => { if (!dateObj || !(dateObj instanceof Date)) return 'N/A'; return `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${dateObj.getFullYear()}`; };
-        function formatCurrency(amount) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0); }
+        // --- ИЗМЕНЕНИЕ 1: Валюта изменена на Турецкую Лиру (TRY) ---
+        function formatCurrency(amount) { 
+            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount || 0); 
+        }
         
         function showView(viewId) {
             document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
@@ -429,7 +432,6 @@
             unsubscribeDataListener = onSnapshot(collectionRef, (snapshot) => {
                 allTransactions = snapshot.docs.map(doc => {
                     const data = doc.data();
-                    // *** BACKWARD COMPATIBILITY FIX ***
                     if (!data.items) {
                         data.items = [{
                             itemName: data.itemName || 'N/A',
@@ -661,7 +663,46 @@
         async function handleUpdateClientName(e) { e.preventDefault(); const clientId = document.getElementById('edit-client-id').value; const newName = document.getElementById('edit-client-name-input').value.trim(); if (!newName) return; const collectionRef = getCollectionRef(); if (!collectionRef) return; const batch = writeBatch(db); allTransactions.filter(t => t.clientId === clientId).forEach(t => { batch.update(doc(collectionRef, t.id), { clientName: newName }); }); try { await batch.commit(); closeEditClientModal(); } catch (error) { console.error("Ошибка обновления имени:", error); } }
         async function deleteTransaction(transactionId) { if (confirm(translations[currentLang][currentMode].confirm_delete_transaction)) { const collectionRef = getCollectionRef(); if (!collectionRef) return; try { await deleteDoc(doc(collectionRef, transactionId)); } catch (error) { console.error("Ошибка удаления транзакции:", error); } } }
         async function deleteClient(clientId) { if (confirm(translations[currentLang][currentMode].confirm_delete_client)) { const collectionRef = getCollectionRef(); if (!collectionRef) return; const batch = writeBatch(db); allTransactions.filter(t => t.clientId === clientId).forEach(t => { batch.delete(doc(collectionRef, t.id)); }); try { await batch.commit(); currentEntityDetailsId = null; renderDetailsView(); } catch (error) { console.error("Ошибка удаления:", error); } } }
-        function exportClientToExcel(clientId) { /* ... export logic ... */ }
+        
+        // --- ИЗМЕНЕНИЕ 2: Функция экспорта в Excel полностью реализована ---
+        function exportClientToExcel(clientId) {
+            const entity = entityAggregates[clientId];
+            if (!entity) return;
+
+            let runningBalance = 0;
+            const transactionsForExport = [...entity.transactions]
+                .sort((a, b) => a.transactionDate - b.transactionDate)
+                .map(t => {
+                    runningBalance += (t.totalAmount || 0) - (t.paymentReceived || 0);
+                    const summary = (t.items && t.items.length > 1) 
+                        ? t.items.map(i => `${i.itemName} (Кол-во: ${i.quantity}, Цена: ${i.unitPrice})`).join('; ')
+                        : t.items?.[0]?.itemName || 'Транзакция';
+                    
+                    return {
+                        'Дата': formatDate(t.transactionDate),
+                        'Описание': summary,
+                        'Сумма': t.totalAmount || 0,
+                        'Оплачено': t.paymentReceived || 0,
+                        'Итоговый баланс': runningBalance
+                    };
+                });
+            
+            const summaryData = [{
+                'Дата': 'ИТОГО',
+                'Описание': '',
+                'Сумма': entity.totalSales,
+                'Оплачено': entity.totalPaid,
+                'Итоговый баланс': entity.totalSales - entity.totalPaid
+            }];
+
+            const worksheet = XLSX.utils.json_to_sheet(transactionsForExport);
+            XLSX.utils.sheet_add_json(worksheet, summaryData, { skipHeader: true, origin: -1 });
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Транзакции');
+            
+            XLSX.writeFile(workbook, `${entity.name.replace(/ /g,"_")}_export.xlsx`);
+        }
         
         window.viewEntityDetails = (id) => { currentEntityDetailsId = id; showView('details'); };
         window.openEditClientNameModal = openEditClientNameModal;
@@ -683,7 +724,6 @@
                 const addButton = document.getElementById('add-transaction-button');
                 const controlsContainer = document.getElementById('controls-container');
                 
-                // Reset styles and structure
                 addButton.classList.remove('w-full', 'bg-orange-500', 'hover:bg-orange-600', 'bg-green-600', 'hover:bg-green-700');
                 controlsContainer.classList.remove('flex-wrap');
                 controlsContainer.append(addButton);
@@ -691,7 +731,7 @@
                 if (mode === 'purchases') {
                     addButton.classList.add('w-full', 'bg-orange-500', 'hover:bg-orange-600');
                     controlsContainer.classList.add('flex-wrap');
-                } else { // sales
+                } else {
                     addButton.classList.add('bg-green-600', 'hover:bg-green-700');
                 }
 
