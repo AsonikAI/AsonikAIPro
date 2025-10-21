@@ -95,7 +95,6 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- === ЭКРАН ВХОДА === -->
     <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300 hidden">
         <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
         <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
@@ -107,7 +106,6 @@
         <p id="login-error" class="text-red-500 mt-4 text-sm"></p>
     </div>
 
-    <!-- === ЭКРАН "ДОСТУП ЗАПРЕЩЕН" === -->
     <div id="access-denied-screen" class="hidden w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center text-center">
         <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
         <h1 class="text-2xl font-bold mb-2">Доступ запрещен</h1>
@@ -117,7 +115,6 @@
         </button>
     </div>
 
-    <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (СКРЫТО) === -->
     <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
         <header class="flex items-center justify-between border-b pb-4 mb-4">
             <div class="flex items-center space-x-3">
@@ -180,7 +177,6 @@
             </div>
         </header>
         
-        <!-- Содержимое вкладок (ОСНОВА, ПОДРОБНО, НАСТРОЙКИ) -->
         <section id="view-clients" class="view-content flex flex-col flex-grow pt-4">
             <div class="flex justify-between items-center mb-4">
                  <h2 class="text-2xl font-bold" data-lang-key="main_header">ОСНОВА (Обзор Клиентов)</h2>
@@ -251,7 +247,6 @@
         </section>
     </div>
 
-    <!-- Модальные окна остаются без изменений -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
             <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Транзакцию</h2>
@@ -274,21 +269,21 @@
                 <div id="main-transaction-fields">
                     <div>
                         <label for="modal-item-name" class="block text-sm font-medium" data-lang-key="item_name">Товар / Описание</label>
-                        <input type="text" id="modal-item-name" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Товар">
+                        <input type="text" id="modal-item-name" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Товар">
                     </div>
                     <div class="grid grid-cols-2 gap-4 mt-4">
                         <div>
                             <label for="modal-unit-price" class="block text-sm font-medium" data-lang-key="unit_price">Цена за единицу ($)</label>
-                            <input type="number" step="0.01" id="modal-unit-price" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
+                            <input type="number" step="0.01" id="modal-unit-price" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
                         </div>
                         <div>
                             <label for="modal-quantity" class="block text-sm font-medium" data-lang-key="quantity">Количество (шт)</label>
-                            <input type="number" step="1" id="modal-quantity" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="1">
+                            <input type="number" step="1" id="modal-quantity" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="1">
                         </div>
                     </div>
                     <div class="mt-4">
                         <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса ($)</label>
-                        <input type="number" step="0.01" id="modal-payment-received" required class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
+                        <input type="number" step="0.01" id="modal-payment-received" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
                     </div>
                 </div>
                 <div class="mt-4">
@@ -327,7 +322,7 @@
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UID = 'h25tlwhyAQfo1PBgzYmekWKD5Vl1'; // ID администратора
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1']; // ID администраторов
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
             authDomain: "asonik-ai.firebaseapp.com",
@@ -426,7 +421,7 @@
                     document.getElementById('admin-panel').classList.add('hidden');
 
                     if (user) {
-                        if (user.uid === ADMIN_UID) {
+                        if (ADMIN_UIDS.includes(user.uid)) {
                             // ПОЛЬЗОВАТЕЛЬ - АДМИН
                             currentUserId = user.uid;
                             document.getElementById('user-id-display-settings').textContent = currentUserId;
@@ -885,30 +880,10 @@
                 clientName = clientAggregates[clientId].name;
             }
 
-            const itemName = form['modal-item-name'].value.trim();
-            const unitPrice = parseFloat(form['modal-unit-price'].value);
-            const quantity = parseInt(form['modal-quantity'].value);
-            const paymentReceived = parseFloat(form['modal-payment-received'].value);
-            const transactionDate = new Date(form['modal-transaction-date'].value);
-
-            if (!itemName) {
-                errorEl.textContent = 'Пожалуйста, введите название товара/описание.';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-            if (isNaN(unitPrice) || isNaN(quantity) || isNaN(paymentReceived)) {
-                errorEl.textContent = 'Пожалуйста, проверьте числовые поля (цена, кол-во, касса).';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-             if (isNaN(transactionDate.getTime())) {
-                errorEl.textContent = 'Пожалуйста, укажите корректную дату транзакции.';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
             const batch = writeBatch(db);
+            let operations_in_batch = 0;
 
+            // Операция 1: Начальный баланс для нового клиента
             if (isNewClient) {
                 const initialBalance = parseFloat(form['modal-initial-balance'].value) || 0;
                 if (initialBalance !== 0) {
@@ -918,23 +893,63 @@
                         unitPrice: initialBalance, quantity: 1, paymentReceived: 0,
                         transactionDate: new Date()
                     });
+                    operations_in_batch++;
                 }
             }
             
-            const mainDocRef = docId ? doc(salesRef, docId) : doc(salesRef);
-            const data = {
-                clientId, clientName,
-                itemName: itemName,
-                unitPrice: unitPrice,
-                quantity: quantity,
-                paymentReceived: paymentReceived,
-                transactionDate: transactionDate
-            };
-            
-            if (docId) {
-                batch.update(mainDocRef, data);
-            } else {
-                batch.set(mainDocRef, data);
+            // Операция 2: Основная транзакция (товар/услуга)
+            const itemName = form['modal-item-name'].value.trim();
+            if (itemName && itemName !== "Товар") { // Также проверяем, что это не значение по умолчанию
+                const unitPrice = parseFloat(form['modal-unit-price'].value);
+                const quantity = parseInt(form['modal-quantity'].value);
+                const paymentReceived = parseFloat(form['modal-payment-received'].value);
+                const transactionDate = new Date(form['modal-transaction-date'].value);
+
+                if (isNaN(unitPrice) || isNaN(quantity) || isNaN(paymentReceived)) {
+                    errorEl.textContent = 'Пожалуйста, проверьте числовые поля (цена, кол-во, касса).';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                if (isNaN(transactionDate.getTime())) {
+                    errorEl.textContent = 'Пожалуйста, укажите корректную дату транзакции.';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                const mainDocRef = docId ? doc(salesRef, docId) : doc(salesRef);
+                const data = {
+                    clientId, clientName,
+                    itemName: itemName,
+                    unitPrice: unitPrice,
+                    quantity: quantity,
+                    paymentReceived: paymentReceived,
+                    transactionDate: transactionDate
+                };
+                
+                if (docId) {
+                    batch.update(mainDocRef, data);
+                } else {
+                    batch.set(mainDocRef, data);
+                }
+                operations_in_batch++;
+            }
+
+            // Если создается новый клиент, но нет других операций, все равно создаем его
+            if (isNewClient && operations_in_batch === 0) {
+                const placeholderDocRef = doc(salesRef);
+                batch.set(placeholderDocRef, {
+                    clientId, clientName, itemName: "Создание клиента",
+                    unitPrice: 0, quantity: 0, paymentReceived: 0,
+                    transactionDate: new Date()
+                });
+                operations_in_batch++;
+            }
+
+            // Если не было добавлено ни одной операции, сообщаем об этом
+            if (operations_in_batch === 0) {
+                errorEl.textContent = 'Нечего сохранять. Укажите имя нового клиента, детали транзакции или начальный баланс.';
+                errorEl.classList.remove('hidden');
+                return;
             }
 
             try {
@@ -1151,5 +1166,3 @@
     </script>
 </body>
 </html>
-
-
