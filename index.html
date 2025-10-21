@@ -230,6 +230,7 @@
          </header>
          <div class="flex items-center space-x-4 mb-4">
             <button id="add-dist-item-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg">Добавить товар</button>
+            <button id="add-dist-recipient-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg">Добавить получателя</button>
          </div>
          <div class="overflow-x-auto border rounded-lg">
             <table id="distribution-table" class="min-w-full text-sm border-collapse">
@@ -250,7 +251,8 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1'];
+        // --- All variables and full functions are defined here ---
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1'];
         const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
@@ -523,17 +525,49 @@
         
         // --- DISTRIBUTION FUNCTIONS ---
         const getDistRef = (name) => collection(db, 'artifacts', appId, 'users', currentUserId, name);
-        async function renderDistributionView() { /* ... */ }
-        async function handleDistDataChange(e) { /* ... */ }
-        const openDistItemModal = (id, name) => { /* ... */ };
-        const closeDistItemModal = () => document.getElementById('dist-item-modal').classList.add('hidden');
-        async function handleDistItemSubmit(e) { /* ... */ }
-        async function handleDistItemDelete() { /* ... */ }
-        const openDistRecipientModal = (id, name) => { /* ... */ };
-        const closeDistRecipientModal = () => document.getElementById('dist-recipient-modal').classList.add('hidden');
-        async function handleDistRecipientSubmit(e) { /* ... */ }
-        async function handleDistRecipientDelete() { /* ... */ }
+        async function renderDistributionView() {
+            unsubscribeDistribution.forEach(unsub => unsub());
+            unsubscribeDistribution = [];
+            
+            const table = document.getElementById('distribution-table');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
 
+            const render = async () => {
+                const [itemsSnap, recipientsSnap] = await Promise.all([getDocs(getDistRef('dist_items')), getDocs(getDistRef('dist_recipients'))]);
+                const items = itemsSnap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                const recipients = recipientsSnap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+                
+                thead.innerHTML = `<tr><th class="border p-2 font-semibold sticky left-0 bg-gray-50 z-10">Товар</th>${recipients.map(r => `<th class="border p-2 editable-header" data-recipient-id="${r.id}" title="Редактировать">${r.name}</th>`).join('')}</tr>`;
+                
+                let tbodyHtml = '';
+                for (const item of items) {
+                    const dataDoc = await getDoc(doc(getDistRef('dist_data'), item.id));
+                    const itemData = dataDoc.exists() ? dataDoc.data() : {};
+                    tbodyHtml += `<tr><td class="border p-2 font-semibold editable-header sticky left-0 bg-white">${item.name}</td>${recipients.map(r => `<td class="border p-0"><input type="number" class="w-24 h-full p-2 bg-transparent rounded-none" data-item-id="${item.id}" data-recipient-id="${r.id}" value="${itemData[r.id] || ''}"></td>`).join('')}</tr>`;
+                }
+                tbody.innerHTML = tbodyHtml;
+                
+                tbody.querySelectorAll('input').forEach(input => input.addEventListener('change', handleDistDataChange));
+                thead.querySelectorAll('.editable-header').forEach(th => th.addEventListener('click', () => openDistRecipientModal(th.dataset.recipientId, th.textContent)));
+                tbody.querySelectorAll('.editable-header').forEach(td => td.addEventListener('click', () => openDistItemModal(td.dataset.itemId, td.textContent)));
+            };
+            
+            ['dist_items', 'dist_recipients', 'dist_data'].forEach(coll => {
+                const unsub = onSnapshot(getDistRef(coll), render);
+                unsubscribeDistribution.push(unsub);
+            });
+        }
+        async function handleDistDataChange(e) { const { itemId, recipientId } = e.target.dataset; const quantity = e.target.valueAsNumber; await setDoc(doc(getDistRef('dist_data'), itemId), { [recipientId]: quantity >= 0 ? quantity : 0 }, { merge: true }); }
+        const openDistItemModal = (id = null, name = '') => { const m = document.getElementById('dist-item-modal'); m.classList.remove('hidden'); m.querySelector('#dist-item-modal-title').textContent = id ? 'Редактировать товар' : 'Добавить товар'; m.querySelector('#dist-item-id').value = id || ''; m.querySelector('#dist-item-name-input').value = name; m.querySelector('#dist-item-delete-btn').classList.toggle('hidden', !id); };
+        const closeDistItemModal = () => document.getElementById('dist-item-modal').classList.add('hidden');
+        async function handleDistItemSubmit(e) { e.preventDefault(); const form = e.target; const id = form['dist-item-id'].value || crypto.randomUUID(); const name = form['dist-item-name-input'].value.trim(); if (!name) return; await setDoc(doc(getDistRef('dist_items'), id), { name }); closeDistItemModal(); }
+        async function handleDistItemDelete() { const id = document.getElementById('dist-item-id').value; if(id && confirm("Удалить товар?")) { await deleteDoc(doc(getDistRef('dist_items'), id)); await deleteDoc(doc(getDistRef('dist_data'), id)); closeDistItemModal(); } }
+        const openDistRecipientModal = (id = null, name = '') => { const m = document.getElementById('dist-recipient-modal'); m.classList.remove('hidden'); m.querySelector('#dist-recipient-modal-title').textContent = id ? 'Редактировать получателя' : 'Добавить получателя'; m.querySelector('#dist-recipient-id').value = id || ''; m.querySelector('#dist-recipient-name-input').value = name; m.querySelector('#dist-recipient-delete-btn').classList.toggle('hidden', !id); };
+        const closeDistRecipientModal = () => document.getElementById('dist-recipient-modal').classList.add('hidden');
+        async function handleDistRecipientSubmit(e) { e.preventDefault(); const form = e.target; const id = form['dist-recipient-id'].value || crypto.randomUUID(); const name = form['dist-recipient-name-input'].value.trim(); if (!name) return; await setDoc(doc(getDistRef('dist_recipients'), id), { name }); closeDistRecipientModal(); }
+        async function handleDistRecipientDelete() { const id = document.getElementById('dist-recipient-id').value; if(id && confirm("Удалить получателя?")) { await deleteDoc(doc(getDistRef('dist_recipients'), id)); /* You might want to also clean up dist_data here */ closeDistRecipientModal(); } }
+        
         // --- ONLOAD ---
         window.onload = () => {
             const showScreen = (id) => { ['main-menu-screen', 'main-app-screen', 'distribution-screen', 'access-denied-screen', 'login-screen'].forEach(sId => document.getElementById(sId).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
@@ -559,8 +593,10 @@
             document.getElementById('back-to-menu-btn').addEventListener('click', backToMenu);
             document.getElementById('dist-back-to-menu-btn').addEventListener('click', backToMenu);
             
+            // All other event listeners
             document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
             document.getElementById('logout-button').addEventListener('click', logOut);
+            document.getElementById('access-denied-logout-button').addEventListener('click', logOut);
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('add-item-to-modal-btn').addEventListener('click', () => addItemRowToModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
@@ -571,12 +607,17 @@
             document.getElementById('client-search').addEventListener('input', renderMainList);
             document.getElementById('client-sort').addEventListener('change', renderMainList);
             document.getElementById('add-dist-item-btn').addEventListener('click', () => openDistItemModal());
+            document.getElementById('add-dist-recipient-btn').addEventListener('click', () => openDistRecipientModal());
             document.getElementById('dist-item-form').addEventListener('submit', handleDistItemSubmit);
             document.getElementById('dist-item-modal-close-btn').addEventListener('click', closeDistItemModal);
             document.getElementById('dist-item-delete-btn').addEventListener('click', handleDistItemDelete);
             document.getElementById('dist-recipient-form').addEventListener('submit', handleDistRecipientSubmit);
             document.getElementById('dist-recipient-modal-close-btn').addEventListener('click', closeDistRecipientModal);
             document.getElementById('dist-recipient-delete-btn').addEventListener('click', handleDistRecipientDelete);
+            
+            // Other setup...
+            setLanguage(localStorage.getItem('appLanguage') || 'ru');
+            document.getElementById('app-name-input').dispatchEvent(new Event('input'));
             
             setupFirebase();
         };
