@@ -109,7 +109,8 @@
     <div id="access-denied-screen" class="hidden w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center text-center">
         <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
         <h1 class="text-2xl font-bold mb-2">Доступ запрещен</h1>
-        <p class="text-gray-600 mb-6">Вы вошли как <strong id="user-email-display"></strong>. Эта учетная запись не имеет прав администратора.</p>
+        <p class="text-gray-600 mb-2">Вы вошли как <strong id="user-email-display"></strong>. Эта учетная запись не имеет прав администратора.</p>
+        <p class="text-xs text-gray-500 mb-6">Скопируйте этот ID и вставьте его в код: <code id="denied-user-uid" class="bg-gray-200 p-1 rounded select-all font-mono"></code></p>
         <button id="access-denied-logout-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition duration-200">
             Выйти
         </button>
@@ -322,7 +323,9 @@
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1']; // ID администраторов
+        // ❗️ ШАГ 3: Вставьте ваш ID, который вы скопировали с экрана, сюда 👇
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1', 'ВСТАВЬТЕ_ВАШ_ID_СЮДА']; // ID администраторов
+        
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
             authDomain: "asonik-ai.firebaseapp.com",
@@ -437,6 +440,7 @@
                         } else {
                             // ПОЛЬЗОВАТЕЛЬ - НЕ АДМИН
                             document.getElementById('user-email-display').textContent = user.email;
+                            document.getElementById('denied-user-uid').textContent = user.uid; // Показываем ID на экране
                             document.getElementById('access-denied-screen').classList.remove('hidden');
                         }
                     } else {
