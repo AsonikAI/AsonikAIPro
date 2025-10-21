@@ -557,7 +557,17 @@
             const salesRef=getCollectionRef('sales_records');
             if(!salesRef)return;
             unsubscribeSales=onSnapshot(salesRef,(snapshot)=>{
-                allTransactions=snapshot.docs.map(doc=>({...doc.data(),id:doc.id,transactionDate:doc.data().transactionDate.toDate()}));
+                // *** ИСПРАВЛЕНИЕ НАЧАЛО: Безопасная обработка даты ***
+                allTransactions = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return { 
+                        ...data, 
+                        id: doc.id, 
+                        transactionDate: data.transactionDate ? data.transactionDate.toDate() : new Date(0) 
+                    };
+                });
+                // *** ИСПРАВЛЕНИЕ КОНЕЦ ***
+                
                 clientAggregates={};
                 allTransactions.forEach(t=>{
                     if(!clientAggregates[t.clientId]){clientAggregates[t.clientId]={name:t.clientName,transactions:[]}}
@@ -824,7 +834,17 @@
             const purchasesRef=getCollectionRef('purchase_records');
             if(!purchasesRef)return;
             unsubscribePurchases=onSnapshot(purchasesRef,(snapshot)=>{
-                allPurchases=snapshot.docs.map(doc=>({...doc.data(),id:doc.id,transactionDate:doc.data().transactionDate.toDate()}));
+                // *** ИСПРАВЛЕНИЕ НАЧАЛО: Безопасная обработка даты ***
+                allPurchases = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return { 
+                        ...data, 
+                        id: doc.id, 
+                        transactionDate: data.transactionDate ? data.transactionDate.toDate() : new Date(0) 
+                    };
+                });
+                // *** ИСПРАВЛЕНИЕ КОНЕЦ ***
+
                 supplierAggregates={};
                 allPurchases.forEach(p=>{
                     if(!supplierAggregates[p.supplierId]){supplierAggregates[p.supplierId]={name:p.supplierName,transactions:[]}}
@@ -1196,8 +1216,3 @@
                 document.getElementById('login-title').textContent=`Добро пожаловать в ${savedTitle}`;
                 document.getElementById('menu-title').textContent=savedTitle;
                 appNameInput.value=savedTitle
-            }
-        }
-    </script>
-</body>
-</html>
