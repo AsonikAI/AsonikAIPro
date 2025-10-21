@@ -116,9 +116,32 @@
         </button>
     </div>
 
-    <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
+    <div id="main-menu-screen" class="hidden w-full max-w-4xl">
+        <div class="p-8 rounded-xl card text-center">
+             <img id="menu-logo" src="" alt="Logo" class="h-24 mx-auto mb-6 hidden">
+             <h1 id="menu-title" class="text-4xl font-bold mb-4">Главное Меню</h1>
+             <p class="text-lg text-gray-600 mb-10">Выберите раздел для работы</p>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <button id="goto-sales-btn" class="flex flex-col items-center justify-center p-8 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                     <svg class="w-20 h-20 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2.01V6m0 10v-1m0 4v-3m0-1c-1.11 0-2.08-.402-2.599-1M12 16v.01M12 18v-1m0-1v-1m0-1c1.657 0 3-.895 3-2s-1.343-2-3-2m0 8c-1.11 0-2.08.402-2.599 1M12 16V7m0 9v.01"></path></svg>
+                     <h2 class="text-2xl font-bold">Продажи</h2>
+                     <p class="text-gray-500 mt-1">Учёт клиентов и транзакций</p>
+                 </button>
+                 <button id="goto-purchases-btn" class="flex flex-col items-center justify-center p-8 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all duration-300 transform hover:scale-105 cursor-not-allowed opacity-60">
+                     <svg class="w-20 h-20 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                     <h2 class="text-2xl font-bold">Покупки</h2>
+                     <p class="text-gray-500 mt-1">Скоро будет доступно</p>
+                 </button>
+             </div>
+        </div>
+    </div>
+
+    <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
         <header class="flex items-center justify-between border-b pb-4 mb-4">
             <div class="flex items-center space-x-3">
+                 <button id="back-to-menu-btn" title="Главное меню" class="p-2 rounded-md hover:bg-gray-100 transition duration-150 card">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
                 <img id="site-logo" src="" alt="Logo" class="h-16 hidden">
                 <h1 class="text-3xl font-bold" id="site-title-display" style="color: var(--header-brand);">CYTC.COM SYSTEM</h1>
             </div>
@@ -323,8 +346,7 @@
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        // ❗️ ШАГ 3: Вставьте ваш ID, который вы скопировали с экрана, сюда 👇
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1', 'h25tlwhyAQfo1PBgzYMekWKD5Vl1']; // ID администраторов
+        const ADMIN_UIDS = ['ВСТАВЬТЕ_ВАШ_ID_СЮДА']; // ID администраторов
         
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -421,6 +443,7 @@
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-app-screen').classList.add('hidden');
                     document.getElementById('access-denied-screen').classList.add('hidden');
+                    document.getElementById('main-menu-screen').classList.add('hidden');
                     document.getElementById('admin-panel').classList.add('hidden');
 
                     if (user) {
@@ -430,13 +453,12 @@
                             document.getElementById('user-id-display-settings').textContent = currentUserId;
                             document.getElementById('user-name').textContent = user.displayName || 'Администратор';
                             document.getElementById('user-avatar').src = user.photoURL || 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=A';
-                            
-                            document.getElementById('main-app-screen').classList.remove('hidden');
                             document.getElementById('user-display').classList.remove('hidden');
+                            
+                            document.getElementById('main-menu-screen').classList.remove('hidden');
                             document.getElementById('admin-panel').classList.remove('hidden');
                             
                             startDataListener();
-                            showView('clients');
                         } else {
                             // ПОЛЬЗОВАТЕЛЬ - НЕ АДМИН
                             document.getElementById('user-email-display').textContent = user.email;
@@ -1050,6 +1072,18 @@
             document.getElementById('logout-button').addEventListener('click', logOut);
             document.getElementById('access-denied-logout-button').addEventListener('click', logOut);
             
+            // Навигация главного меню
+            document.getElementById('goto-sales-btn').addEventListener('click', () => {
+                document.getElementById('main-menu-screen').classList.add('hidden');
+                document.getElementById('main-app-screen').classList.remove('hidden');
+                showView('clients');
+            });
+
+            document.getElementById('back-to-menu-btn').addEventListener('click', () => {
+                document.getElementById('main-app-screen').classList.add('hidden');
+                document.getElementById('main-menu-screen').classList.remove('hidden');
+            });
+
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
             document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
@@ -1099,7 +1133,6 @@
                 
                 const activeNavItem = document.querySelector('.header-nav-item[style*="var(--header-brand)"]');
                 if (activeNavItem) showView(activeNavItem.dataset.view);
-                else showView('clients');
             };
             document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1110,20 +1143,20 @@
             const updateLogo = (url) => {
                 const loginLogo = document.getElementById('login-logo');
                 const siteLogo = document.getElementById('site-logo');
+                const menuLogo = document.getElementById('menu-logo');
                 const title = document.getElementById('site-title-display');
                 const logoBg = document.getElementById('logo-bg-duplicate');
                 
                 if (url) {
-                    loginLogo.src = url;
-                    siteLogo.src = url;
-                    loginLogo.classList.remove('hidden');
-                    siteLogo.classList.remove('hidden');
+                    [loginLogo, siteLogo, menuLogo].forEach(logo => {
+                        logo.src = url;
+                        logo.classList.remove('hidden');
+                    });
                     title.classList.remove('hidden');
                     if(logoBg) logoBg.src = url;
                     document.getElementById('logo-preview-container').innerHTML = `<img src="${url}" class="h-16 mx-auto">`;
                 } else {
-                    loginLogo.classList.add('hidden');
-                    siteLogo.classList.add('hidden');
+                     [loginLogo, siteLogo, menuLogo].forEach(logo => logo.classList.add('hidden'));
                     title.classList.remove('hidden');
                     if (logoBg) logoBg.src = '';
                 }
@@ -1158,6 +1191,7 @@
             if (savedTitle) {
                 document.getElementById('site-title-display').textContent = savedTitle;
                 document.getElementById('login-title').textContent = `Добро пожаловать в ${savedTitle}`;
+                document.getElementById('menu-title').textContent = savedTitle;
                 document.getElementById('site-title-tag').textContent = savedTitle;
                 document.getElementById('app-name-input').value = savedTitle;
             }
