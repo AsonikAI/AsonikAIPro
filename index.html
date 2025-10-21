@@ -209,15 +209,11 @@
                     <option value="name_az" data-lang-key="sort_name_az">Имя (А-Я)</option>
                     <option value="name_za" data-lang-key="sort_name_za">Имя (Я-А)</option>
                 </select>
-                <button id="add-transaction-button-sales" class="font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center text-white bg-green-600 hover:bg-green-700">
+                <button id="add-transaction-button" class="font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center text-white">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span data-lang-key="add_transaction">Добавить</span>
                 </button>
             </div>
-             <button id="add-transaction-button-purchases" class="w-full mt-0 mb-4 font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center text-white bg-orange-500 hover:bg-orange-600 hidden">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                <span data-lang-key="add_transaction">Добавить</span>
-            </button>
             <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4">
                  <div class="w-full h-64 flex items-center justify-center opacity-25">
                     <img id="logo-bg-duplicate" src="" alt="Logo Background" class="max-h-full">
@@ -288,7 +284,7 @@
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1'];
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1'];
         const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
@@ -311,7 +307,7 @@
                 settings_account_title: "Ваша Учётная Запись", status: "Статус", user_id: "ID Пользователя",
                 cancel: "Отмена", save: "Сохранить", edit: "Ред.", delete: "Удал.", details_btn: "Выбрать",
                 sort_newest: "Сначала новые", sort_oldest: "Сначала старые", sort_name_az: "Имя (А-Я)", sort_name_za: "Имя (Я-А)",
-                date: "Дата", item: "Товар", amount: "Сумма", paid: "Касса", running_balance: "Итоговый Остаток", actions: "Действия",
+                date: "Дата", item: "Товар/Описание", amount: "Сумма", paid: "Касса", running_balance: "Итоговый Остаток", actions: "Действия",
                 item_name: "Товар / Описание", unit_price: "Цена за ед.", quantity: "Кол-во", payment_received: "Касса ($)",
                 initial_balance: "Начальный остаток ($)", transaction_date: "Дата Транзакции",
                 export_to_excel: "Экспорт в Excel", reset_filters: "Сброс", search_item_placeholder: "Поиск по товару...",
@@ -431,7 +427,23 @@
             const collectionRef = getCollectionRef();
             if (!collectionRef) return;
             unsubscribeDataListener = onSnapshot(collectionRef, (snapshot) => {
-                allTransactions = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
+                allTransactions = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // *** BACKWARD COMPATIBILITY FIX ***
+                    if (!data.items) {
+                        data.items = [{
+                            itemName: data.itemName || 'N/A',
+                            unitPrice: data.unitPrice || 0,
+                            quantity: data.quantity || 0,
+                        }];
+                        data.totalAmount = (data.unitPrice || 0) * (data.quantity || 0);
+                    }
+                    if (typeof data.totalAmount === 'undefined') {
+                         data.totalAmount = data.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+                    }
+                    return { ...data, id: doc.id, transactionDate: data.transactionDate.toDate() };
+                });
+
                 entityAggregates = {};
                 allTransactions.forEach(t => {
                     if (!entityAggregates[t.clientId]) entityAggregates[t.clientId] = { name: t.clientName, transactions: [] };
@@ -470,7 +482,7 @@
                 card.className = `p-4 border rounded-lg shadow-sm card`;
                 const lastFiveTransactions = [...entity.transactions].reverse().slice(0, 5);
                 const transactionsHtml = lastFiveTransactions.map(t => {
-                    const summary = (t.items && t.items.length > 1) ? `Групповая (${t.items.length} поз.)` : (t.items?.[0]?.itemName || t.itemName || 'Транзакция');
+                    const summary = (t.items && t.items.length > 1) ? `Групповая (${t.items.length} поз.)` : (t.items?.[0]?.itemName || 'Транзакция');
                     return `<div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0"><div class="col-span-3">${formatDate(t.transactionDate)}</div><div class="col-span-5 font-medium">${summary}</div><div class="col-span-2 text-right"><span class="text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</span><span class="text-xs block" data-lang-key="paid"></span></div><div class="col-span-2 text-right"><span class="font-semibold" style="color: var(--header-brand);">${formatCurrency(t.totalAmount)}</span><span class="text-xs block" data-lang-key="amount"></span></div></div>`;
                 }).join('');
                 card.innerHTML = `<div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleEntityDetails('${entityId}')"><div class="flex items-center space-x-3"><svg id="arrow-${entityId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg><h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${entity.name}</h3><button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button></div><div class="flex items-center space-x-4"><div class="text-right"><span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span><span class="text-xs block" data-lang-key="total_remaining"></span></div><button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewEntityDetails('${entityId}')"></button></div></div><div id="details-${entityId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
@@ -512,27 +524,18 @@
                 .map(t => { runningBalance += (t.totalAmount || 0) - (t.paymentReceived || 0); return { ...t, runningBalance }; });
 
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            let filteredTransactions = allTransactionsWithBalance.filter(t => !searchTerm || (t.items || [{itemName: t.itemName || ''}]).some(item => item.itemName.toLowerCase().includes(lowerCaseSearchTerm)));
+            let filteredTransactions = allTransactionsWithBalance.filter(t => !searchTerm || t.items.some(item => item.itemName.toLowerCase().includes(lowerCaseSearchTerm)));
             if (sortOrder === 'newest') filteredTransactions.reverse();
 
             tableBody.innerHTML = filteredTransactions.map(t => {
                 const isGroup = t.items && t.items.length > 1;
-                const summary = isGroup ? `Групповая (${t.items.length} поз.)` : (t.items?.[0]?.itemName || t.itemName || 'Транзакция');
+                const summary = isGroup ? `Групповая закупка (${t.items.length} поз.)` : t.items[0]?.itemName || 'Транзакция';
                 const subTableHtml = !isGroup ? '' : `
                     <tr class="sub-table-row hidden bg-gray-50" data-sub-table-for="${t.id}">
-                        <td colspan="8" class="p-0">
-                            <div class="p-3">
-                                <table class="min-w-full">
-                                    <thead class="text-xs text-gray-500"><tr><th class="text-left font-medium p-2">Товар</th><th class="text-center font-medium p-2">Кол-во</th><th class="text-right font-medium p-2">Цена за ед.</th><th class="text-right font-medium p-2">Сумма</th></tr></thead>
-                                    <tbody>${t.items.map(item => `
-                                        <tr class="border-b last:border-b-0"><td class="p-2">${item.itemName}</td><td class="text-center p-2">${item.quantity}</td><td class="text-right p-2">${formatCurrency(item.unitPrice)}</td><td class="text-right p-2 font-medium">${formatCurrency((item.unitPrice||0)*(item.quantity||0))}</td></tr>
-                                    `).join('')}</tbody>
-                                </table>
-                            </div>
-                        </td>
+                        <td colspan="6" class="p-0"><div class="p-3"><table class="min-w-full"><thead class="text-xs text-gray-500"><tr><th class="text-left font-medium p-2">Товар</th><th class="text-center font-medium p-2">Кол-во</th><th class="text-right font-medium p-2">Цена за ед.</th><th class="text-right font-medium p-2">Сумма</th></tr></thead><tbody>${t.items.map(item => `<tr class="border-b last:border-b-0"><td class="p-2">${item.itemName}</td><td class="text-center p-2">${item.quantity}</td><td class="text-right p-2">${formatCurrency(item.unitPrice)}</td><td class="text-right p-2 font-medium">${formatCurrency((item.unitPrice||0)*(item.quantity||0))}</td></tr>`).join('')}</tbody></table></div></td>
                     </tr>`;
                 return `
-                    <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.toggleSubTable('${t.id}')">
+                    <tr class="hover:bg-gray-50 ${isGroup ? 'cursor-pointer' : ''}" ${isGroup ? `onclick="window.toggleSubTable('${t.id}')"` : ''}>
                         <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
                         <td class="px-2 py-3 text-sm">${isGroup ? `<svg class="w-4 h-4 inline-block mr-2 transition-transform" id="arrow-sub-${t.id}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>` : ''}${summary}</td>
                         <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(t.totalAmount)}</td>
@@ -584,7 +587,7 @@
             if (transactionData) {
                 document.getElementById('modal-title').dataset.langKey = "modal_edit_trans_title";
                 clientSelect.value = transactionData.clientId;
-                (transactionData.items || [{...transactionData}]).forEach(item => addItemRowToModal(item));
+                transactionData.items.forEach(item => addItemRowToModal(item));
                 document.getElementById('modal-payment-received').value = transactionData.paymentReceived;
                 document.getElementById('modal-transaction-date').value = transactionData.transactionDate.toISOString().split('T')[0];
                 clientSelect.disabled = true;
@@ -677,18 +680,19 @@
             
             const showAppScreen = (mode) => {
                 currentMode = mode;
-                const btnSales = document.getElementById('add-transaction-button-sales');
-                const btnPurchases = document.getElementById('add-transaction-button-purchases');
+                const addButton = document.getElementById('add-transaction-button');
                 const controlsContainer = document.getElementById('controls-container');
                 
+                // Reset styles and structure
+                addButton.classList.remove('w-full', 'bg-orange-500', 'hover:bg-orange-600', 'bg-green-600', 'hover:bg-green-700');
+                controlsContainer.classList.remove('flex-wrap');
+                controlsContainer.append(addButton);
+
                 if (mode === 'purchases') {
-                    btnSales.classList.add('hidden');
-                    controlsContainer.classList.add('hidden');
-                    btnPurchases.classList.remove('hidden');
-                } else {
-                    btnSales.classList.remove('hidden');
-                    controlsContainer.classList.remove('hidden');
-                    btnPurchases.classList.add('hidden');
+                    addButton.classList.add('w-full', 'bg-orange-500', 'hover:bg-orange-600');
+                    controlsContainer.classList.add('flex-wrap');
+                } else { // sales
+                    addButton.classList.add('bg-green-600', 'hover:bg-green-700');
                 }
 
                 document.getElementById('main-menu-screen').classList.add('hidden');
@@ -701,9 +705,7 @@
             document.getElementById('goto-sales-btn').addEventListener('click', () => showAppScreen('sales'));
             document.getElementById('goto-purchases-btn').addEventListener('click', () => showAppScreen('purchases'));
             document.getElementById('back-to-menu-btn').addEventListener('click', () => { document.getElementById('main-app-screen').classList.add('hidden'); document.getElementById('main-menu-screen').classList.remove('hidden'); if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; } });
-
-            document.getElementById('add-transaction-button-sales').addEventListener('click', () => openTransactionModal());
-            document.getElementById('add-transaction-button-purchases').addEventListener('click', () => openTransactionModal());
+            document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('add-item-to-modal-btn').addEventListener('click', () => addItemRowToModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
             document.getElementById('transaction-form').addEventListener('submit', handleTransactionSubmit);
