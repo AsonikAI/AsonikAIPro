@@ -557,6 +557,1242 @@
             const salesRef=getCollectionRef('sales_records');
             if(!salesRef)return;
             unsubscribeSales=onSnapshot(salesRef,(snapshot)=>{
+                allTransactions = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return { 
+                        ...data, 
+                        id: doc.id, 
+                        transactionDate: data.transactionDate ? data.transactionDate.toDate() : new Date(0) 
+                    };
+                });
+                
+                clientAggregates={};
+                allTransactions.forEach(t => {
+                    // FIX: Ensure transaction has a client name to avoid errors
+                    if (t.clientId && typeof t.clientName === 'string' && t.clientName.trim() !== '') {
+                        if(!clientAggregates[t.clientId]){
+                            clientAggregates[t.clientId]={name:t.clientName,transactions:[]}
+                        }
+                        clientAggregates[t.clientId].transactions.push(t);
+                    }
+                });
+
+                Object.keys(clientAggregates).forEach(clientId=>{
+                    const client=clientAggregates[clientId];
+                    client.transactions.sort((a,b)=>a.transactionDate-b.transactionDate);
+                    let totalSales=0,totalPaid=0;
+                    client.transactions.forEach(t=>{
+                        totalSales+=(t.unitPrice||0)*(t.quantity||0);
+                        totalPaid+=t.paymentReceived||0
+                    });
+                    client.totalSales=totalSales;
+                    client.totalPaid=totalPaid
+                });
+                renderClientsList();
+                if(currentClientDetailsId){renderSalesDetailsView()}
+            }, (error) => {
+                console.error("Error in sales listener:", error);
+            });
+        }
+        function renderClientsList(){
+            const container=document.getElementById('clients-list-container');
+            if(!container)return;
+            const filter=document.getElementById('client-search').value.toLowerCase();
+            const sortMethod=document.getElementById('client-sort').value;
+            container.innerHTML='';
+            let clientIds=Object.keys(clientAggregates);
+            switch(sortMethod){
+                case 'newest':clientIds.sort((a,b)=>(clientAggregates[b].transactions.at(-1)?.transactionDate||0)-(clientAggregates[a].transactions.at(-1)?.transactionDate||0));break;
+                case 'oldest':clientIds.sort((a,b)=>(clientAggregates[a].transactions[0]?.transactionDate||Infinity)-(clientAggregates[b].transactions[0]?.transactionDate||Infinity));break;
+                case 'name_az':clientIds.sort((a,b)=>clientAggregates[a].name.localeCompare(clientAggregates[b].name));break;
+                case 'name_za':clientIds.sort((a,b)=>clientAggregates[b].name.localeCompare(clientAggregates[a].name));break
+            }
+            const filteredClientIds=clientIds.filter(id=>clientAggregates[id].name.toLowerCase().includes(filter));
+            if(filteredClientIds.length===0){
+                const logoUrl=localStorage.getItem('siteLogo');
+                container.innerHTML=logoUrl?`<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>`:`<div class="p-4 text-center text-gray-500">Нет клиентов для отображения.</div>`;
+                return
+            }
+            filteredClientIds.forEach((clientId,index)=>{
+                const client=clientAggregates[clientId];
+                const remaining=client.totalSales-client.totalPaid;
+                const clientCard=document.createElement('div');
+                clientCard.className=`p-4 border rounded-lg shadow-sm card`;
+                const lastFiveTransactions=[...client.transactions].reverse().slice(0,5);
+                const transactionsHtml=lastFiveTransactions.map(t=>`
+                    <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
+                        <div class="col-span-3">${formatDate(t.transactionDate)}</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity||0})</div>
+                        <div class="col-span-2 text-right text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</div>
+                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice||0)*(t.quantity||0))}</div>
+                    </div>`).join('');
+                clientCard.innerHTML=`
+                    <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleClientDetails('${clientId}')">
+                        <div class="flex items-center space-x-3">
+                            <svg id="arrow-${clientId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index+1}.</span>${client.name}</h3>
+                            <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g,"\\'")}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                             <div class="text-right">
+                                <span class="text-lg font-bold ${remaining>0?'text-red-600':'text-green-600'}">${formatCurrency(remaining)}</span>
+                                <span class="text-xs block">Общий долг</span>
+                             </div>
+                             <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" onclick="event.stopPropagation(); window.viewClientDetails('${clientId}')">Детали</button>
+                        </div>
+                    </div>
+                    <div id="details-${clientId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
+                container.appendChild(clientCard)
+            })
+        }
+        function renderSalesDetailsView(){
+            const container=document.getElementById('sales-details-view-container');
+            if(currentClientDetailsId&&clientAggregates[currentClientDetailsId]){renderDetailedClientInfo(container,currentClientDetailsId)}
+            else{renderSalesClientList(container)}
+        }
+        function renderSalesClientList(container){
+            container.innerHTML=`
+                <h2 class="text-2xl font-bold mb-2">Подробнее (Выбор Клиента)</h2>
+                <p class="mb-4">Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.</p>
+                <div id="details-client-list" class="space-y-2"></div>`;
+            const listContainer=document.getElementById('details-client-list');
+            Object.keys(clientAggregates).forEach(clientId=>{
+                const client=clientAggregates[clientId];
+                const item=document.createElement('div');
+                item.className='p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick=()=>{currentClientDetailsId=clientId;renderSalesDetailsView()};
+                item.innerHTML=`<div><p class="font-semibold">${client.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
+                listContainer.appendChild(item)
+            })
+        }
+        function renderDetailedClientInfo(container,clientId){
+            const client=clientAggregates[clientId];
+            const remaining=client.totalSales-client.totalPaid;
+            container.innerHTML=`
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToSalesDetailsList()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            <span>Назад к списку клиентов</span>
+                        </button>
+                        <h2 class="text-3xl font-bold">${client.name}</h2>
+                    </div>
+                    <div>
+                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${clientId}')">Удалить Клиента</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800">Всего Продано</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(client.totalSales)}</p></div>
+                    <div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800">Всего Оплачено</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
+                    <div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800">Общий Долг</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
+                </div>
+                <div class="rounded-lg border overflow-x-auto card">
+                     <table class="min-w-full divide-y">
+                        <thead class="bg-gray-50"><tr>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Дата</th>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Товар</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Сумма</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Оплачено</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Итоговый Баланс</th>
+                            <th class="px-2 py-3 text-center text-xs font-semibold uppercase">Действия</th>
+                        </tr></thead>
+                        <tbody id="sales-transactions-table-body" class="divide-y"></tbody>
+                    </table>
+                </div>`;
+            const tableBody=document.getElementById('sales-transactions-table-body');
+            let runningBalance=0;
+            const transactionsHtml=client.transactions.map(t=>{
+                const transactionTotal=(t.unitPrice||0)*(t.quantity||0);
+                runningBalance+=transactionTotal-(t.paymentReceived||0);
+                return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity||0})</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(transactionTotal)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance>0?'text-red-600':'text-green-600'}">${formatCurrency(runningBalance)}</td>
+                    <td class="px-2 py-3 text-center whitespace-nowrap">
+                        <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
+                        <button class="text-red-600 hover:text-red-900 text-sm" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
+                    </td>
+                </tr>`
+            }).join('');
+            tableBody.innerHTML=transactionsHtml
+        }
+        function openTransactionModal(docId=null,transactionData=null){
+            const modal=document.getElementById('transaction-modal');
+            modal.classList.remove('hidden');
+            const form=document.getElementById('transaction-form');
+            form.reset();
+            document.getElementById('modal-transaction-date').valueAsDate=new Date();
+            document.getElementById('transaction-doc-id').value=docId||'';
+            const clientSelect=document.getElementById('modal-client-select');
+            clientSelect.innerHTML=`<option value="" disabled selected>Выберите клиента</option>`;
+            Object.keys(clientAggregates).forEach(id=>{clientSelect.innerHTML+=`<option value="${id}">${clientAggregates[id].name}</option>`});
+            if(transactionData){
+                clientSelect.value=transactionData.clientId;
+                document.getElementById('modal-item-name').value=transactionData.itemName;
+                document.getElementById('modal-unit-price').value=transactionData.unitPrice;
+                document.getElementById('modal-quantity').value=transactionData.quantity;
+                document.getElementById('modal-payment-received').value=transactionData.paymentReceived;
+                document.getElementById('modal-transaction-date').value=transactionData.transactionDate.toISOString().split('T')[0];
+                clientSelect.disabled=true;
+                document.getElementById('toggle-new-client-button').classList.add('hidden')
+            }else{
+                clientSelect.disabled=false;
+                document.getElementById('toggle-new-client-button').classList.remove('hidden')
+            }
+        }
+        function closeTransactionModal(){document.getElementById('transaction-modal').classList.add('hidden')}
+        function openEditClientNameModal(clientId,currentName){
+            document.getElementById('edit-client-id').value=clientId;
+            document.getElementById('edit-client-name-input').value=currentName;
+            document.getElementById('edit-client-modal').classList.remove('hidden')
+        }
+        function closeEditClientModal(){document.getElementById('edit-client-modal').classList.add('hidden')}
+        async function handleTransactionSubmit(e){
+            e.preventDefault();
+            const form=e.target;
+            const errorEl=document.getElementById('modal-error-message');
+            errorEl.classList.add('hidden');
+            const salesRef=getCollectionRef('sales_records');
+            if(!salesRef)return;
+            const isNewClient=!document.getElementById('new-client-container').classList.contains('hidden');
+            let clientId,clientName;
+            if(isNewClient){
+                clientName=form['modal-new-client-name'].value.trim();
+                if(!clientName){errorEl.textContent='Имя нового клиента не может быть пустым.';errorEl.classList.remove('hidden');return}
+                clientId=crypto.randomUUID()
+            }else{
+                clientId=form['modal-client-select'].value;
+                if(!clientId){errorEl.textContent='Пожалуйста, выберите клиента.';errorEl.classList.remove('hidden');return}
+                clientName=clientAggregates[clientId].name
+            }
+            const batch=writeBatch(db);
+            let operations=0;
+            const itemName=form['modal-item-name'].value.trim();
+            if(isNewClient){
+                const initialBalance=parseFloat(form['modal-initial-balance'].value)||0;
+                if(initialBalance!==0){
+                    batch.set(doc(salesRef),{clientId,clientName,itemName:"Начальный баланс",unitPrice:initialBalance,quantity:1,paymentReceived:0,transactionDate:new Date()});
+                    operations++
+                }
+            }
+            if(itemName&&(itemName!=="Товар"||isNewClient)){
+                const data={clientId,clientName,itemName:itemName,unitPrice:parseFloat(form['modal-unit-price'].value),quantity:parseInt(form['modal-quantity'].value),paymentReceived:parseFloat(form['modal-payment-received'].value),transactionDate:new Date(form['modal-transaction-date'].value)};
+                const docId=form['transaction-doc-id'].value;
+                const docRef=docId?doc(salesRef,docId):doc(salesRef);
+                if(docId){batch.update(docRef,data)}else{batch.set(docRef,data)}
+                operations++
+            }
+            if(operations===0&&isNewClient){
+                batch.set(doc(salesRef),{clientId,clientName,itemName:"Создание клиента",unitPrice:0,quantity:0,paymentReceived:0,transactionDate:new Date()});
+                operations++
+            }
+            if(operations>0){try{await batch.commit();closeTransactionModal()}catch(error){errorEl.textContent=`Ошибка: ${error.message}`;errorEl.classList.remove('hidden')}}
+            else{errorEl.textContent='Нечего сохранять.';errorEl.classList.remove('hidden')}
+        }
+        async function handleUpdateClientName(e){
+            e.preventDefault();
+            const clientId=document.getElementById('edit-client-id').value;
+            const newName=document.getElementById('edit-client-name-input').value.trim();
+            if(!newName)return;
+            const salesRef=getCollectionRef('sales_records');
+            const batch=writeBatch(db);
+            allTransactions.filter(t=>t.clientId===clientId).forEach(t=>{batch.update(doc(salesRef,t.id),{clientName:newName})});
+            try{await batch.commit();closeEditClientModal()}
+            catch(error){console.error("Ошибка обновления имени клиента:",error)}
+        }
+        async function deleteTransaction(transactionId){
+            if(confirm('Вы уверены, что хотите удалить эту транзакцию?')){
+                try{await deleteDoc(doc(getCollectionRef('sales_records'),transactionId))}
+                catch(error){console.error("Ошибка удаления транзакции:",error)}
+            }
+        }
+        async function deleteClient(clientId){
+            if(confirm('ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.')){
+                const salesRef=getCollectionRef('sales_records');
+                const batch=writeBatch(db);
+                allTransactions.filter(t=>t.clientId===clientId).forEach(t=>batch.delete(doc(salesRef,t.id)));
+                try{await batch.commit();currentClientDetailsId=null;renderSalesDetailsView()}
+                catch(error){console.error("Ошибка удаления клиента:",error)}
+            }
+        }
+        window.toggleClientDetails=(clientId)=>{
+            const detailsDiv=document.getElementById(`details-${clientId}`);
+            const arrow=document.getElementById(`arrow-${clientId}`);
+            if(detailsDiv.style.maxHeight){detailsDiv.style.maxHeight=null;arrow.classList.remove('rotate-180')}
+            else{detailsDiv.style.maxHeight=detailsDiv.scrollHeight+"px";arrow.classList.add('rotate-180')}
+        };
+        window.openEditClientNameModal=openEditClientNameModal;
+        window.viewClientDetails=(clientId)=>{currentClientDetailsId=clientId;showAppView('sales','details')};
+        window.backToSalesDetailsList=()=>{currentClientDetailsId=null;renderSalesDetailsView()};
+        window.openTransactionModalForEdit=(id)=>openTransactionModal(id,allTransactions.find(t=>t.id===id));
+        window.deleteTransaction=deleteTransaction;
+        window.deleteClient=deleteClient;
+
+        // --- ЛОГИКА ДЛЯ "ПОКУПОК" ---
+        function startPurchasesListener(){
+            if(unsubscribeSales){unsubscribeSales();unsubscribeSales=null}
+            if(unsubscribePurchases)unsubscribePurchases();
+            const purchasesRef=getCollectionRef('purchase_records');
+            if(!purchasesRef)return;
+            unsubscribePurchases=onSnapshot(purchasesRef,(snapshot)=>{
+                allPurchases = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return { 
+                        ...data, 
+                        id: doc.id, 
+                        transactionDate: data.transactionDate ? data.transactionDate.toDate() : new Date(0) 
+                    };
+                });
+
+                supplierAggregates={};
+                allPurchases.forEach(p => {
+                    // FIX: Ensure purchase has a supplier name to avoid errors
+                    if (p.supplierId && typeof p.supplierName === 'string' && p.supplierName.trim() !== '') {
+                        if(!supplierAggregates[p.supplierId]){
+                            supplierAggregates[p.supplierId]={name:p.supplierName,transactions:[]}
+                        }
+                        supplierAggregates[p.supplierId].transactions.push(p);
+                    }
+                });
+
+                Object.keys(supplierAggregates).forEach(supplierId=>{
+                    const supplier=supplierAggregates[supplierId];
+                    supplier.transactions.sort((a,b)=>a.transactionDate-b.transactionDate);
+                    let totalPurchased=0,totalPaid=0;
+                    supplier.transactions.forEach(t=>{
+                        totalPurchased+=(t.unitPrice||0)*(t.quantity||0);
+                        totalPaid+=t.paymentMade||0
+                    });
+                    supplier.totalPurchased=totalPurchased;
+                    supplier.totalPaid=totalPaid
+                });
+                renderSuppliersList();
+                if(currentSupplierDetailsId)renderPurchasesDetailsView()
+            }, (error) => {
+                console.error("Error in purchases listener:", error);
+            });
+        }
+        function renderSuppliersList(){
+            const container=document.getElementById('suppliers-list-container');
+            if(!container)return;
+            const filter=document.getElementById('supplier-search').value.toLowerCase();
+            const sortMethod=document.getElementById('supplier-sort').value;
+            container.innerHTML='';
+            let supplierIds=Object.keys(supplierAggregates);
+            switch(sortMethod){
+                case 'newest':supplierIds.sort((a,b)=>(supplierAggregates[b].transactions.at(-1)?.transactionDate||0)-(supplierAggregates[a].transactions.at(-1)?.transactionDate||0));break;
+                case 'oldest':supplierIds.sort((a,b)=>(supplierAggregates[a].transactions[0]?.transactionDate||Infinity)-(supplierAggregates[b].transactions[0]?.transactionDate||Infinity));break;
+                case 'name_az':supplierIds.sort((a,b)=>supplierAggregates[a].name.localeCompare(supplierAggregates[b].name));break;
+                case 'name_za':supplierIds.sort((a,b)=>supplierAggregates[b].name.localeCompare(supplierAggregates[a].name));break
+            }
+            const filteredSupplierIds=supplierIds.filter(id=>supplierAggregates[id].name.toLowerCase().includes(filter));
+            if(filteredSupplierIds.length===0){
+                const logoUrl=localStorage.getItem('siteLogo');
+                container.innerHTML=logoUrl?`<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>`:`<div class="p-4 text-center text-gray-500">Нет поставщиков для отображения.</div>`;
+                return
+            }
+            filteredSupplierIds.forEach((supplierId,index)=>{
+                const supplier=supplierAggregates[supplierId];
+                const remaining=supplier.totalPurchased-supplier.totalPaid;
+                const supplierCard=document.createElement('div');
+                supplierCard.className=`p-4 border rounded-lg shadow-sm card`;
+                const lastFivePurchases=[...supplier.transactions].reverse().slice(0,5);
+                const purchasesHtml=lastFivePurchases.map(t=>`
+                     <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
+                        <div class="col-span-3">${formatDate(t.transactionDate)}</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity||0})</div>
+                        <div class="col-span-2 text-right text-red-600 font-semibold">${formatCurrency(t.paymentMade)}</div>
+                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice||0)*(t.quantity||0))}</div>
+                    </div>`).join('');
+                supplierCard.innerHTML=`
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center space-x-3">
+                             <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index+1}.</span>${supplier.name}</h3>
+                             <button class="text-gray-400 hover:text-yellow-600" onclick="window.openEditSupplierNameModal('${supplierId}', '${supplier.name.replace(/'/g,"\\'")}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <span class="text-lg font-bold ${remaining>0?'text-red-600':'text-green-600'}">${formatCurrency(remaining)}</span>
+                                <span class="text-xs block">Наш долг</span>
+                            </div>
+                             <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" onclick="event.stopPropagation(); window.viewSupplierDetails('${supplierId}')">Детали</button>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t">${purchasesHtml}</div>`;
+                container.appendChild(supplierCard)
+            })
+        }
+        function renderPurchasesDetailsView(){
+            const container=document.getElementById('purchases-details-view-container');
+            if(currentSupplierDetailsId&&supplierAggregates[currentSupplierDetailsId]){renderDetailedSupplierInfo(container,currentSupplierDetailsId)}
+            else{renderPurchasesSupplierList(container)}
+        }
+        function renderPurchasesSupplierList(container){
+            container.innerHTML=`
+                <h2 class="text-2xl font-bold mb-2">Подробнее (Выбор Поставщика)</h2>
+                <p class="mb-4">Выберите поставщика из списка ниже, чтобы просмотреть его полную историю закупок.</p>
+                <div id="details-supplier-list" class="space-y-2"></div>`;
+            const listContainer=document.getElementById('details-supplier-list');
+            Object.keys(supplierAggregates).forEach(supplierId=>{
+                const supplier=supplierAggregates[supplierId];
+                const item=document.createElement('div');
+                item.className='p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick=()=>{currentSupplierDetailsId=supplierId;renderPurchasesDetailsView()};
+                item.innerHTML=`<div><p class="font-semibold">${supplier.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
+                listContainer.appendChild(item)
+            })
+        }
+        function renderDetailedSupplierInfo(container,supplierId){
+            const supplier=supplierAggregates[supplierId];
+            const remaining=supplier.totalPurchased-supplier.totalPaid;
+            container.innerHTML=`
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToPurchasesDetailsList()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            <span>Назад к списку поставщиков</span>
+                        </button>
+                        <h2 class="text-3xl font-bold">${supplier.name}</h2>
+                    </div>
+                    <div>
+                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteSupplier('${supplierId}')">Удалить Поставщика</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800">Всего Закуплено</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(supplier.totalPurchased)}</p></div>
+                    <div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800">Всего Оплачено</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(supplier.totalPaid)}</p></div>
+                    <div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800">Наш Долг</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
+                </div>
+                <div class="rounded-lg border overflow-x-auto card">
+                     <table class="min-w-full divide-y">
+                        <thead class="bg-gray-50"><tr>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Дата</th>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Товар</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Сумма</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Оплачено</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Итоговый Баланс</th>
+                            <th class="px-2 py-3 text-center text-xs font-semibold uppercase">Действия</th>
+                        </tr></thead>
+                        <tbody id="purchases-transactions-table-body" class="divide-y"></tbody>
+                    </table>
+                </div>`;
+            const tableBody=document.getElementById('purchases-transactions-table-body');
+            let runningBalance=0;
+            const transactionsHtml=supplier.transactions.map(t=>{
+                const transactionTotal=(t.unitPrice||0)*(t.quantity||0);
+                runningBalance+=transactionTotal-(t.paymentMade||0);
+                return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity||0})</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(transactionTotal)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium text-red-600">${formatCurrency(t.paymentMade)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance>0?'text-red-600':'text-green-600'}">${formatCurrency(runningBalance)}</td>
+                    <td class="px-2 py-3 text-center whitespace-nowrap">
+                        <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" onclick="window.openPurchaseModalForEdit('${t.id}')">Ред.</button>
+                        <button class="text-red-600 hover:text-red-900 text-sm" onclick="window.deletePurchase('${t.id}')">Удал.</button>
+                    </td>
+                </tr>`
+            }).join('');
+            tableBody.innerHTML=transactionsHtml
+        }
+        function openPurchaseModal(docId=null,purchaseData=null){
+            const modal=document.getElementById('purchase-modal');
+            modal.classList.remove('hidden');
+            const form=document.getElementById('purchase-form');
+            form.reset();
+            document.getElementById('modal-purchase-date').valueAsDate=new Date();
+            document.getElementById('purchase-doc-id').value=docId||'';
+            const supplierSelect=document.getElementById('modal-supplier-select');
+            supplierSelect.innerHTML=`<option value="" disabled selected>Выберите поставщика</option>`;
+            Object.keys(supplierAggregates).forEach(id=>{supplierSelect.innerHTML+=`<option value="${id}">${supplierAggregates[id].name}</option>`});
+            if(purchaseData){
+                supplierSelect.value=purchaseData.supplierId;
+                document.getElementById('modal-purchase-item-name').value=purchaseData.itemName;
+                document.getElementById('modal-purchase-unit-price').value=purchaseData.unitPrice;
+                document.getElementById('modal-purchase-quantity').value=purchaseData.quantity;
+                document.getElementById('modal-payment-made').value=purchaseData.paymentMade;
+                document.getElementById('modal-purchase-date').value=purchaseData.transactionDate.toISOString().split('T')[0];
+                supplierSelect.disabled=true;
+                document.getElementById('toggle-new-supplier-button').classList.add('hidden')
+            }else{
+                supplierSelect.disabled=false;
+                document.getElementById('toggle-new-supplier-button').classList.remove('hidden')
+            }
+        }
+        function closePurchaseModal(){document.getElementById('purchase-modal').classList.add('hidden')}
+        function openEditSupplierNameModal(supplierId,currentName){
+            document.getElementById('edit-supplier-id').value=supplierId;
+            document.getElementById('edit-supplier-name-input').value=currentName;
+            document.getElementById('edit-supplier-modal').classList.remove('hidden')
+        }
+        function closeEditSupplierModal(){document.getElementById('edit-supplier-modal').classList.add('hidden')}
+        async function handlePurchaseSubmit(e){
+            e.preventDefault();
+            const form=e.target;
+            const errorEl=document.getElementById('purchase-modal-error-message');
+            errorEl.classList.add('hidden');
+            const purchasesRef=getCollectionRef('purchase_records');
+            if(!purchasesRef)return;
+            const isNewSupplier=!document.getElementById('new-supplier-container').classList.contains('hidden');
+            let supplierId,supplierName;
+            if(isNewSupplier){
+                supplierName=form['modal-new-supplier-name'].value.trim();
+                if(!supplierName){errorEl.textContent='Имя нового поставщика не может быть пустым.';errorEl.classList.remove('hidden');return}
+                supplierId=crypto.randomUUID()
+            }else{
+                supplierId=form['modal-supplier-select'].value;
+                if(!supplierId){errorEl.textContent='Пожалуйста, выберите поставщика.';errorEl.classList.remove('hidden');return}
+                supplierName=supplierAggregates[supplierId].name
+            }
+            const batch=writeBatch(db);
+            let operations=0;
+            const itemName=form['modal-purchase-item-name'].value.trim();
+            if(isNewSupplier){
+                const initialBalance=parseFloat(form['modal-initial-purchase-balance'].value)||0;
+                if(initialBalance!==0){
+                    batch.set(doc(purchasesRef),{supplierId,supplierName,itemName:"Начальный баланс",unitPrice:initialBalance,quantity:1,paymentMade:0,transactionDate:new Date()});
+                    operations++
+                }
+            }
+            if(itemName&&(itemName!=="Закупка"||isNewSupplier)){
+                const data={supplierId,supplierName,itemName,unitPrice:parseFloat(form['modal-purchase-unit-price'].value),quantity:parseInt(form['modal-purchase-quantity'].value),paymentMade:parseFloat(form['modal-payment-made'].value),transactionDate:new Date(form['modal-purchase-date'].value)};
+                const docId=form['purchase-doc-id'].value;
+                const docRef=docId?doc(purchasesRef,docId):doc(purchasesRef);
+                if(docId){batch.update(docRef,data)}else{batch.set(docRef,data)}
+                operations++
+            }
+            if(operations===0&&isNewSupplier){
+                batch.set(doc(purchasesRef),{supplierId,supplierName,itemName:"Создание поставщика",unitPrice:0,quantity:0,paymentMade:0,transactionDate:new Date()});
+                operations++
+            }
+            if(operations>0){try{await batch.commit();closePurchaseModal()}catch(error){errorEl.textContent=`Ошибка: ${error.message}`;errorEl.classList.remove('hidden')}}
+            else{errorEl.textContent='Нечего сохранять.';errorEl.classList.remove('hidden')}
+        }
+        async function handleUpdateSupplierName(e){
+            e.preventDefault();
+            const supplierId=document.getElementById('edit-supplier-id').value;
+            const newName=document.getElementById('edit-supplier-name-input').value.trim();
+            if(!newName)return;
+            const purchasesRef=getCollectionRef('purchase_records');
+            const batch=writeBatch(db);
+            allPurchases.filter(p=>p.supplierId===supplierId).forEach(p=>{batch.update(doc(purchasesRef,p.id),{supplierName:newName})});
+            try{await batch.commit();closeEditSupplierModal()}
+            catch(error){console.error("Ошибка обновления имени поставщика:",error)}
+        }
+        async function deletePurchase(purchaseId){
+            if(confirm('Вы уверены, что хотите удалить эту закупку?')){
+                try{await deleteDoc(doc(getCollectionRef('purchase_records'),purchaseId))}
+                catch(error){console.error("Ошибка удаления закупки:",error)}
+            }
+        }
+        async function deleteSupplier(supplierId){
+            if(confirm('ВНИМАНИЕ! Вы действительно хотите удалить поставщика и ВСЕ его закупки? Это действие необратимо.')){
+                const purchasesRef=getCollectionRef('purchase_records');
+                const batch=writeBatch(db);
+                allPurchases.filter(p=>p.supplierId===supplierId).forEach(p=>batch.delete(doc(purchasesRef,p.id)));
+                try{await batch.commit();currentSupplierDetailsId=null;renderPurchasesDetailsView()}
+                catch(error){console.error("Ошибка удаления поставщика:",error)}
+            }
+        }
+        window.openEditSupplierNameModal=openEditSupplierNameModal;
+        window.viewSupplierDetails=(supplierId)=>{currentSupplierDetailsId=supplierId;showAppView('purchases','details')};
+        window.backToPurchasesDetailsList=()=>{currentSupplierDetailsId=null;renderPurchasesDetailsView()};
+        window.openPurchaseModalForEdit=(id)=>openPurchaseModal(id,allPurchases.find(p=>p.id===id));
+        window.deletePurchase=deletePurchase;
+        window.deleteSupplier=deleteSupplier;
+        
+        window.onload=()=>{
+            setupFirebase();
+            document.getElementById('google-signin-button').addEventListener('click',signInWithGoogle);
+            document.getElementById('access-denied-logout-button').addEventListener('click',logOut);
+            [...document.querySelectorAll('#sales-logout-button, #purchases-logout-button')].forEach(b=>b.addEventListener('click',logOut));
+            document.getElementById('goto-sales-btn').addEventListener('click',()=>{
+                document.getElementById('main-menu-screen').classList.add('hidden');
+                document.getElementById('sales-app-screen').classList.remove('hidden');
+                startSalesListener();
+                showAppView('sales','main')
+            });
+            document.getElementById('goto-purchases-btn').addEventListener('click',()=>{
+                document.getElementById('main-menu-screen').classList.add('hidden');
+                document.getElementById('purchases-app-screen').classList.remove('hidden');
+                startPurchasesListener();
+                showAppView('purchases','main')
+            });
+            [...document.querySelectorAll('#sales-back-to-menu-btn, #purchases-back-to-menu-btn')].forEach(btn=>{
+                btn.addEventListener('click',()=>{
+                    document.getElementById('sales-app-screen').classList.add('hidden');
+                    document.getElementById('purchases-app-screen').classList.add('hidden');
+                    document.getElementById('main-menu-screen').classList.remove('hidden');
+                    if(unsubscribeSales){unsubscribeSales();unsubscribeSales=null}
+                    if(unsubscribePurchases){unsubscribePurchases();unsubscribePurchases=null}
+                })
+            });
+            document.querySelectorAll('.header-nav-item').forEach(btn=>{btn.addEventListener('click',()=>showAppView(btn.dataset.app,btn.dataset.view))});
+            document.getElementById('add-transaction-button').addEventListener('click',()=>openTransactionModal());
+            document.getElementById('modal-close-button').addEventListener('click',closeTransactionModal);
+            document.getElementById('transaction-form').addEventListener('submit',handleTransactionSubmit);
+            document.getElementById('edit-client-form').addEventListener('submit',handleUpdateClientName);
+            document.getElementById('edit-modal-close-button').addEventListener('click',closeEditClientModal);
+            document.getElementById('client-search').addEventListener('input',renderClientsList);
+            document.getElementById('client-sort').addEventListener('change',renderClientsList);
+            document.getElementById('toggle-new-client-button').addEventListener('click',(e)=>{
+                document.getElementById('new-client-container').classList.toggle('hidden');
+                document.getElementById('client-selection-container').classList.toggle('hidden');
+                e.target.textContent=document.getElementById('new-client-container').classList.contains('hidden')?'Добавить нового клиента':'Вернуться к списку'
+            });
+            document.getElementById('add-purchase-button').addEventListener('click',()=>openPurchaseModal());
+            document.getElementById('purchase-modal-close-button').addEventListener('click',closePurchaseModal);
+            document.getElementById('purchase-form').addEventListener('submit',handlePurchaseSubmit);
+            document.getElementById('edit-supplier-form').addEventListener('submit',handleUpdateSupplierName);
+            document.getElementById('edit-supplier-modal-close-button').addEventListener('click',closeEditSupplierModal);
+            document.getElementById('supplier-search').addEventListener('input',renderSuppliersList);
+            document.getElementById('supplier-sort').addEventListener('change',renderSuppliersList);
+            document.getElementById('toggle-new-supplier-button').addEventListener('click',(e)=>{
+                document.getElementById('new-supplier-container').classList.toggle('hidden');
+                document.getElementById('supplier-selection-container').classList.toggle('hidden');
+                e.target.textContent=document.getElementById('new-supplier-container').classList.contains('hidden')?'Добавить нового поставщика':'Вернуться к списку'
+            });
+            const appNameInput=document.getElementById('app-name-input');
+            appNameInput.addEventListener('input',e=>{
+                const title=e.target.value.trim()||"JavPharma";
+                document.getElementById('site-title-tag').textContent=title;
+                document.getElementById('login-title').textContent=`Добро пожаловать в ${title}`;
+                document.getElementById('menu-title').textContent=title;
+                localStorage.setItem('siteTitle',title)
+            });
+            const applyTheme=(theme)=>{
+                document.body.className='min-h-screen flex flex-col items-center justify-center p-4';
+                if(theme!=='light')document.body.classList.add(`theme-${theme}`);
+                localStorage.setItem('siteTheme',theme);
+                document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+                document.querySelector(`.theme-btn[data-theme="${theme}"]`)?.classList.add('active')
+            };
+            document.querySelectorAll('.theme-btn').forEach(btn=>btn.addEventListener('click',e=>{
+                e.stopPropagation();
+                applyTheme(btn.dataset.theme);
+                [...document.querySelectorAll('#sales-theme-dropdown, #purchases-theme-dropdown')].forEach(d=>d.classList.add('hidden'))
+            }));
+            ['sales','purchases'].forEach(app=>{
+                const themeBtn=document.getElementById(`${app}-theme-menu-button`);
+                const langBtn=document.getElementById(`${app}-language-menu-button`);
+                const themeDropdown=document.getElementById(`${app}-theme-dropdown`);
+                const langDropdown=document.getElementById(`${app}-language-dropdown`);
+                if(themeBtn)themeBtn.addEventListener('click',e=>{e.stopPropagation();themeDropdown?.classList.toggle('hidden')});
+                if(langBtn)langBtn.addEventListener('click',e=>{e.stopPropagation();langDropdown?.classList.toggle('hidden')})
+            });
+            document.addEventListener('click',()=>{
+                ['sales-theme-dropdown','sales-language-dropdown','purchases-theme-dropdown','purchases-language-dropdown'].forEach(id=>{
+                    const el=document.getElementById(id);
+                    if(el)el.classList.add('hidden')
+                })
+            });
+            const updateLogo=(url)=>{
+                document.querySelectorAll('#login-logo, #menu-logo, #sales-site-logo, #purchases-site-logo').forEach(el=>{
+                    if(url){el.src=url;el.classList.remove('hidden')}
+                    else{el.classList.add('hidden')}
+                });
+                document.getElementById('logo-preview-container').innerHTML=url?`<img src="${url}" class="h-16 mx-auto">`:''
+            };
+            const logoUploadInput=document.getElementById('logo-upload-input');
+            logoUploadInput.addEventListener('change',async(e)=>{
+                const file=e.target.files[0];
+                if(!file)return;
+                const statusEl=document.getElementById('logo-upload-status');
+                statusEl.textContent='Загрузка...';
+                const formData=new FormData();
+                formData.append('image',file);
+                try{
+                    const res=await fetch('https://api.imgbb.com/1/upload?key=ef55a2f580a19821cd96845bc3f3cee1',{method:'POST',body:formData});
+                    const result=await res.json();
+                    if(result.success){
+                        const logoUrl=result.data.url;
+                        localStorage.setItem('siteLogo',logoUrl);
+                        updateLogo(logoUrl);
+                        statusEl.textContent='Логотип успешно загружен!'
+                    }else{throw new Error(result.error.message)}
+                }catch(err){statusEl.textContent='Ошибка загрузки.'}
+            });
+            applyTheme(localStorage.getItem('siteTheme')||'light');
+            updateLogo(localStorage.getItem('siteLogo'));
+            const savedTitle=localStorage.getItem('siteTitle');
+            if(savedTitle){
+                document.getElementById('site-title-tag').textContent=savedTitle;
+                document.getElementById('login-title').textContent=`Добро пожаловать в ${savedTitle}`;
+                document.getElementById('menu-title').textContent=savedTitle;
+                appNameInput.value=savedTitle;
+            }
+        }
+    </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="site-title-tag">JavPharma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        :root {
+            --bg-main: #f7f7f9;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --header-brand: #2563eb;
+            --bg-hover: #f3f4f6;
+        }
+
+        .theme-violet {
+            --bg-main-start: #a78bfa; 
+            --bg-main-end: #ddd6fe;
+            --bg-card: rgba(255, 255, 255, 0.4);
+            --text-primary: #1e1b4b;
+            --text-secondary: #4338ca;
+            --border-color: rgba(99, 102, 241, 0.3);
+            --header-brand: #4338ca;
+            --bg-hover: rgba(255, 255, 255, 0.6);
+        }
+
+        .theme-crimson {
+            --bg-main-start: #fb7185;
+            --bg-main-end: #fecdd3;
+            --bg-card: rgba(255, 255, 255, 0.4);
+            --text-primary: #881337;
+            --text-secondary: #be123c;
+            --border-color: rgba(225, 29, 72, 0.3);
+            --header-brand: #be123c;
+            --bg-hover: rgba(255, 255, 255, 0.6);
+        }
+        
+        .theme-sunset {
+            --bg-main-start: #fb923c;
+            --bg-main-end: #fed7aa;
+            --bg-card: rgba(255, 255, 255, 0.4);
+            --text-primary: #7c2d12;
+            --text-secondary: #c2410c;
+            --border-color: rgba(234, 88, 12, 0.3);
+            --header-brand: #c2410c;
+            --bg-hover: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            transition: background-color 0.5s ease;
+        }
+
+        body.theme-violet, body.theme-crimson, body.theme-sunset {
+            background-image: linear-gradient(135deg, var(--bg-main-start), var(--bg-main-end));
+        }
+
+        .card, .bg-white, .bg-gray-50 {
+            background-color: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        .text-gray-900, .text-gray-800, .text-gray-700 { color: var(--text-primary); }
+        .text-gray-600, .text-gray-500, .text-gray-400 { color: var(--text-secondary); }
+        .border-b, .border { border-color: var(--border-color); }
+        .hover\:bg-gray-100:hover, .hover\:bg-gray-50:hover { background-color: var(--bg-hover); }
+
+        .min-h-h-screen { min-height: calc(100vh - 32px); }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.6); z-index: 40; }
+        #transaction-modal, #edit-client-modal, #purchase-modal, #edit-supplier-modal { z-index: 50; }
+        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
+        
+        .theme-btn.active { box-shadow: 0 0 0 2px var(--header-brand); }
+        
+        .theme-violet .modal-overlay .card,
+        .theme-crimson .modal-overlay .card,
+        .theme-sunset .modal-overlay .card {
+             background-color: #1f2937;
+             color: #f9fafb;
+        }
+         .theme-violet .modal-overlay .bg-transparent,
+         .theme-crimson .modal-overlay .bg-transparent,
+         .theme-sunset .modal-overlay .bg-transparent {
+            background-color: rgba(255, 255, 255, 0.05);
+         }
+        mark { background-color: #fde047; color: black; padding: 0 2px; border-radius: 2px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- === ЭКРАН ВХОДА === -->
+    <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300">
+        <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
+        <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
+        <p class="text-center text-gray-600 mb-8">Войдите, чтобы получить доступ к вашим данным.</p>
+        <button id="google-signin-button" class="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 font-semibold py-3 px-4 rounded-lg shadow-sm hover:bg-gray-50 transition duration-200">
+            <svg class="w-6 h-6 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+            Войти с помощью Google
+        </button>
+        <p id="login-error" class="text-red-500 mt-4 text-sm"></p>
+    </div>
+
+    <!-- === ЭКРАН "ДОСТУП ЗАПРЕЩЕН" === -->
+    <div id="access-denied-screen" class="hidden w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center text-center">
+        <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+        <h1 class="text-2xl font-bold mb-2">Доступ запрещен</h1>
+        <p class="text-gray-600 mb-2">Вы вошли как <strong id="user-email-display"></strong>. Эта учетная запись не имеет прав администратора.</p>
+        <p class="text-xs text-gray-500 mb-6 break-all">Скопируйте ваш ID и вставьте его в код: <code id="denied-user-uid" class="bg-gray-200 p-1 rounded select-all font-mono"></code></p>
+        <button id="access-denied-logout-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-sm transition duration-200">
+            Выйти
+        </button>
+    </div>
+
+    <!-- === ЭКРАН ГЛАВНОГО МЕНЮ === -->
+    <div id="main-menu-screen" class="hidden w-full max-w-4xl">
+        <div class="p-8 rounded-xl card text-center">
+             <img id="menu-logo" src="" alt="Logo" class="h-24 mx-auto mb-6 hidden">
+             <h1 id="menu-title" class="text-4xl font-bold mb-4">JavPharma</h1>
+             <p class="text-lg text-gray-600 mb-10">Выберите раздел для работы</p>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <button id="goto-sales-btn" class="flex flex-col items-center justify-center p-8 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                     <svg class="w-20 h-20 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 18a6 6 0 006-6h-4.5a1.5 1.5 0 010-3H18a6 6 0 00-6-6" /><path d="M12 6a6 6 0 00-6 6h4.5a1.5 1.5 0 010 3H6a6 6 0 006 6z" /></svg>
+                     <h2 class="text-2xl font-bold">Продажи</h2>
+                     <p class="text-gray-500 mt-1">Учёт клиентов и транзакций</p>
+                 </button>
+                 <button id="goto-purchases-btn" class="flex flex-col items-center justify-center p-8 bg-green-50 hover:bg-green-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                     <svg class="w-20 h-20 text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                     <h2 class="text-2xl font-bold">Покупки</h2>
+                     <p class="text-gray-500 mt-1">Учёт поставщиков и закупок</p>
+                 </button>
+             </div>
+        </div>
+    </div>
+
+    <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (ПРОДАЖИ) === -->
+    <div id="sales-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
+        <header class="flex items-center justify-between border-b pb-4 mb-4">
+            <div class="flex items-center space-x-3">
+                 <button id="sales-back-to-menu-btn" title="Главное меню" class="p-2 rounded-md hover:bg-gray-100 transition duration-150 card">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <img id="sales-site-logo" src="" alt="Logo" class="h-16 hidden">
+                <h1 class="text-3xl font-bold" style="color: var(--header-brand);">Продажи</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div id="sales-user-display" class="hidden items-center space-x-3">
+                    <img id="sales-user-avatar" src="" class="w-10 h-10 rounded-full">
+                    <span id="sales-user-name" class="font-semibold"></span>
+                </div>
+                <button data-app="sales" data-view="main" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a3.004 3.004 0 015.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <span>Основа</span>
+                </button>
+                <button data-app="sales" data-view="details" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2z"></path></svg>
+                    <span>Подробнее</span>
+                </button>
+                <button data-app="sales" data-view="settings" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span>Настройки</span>
+                </button>
+                 <button id="sales-logout-button" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </header>
+        
+        <section data-app="sales" data-view="main" class="view-content flex flex-col flex-grow pt-4">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-bold">Обзор Клиентов</h2>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-3 mb-4">
+                <input type="text" id="client-search" placeholder="Поиск по имени клиента..." class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent">
+                <select id="client-sort" class="px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
+                    <option value="newest">Сначала новые</option>
+                    <option value="oldest">Сначала старые</option>
+                    <option value="name_az">Имя (А-Я)</option>
+                    <option value="name_za">Имя (Я-А)</option>
+                </select>
+                <button id="add-transaction-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Добавить Продажу/Клиента</span>
+                </button>
+            </div>
+            
+            <div id="clients-list-container" class="overflow-y-auto flex-grow space-y-4"></div>
+        </section>
+
+        <section data-app="sales" data-view="details" class="view-content hidden flex-col flex-grow pt-4">
+             <div id="sales-details-view-container"></div>
+        </section>
+
+        <section data-app="sales" data-view="settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
+            <h1 class="text-3xl font-bold mb-6">Настройки Системы</h1>
+            <div class="space-y-8 max-w-2xl">
+                <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4">Логотип</h3>
+                    <div id="logo-preview-container" class="mb-4 flex items-center justify-center h-20"></div>
+                    <input type="file" id="logo-upload-input" accept="image/*" class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                    <p id="logo-upload-status" class="text-sm mt-2 text-center"></p>
+                </div>
+                <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4">Название Приложения</h3>
+                    <label for="app-name-input" class="block text-sm font-medium">Изменить название</label>
+                    <input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent" placeholder="JavPharma"/>
+                </div>
+                 <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4">Ваша Учётная Запись</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium">Статус</label>
+                            <input type="text" value="Вошли через Google" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg shadow-sm focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">ID Пользователя</label>
+                            <code id="user-id-display-settings" class="block bg-gray-100 p-2 rounded text-sm break-all">...</code>
+                        </div>
+                    </div>
+                </div>
+                 <div id="admin-panel" class="hidden p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4">Панель Администратора</h3>
+                    <p class="text-sm text-gray-600 mb-2">Вы вошли с правами администратора.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- === ОСНОВНОЕ ПРИЛОЖЕНИЕ (ПОКУПКИ) === -->
+    <div id="purchases-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
+        <header class="flex items-center justify-between border-b pb-4 mb-4">
+            <div class="flex items-center space-x-3">
+                 <button id="purchases-back-to-menu-btn" title="Главное меню" class="p-2 rounded-md hover:bg-gray-100 transition duration-150 card">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <img id="purchases-site-logo" src="" alt="Logo" class="h-16 hidden">
+                <h1 class="text-3xl font-bold" style="color: var(--header-brand);">Покупки</h1>
+            </div>
+             <div class="flex items-center space-x-4">
+                 <div id="purchases-user-display" class="hidden items-center space-x-3">
+                    <img id="purchases-user-avatar" src="" class="w-10 h-10 rounded-full">
+                    <span id="purchases-user-name" class="font-semibold"></span>
+                </div>
+                <button data-app="purchases" data-view="main" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1m-1-4h1m-1-4h1"></path></svg>
+                    <span>Основа</span>
+                </button>
+                <button data-app="purchases" data-view="details" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2z"></path></svg>
+                    <span>Подробнее</span>
+                </button>
+                <button data-app="purchases" data-view="settings" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span>Настройки</span>
+                </button>
+                <button id="purchases-logout-button" class="text-gray-500 hover:text-red-500 transition duration-200" title="Выход">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <section data-app="purchases" data-view="main" class="view-content flex flex-col flex-grow pt-4">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-bold">Обзор Поставщиков</h2>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-3 mb-4">
+                <input type="text" id="supplier-search" placeholder="Поиск по имени поставщика..." class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent">
+                <select id="supplier-sort" class="px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
+                    <option value="newest">Сначала новые</option>
+                    <option value="oldest">Сначала старые</option>
+                    <option value="name_az">Имя (А-Я)</option>
+                    <option value="name_za">Имя (Я-А)</option>
+                </select>
+                <button id="add-purchase-button" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg shadow-md flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Добавить Покупку/Поставщика</span>
+                </button>
+            </div>
+            
+            <div id="suppliers-list-container" class="overflow-y-auto flex-grow space-y-4"></div>
+        </section>
+        
+        <section data-app="purchases" data-view="details" class="view-content hidden flex-col flex-grow pt-4">
+             <div id="purchases-details-view-container"></div>
+        </section>
+
+        <section data-app="purchases" data-view="settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
+             <h1 class="text-3xl font-bold mb-6">Настройки</h1>
+             <div class="flex items-center space-x-4">
+                 <div class="relative">
+                    <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card purchases-theme-lang-btn" id="purchases-language-menu-button">
+                        <span id="purchases-current-lang-text" class="font-semibold">RU</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="purchases-language-dropdown" class="absolute left-0 mt-2 w-48 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                        <button data-lang="ru" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg"><span>🇷🇺</span><span>Русский</span></button>
+                        <button data-lang="tr" class="language-option flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg"><span>🇹🇷</span><span>Türkçe</span></button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card purchases-theme-lang-btn" id="purchases-theme-menu-button" title="Сменить тему">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    </button>
+                    <div id="purchases-theme-dropdown" class="absolute left-0 mt-2 w-40 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="light"><span>Светлая</span> <div class="w-4 h-4 rounded-full bg-gray-200 border"></div></button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="violet"><span>Фиолетовая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #a78bfa, #ddd6fe)"></div></button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="crimson"><span>Багровая</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb7185, #fecdd3)"></div></button>
+                        <button class="theme-btn flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-100 rounded-lg" data-theme="sunset"><span>Закат</span> <div class="w-4 h-4 rounded-full" style="background-image: linear-gradient(135deg, #fb923c, #fed7aa)"></div></button>
+                    </div>
+                </div>
+             </div>
+        </section>
+    </div>
+
+
+    <!-- === МОДАЛЬНЫЕ ОКНА: ПРОДАЖИ === -->
+    <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">Добавить Новую Продажу</h2>
+            <form id="transaction-form" class="space-y-4">
+                <input type="hidden" id="transaction-doc-id">
+                <div>
+                    <label class="block text-sm font-medium">Имя Клиента</label>
+                    <div id="client-selection-container">
+                        <select id="modal-client-select" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent"></select>
+                    </div>
+                    <div id="new-client-container" class="hidden mt-2 space-y-2">
+                        <input type="text" id="modal-new-client-name" placeholder="Введите имя нового клиента" class="w-full px-4 py-2 border rounded-lg bg-transparent">
+                        <div>
+                            <label class="block text-sm font-medium">Начальный долг клиента ($)</label>
+                            <input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
+                        </div>
+                    </div>
+                    <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2">Добавить нового клиента</button>
+                </div>
+                <div>
+                    <div>
+                        <label class="block text-sm font-medium">Товар / Описание</label>
+                        <input type="text" id="modal-item-name" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Товар">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium">Цена продажи ($)</label>
+                            <input type="number" step="0.01" id="modal-unit-price" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Количество (шт)</label>
+                            <input type="number" step="1" id="modal-quantity" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="1">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium">Получено оплаты ($)</label>
+                        <input type="number" step="0.01" id="modal-payment-received" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium">Дата Продажи</label>
+                    <input type="date" id="modal-transaction-date" required class="w-full px-4 py-2 border rounded-lg bg-transparent">
+                </div>
+                <p id="modal-error-message" class="text-red-500 text-sm mt-2 mb-2 text-center hidden"></p>
+                <div class="flex justify-between pt-4">
+                    <button type="button" id="modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg">Отмена</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="edit-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+         <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all">
+              <h2 class="text-2xl font-bold mb-4">Редактировать имя клиента</h2>
+              <form id="edit-client-form">
+                   <input type="hidden" id="edit-client-id">
+                   <div>
+                        <label for="edit-client-name-input" class="block text-sm font-medium">Новое имя клиента</label>
+                        <input type="text" id="edit-client-name-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent">
+                   </div>
+                   <div class="flex justify-between pt-6">
+                        <button type="button" id="edit-modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg">Отмена</button>
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg">Сохранить</button>
+                   </div>
+              </form>
+         </div>
+    </div>
+
+    <!-- === МОДАЛЬНЫЕ ОКНА: ПОКУПКИ === -->
+     <div id="purchase-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-lg p-6 rounded-xl card transform transition-all duration-300">
+            <h2 class="text-2xl font-bold mb-4">Добавить Новую Покупку</h2>
+            <form id="purchase-form" class="space-y-4">
+                <input type="hidden" id="purchase-doc-id">
+                <div>
+                    <label class="block text-sm font-medium">Имя Поставщика</label>
+                    <div id="supplier-selection-container">
+                        <select id="modal-supplier-select" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent"></select>
+                    </div>
+                    <div id="new-supplier-container" class="hidden mt-2 space-y-2">
+                        <input type="text" id="modal-new-supplier-name" placeholder="Введите имя нового поставщика" class="w-full px-4 py-2 border rounded-lg bg-transparent">
+                        <div>
+                            <label class="block text-sm font-medium">Наш начальный долг ($)</label>
+                            <input type="number" step="0.01" id="modal-initial-purchase-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
+                        </div>
+                    </div>
+                    <button type="button" id="toggle-new-supplier-button" class="text-sm text-blue-600 hover:underline mt-2">Добавить нового поставщика</button>
+                </div>
+                <div>
+                    <div>
+                        <label class="block text-sm font-medium">Товар / Описание</label>
+                        <input type="text" id="modal-purchase-item-name" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="Закупка">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium">Цена закупки ($)</label>
+                            <input type="number" step="0.01" id="modal-purchase-unit-price" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Количество (шт)</label>
+                            <input type="number" step="1" id="modal-purchase-quantity" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="1">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium">Оплачено поставщику ($)</label>
+                        <input type="number" step="0.01" id="modal-payment-made" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="100">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm font-medium">Дата Покупки</label>
+                    <input type="date" id="modal-purchase-date" required class="w-full px-4 py-2 border rounded-lg bg-transparent">
+                </div>
+                <p id="purchase-modal-error-message" class="text-red-500 text-sm mt-2 mb-2 text-center hidden"></p>
+                <div class="flex justify-between pt-4">
+                    <button type="button" id="purchase-modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg">Отмена</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="edit-supplier-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+         <div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all">
+              <h2 class="text-2xl font-bold mb-4">Редактировать имя поставщика</h2>
+              <form id="edit-supplier-form">
+                   <input type="hidden" id="edit-supplier-id">
+                   <div>
+                        <label class="block text-sm font-medium">Новое имя поставщика</label>
+                        <input type="text" id="edit-supplier-name-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent">
+                   </div>
+                   <div class="flex justify-between pt-6">
+                        <button type="button" id="edit-supplier-modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg">Отмена</button>
+                        <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg">Сохранить</button>
+                   </div>
+              </form>
+         </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1']; 
+        const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
+        
+        let db, auth, currentUserId;
+        let unsubscribeSales = null, clientAggregates = {}, allTransactions = [], currentClientDetailsId = null;
+        let unsubscribePurchases = null, supplierAggregates = {}, allPurchases = [], currentSupplierDetailsId = null;
+        
+        const formatDate = (d) => d && d instanceof Date ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}` : 'N/A';
+        const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(a || 0);
+
+        function getCollectionRef(type) {
+            if (!db || !currentUserId) return null;
+            return collection(db, 'artifacts', appId, 'users', currentUserId, type);
+        }
+        
+        function showAppView(app, viewId) {
+            document.querySelectorAll(`[data-app="${app}"].view-content`).forEach(v => v.classList.add('hidden'));
+            const viewToShow = document.querySelector(`[data-app="${app}"][data-view="${viewId}"]`);
+            if(viewToShow) viewToShow.classList.remove('hidden');
+            
+            document.querySelectorAll(`#${app}-app-screen .header-nav-item`).forEach(item => {
+                item.style.borderColor = 'transparent';
+                item.style.color = 'var(--text-secondary)';
+                if (item.dataset.view === viewId) {
+                    item.style.borderColor = 'var(--header-brand)';
+                    item.style.color = 'var(--text-primary)';
+                }
+            });
+            
+            if (app === 'sales' && viewId === 'details') renderSalesDetailsView();
+            if (app === 'purchases' && viewId === 'details') renderPurchasesDetailsView();
+        }
+
+        function setupFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                onAuthStateChanged(auth, handleAuthStateChange);
+            } catch (error) { console.error("Firebase initialization failed:", error); }
+        }
+        
+        function handleAuthStateChange(user) {
+            ['login-screen', 'sales-app-screen', 'purchases-app-screen', 'access-denied-screen', 'main-menu-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('admin-panel')?.classList.add('hidden');
+
+            if (user) {
+                if (ADMIN_UIDS.includes(user.uid)) {
+                    currentUserId = user.uid;
+                    ['sales', 'purchases'].forEach(prefix => {
+                        const nameEl = document.getElementById(`${prefix}-user-name`);
+                        const avatarEl = document.getElementById(`${prefix}-user-avatar`);
+                        const displayEl = document.getElementById(`${prefix}-user-display`);
+                        if(nameEl) nameEl.textContent = user.displayName || 'Администратор';
+                        if(avatarEl) avatarEl.src = user.photoURL || 'https://placehold.co/40x40/E2E8F0/A0AEC0?text=A';
+                        if(displayEl) displayEl.classList.remove('hidden');
+                    });
+                    document.getElementById('user-id-display-settings').textContent = currentUserId;
+                    document.getElementById('main-menu-screen').classList.remove('hidden');
+                    document.getElementById('admin-panel')?.classList.remove('hidden');
+                } else {
+                    document.getElementById('user-email-display').textContent = user.email;
+                    document.getElementById('denied-user-uid').textContent = user.uid;
+                    document.getElementById('access-denied-screen').classList.remove('hidden');
+                }
+            } else {
+                currentUserId = null;
+                if (unsubscribeSales) unsubscribeSales();
+                if (unsubscribePurchases) unsubscribePurchases();
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        }
+        
+        async function signInWithGoogle() {
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+            catch (error) { document.getElementById('login-error').textContent = `Ошибка: ${error.code}`; }
+        }
+
+        async function logOut() {
+            try { await signOut(auth); } catch (error) { console.error("Ошибка выхода:", error); }
+        }
+
+        // --- ЛОГИКА ДЛЯ "ПРОДАЖ" ---
+        function startSalesListener(){
+            if(unsubscribeSales)unsubscribeSales();
+            if(unsubscribePurchases){unsubscribePurchases();unsubscribePurchases=null}
+            const salesRef=getCollectionRef('sales_records');
+            if(!salesRef)return;
+            unsubscribeSales=onSnapshot(salesRef,(snapshot)=>{
                 // *** ИСПРАВЛЕНИЕ НАЧАЛО: Безопасная обработка даты ***
                 allTransactions = snapshot.docs.map(doc => {
                     const data = doc.data();
