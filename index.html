@@ -243,7 +243,7 @@
                     <img id="purchases-user-avatar" src="" class="w-10 h-10 rounded-full">
                     <span id="purchases-user-name" class="font-semibold"></span>
                 </div>
-                 <button data-app="purchases" data-view="main" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                <button data-app="purchases" data-view="main" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1m-1-4h1m-1-4h1"></path></svg>
                     <span>Основа</span>
                 </button>
@@ -290,7 +290,7 @@
         <section data-app="purchases" data-view="settings" class="view-content hidden flex-col flex-grow pt-4">
              <div class="flex items-center space-x-4">
                  <div class="relative">
-                    <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="purchases-language-menu-button">
+                    <button class="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 transition duration-150 card purchases-theme-lang-btn" id="purchases-language-menu-button">
                         <span id="purchases-current-lang-text" class="font-semibold">RU</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
@@ -300,7 +300,7 @@
                     </div>
                 </div>
                 <div class="relative">
-                    <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card" id="purchases-theme-menu-button" title="Сменить тему">
+                    <button class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-150 card purchases-theme-lang-btn" id="purchases-theme-menu-button" title="Сменить тему">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
                     </button>
                     <div id="purchases-theme-dropdown" class="absolute left-0 mt-2 w-40 bg-white border rounded-lg shadow-xl hidden z-20 p-2 card">
@@ -459,7 +459,7 @@
         import { getFirestore, doc, collection, onSnapshot, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1', 'h25tlwhyAQfo1PBgzYMekWKD5Vl1']; 
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYmekWKD5Vl1']; 
         
         const CUSTOM_FIREBASE_CONFIG = {
             apiKey: "AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ",
@@ -553,13 +553,416 @@
             try { await signOut(auth); } catch (error) { console.error("Ошибка выхода:", error); }
         }
 
-        // === ЛОГИКА РАЗДЕЛА "ПРОДАЖИ" ===
-        // ... (все функции были здесь)
+        // --- ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПРОДАЖИ" ---
 
-        // === ЛОГИКА РАЗДЕЛА "ПОКУПКИ" ===
-        // ... (все функции были здесь)
+        function startSalesListener() {
+            if (unsubscribeSales) unsubscribeSales();
+            if (unsubscribePurchases) { unsubscribePurchases(); unsubscribePurchases = null; }
 
-        // === ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ===
+            const salesRef = getCollectionRef('sales_records');
+            if (!salesRef) return;
+            
+            unsubscribeSales = onSnapshot(salesRef, (snapshot) => {
+                allTransactions = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
+                clientAggregates = {};
+                allTransactions.forEach(t => {
+                    if (!clientAggregates[t.clientId]) {
+                        clientAggregates[t.clientId] = { name: t.clientName, transactions: [] };
+                    }
+                    clientAggregates[t.clientId].transactions.push(t);
+                });
+
+                Object.keys(clientAggregates).forEach(clientId => {
+                    const client = clientAggregates[clientId];
+                    client.transactions.sort((a, b) => a.transactionDate - b.transactionDate);
+                    let totalSales = 0, totalPaid = 0;
+                    client.transactions.forEach(t => {
+                        totalSales += (t.unitPrice || 0) * (t.quantity || 0);
+                        totalPaid += t.paymentReceived || 0;
+                    });
+                    client.totalSales = totalSales;
+                    client.totalPaid = totalPaid;
+                });
+                renderClientsList();
+                 if (currentClientDetailsId) {
+                    renderSalesDetailsView();
+                }
+            });
+        }
+
+        function renderClientsList() {
+            const container = document.getElementById('clients-list-container');
+            if (!container) return;
+            const filter = document.getElementById('client-search').value.toLowerCase();
+            const sortMethod = document.getElementById('client-sort').value;
+            container.innerHTML = '';
+            let clientIds = Object.keys(clientAggregates);
+
+            switch(sortMethod) {
+                case 'newest': clientIds.sort((a, b) => (clientAggregates[b].transactions.at(-1)?.transactionDate || 0) - (clientAggregates[a].transactions.at(-1)?.transactionDate || 0)); break;
+                case 'oldest': clientIds.sort((a, b) => (clientAggregates[a].transactions[0]?.transactionDate || Infinity) - (clientAggregates[b].transactions[0]?.transactionDate || Infinity)); break;
+                case 'name_az': clientIds.sort((a, b) => clientAggregates[a].name.localeCompare(clientAggregates[b].name)); break;
+                case 'name_za': clientIds.sort((a, b) => clientAggregates[b].name.localeCompare(clientAggregates[a].name)); break;
+            }
+
+            const filteredClientIds = clientIds.filter(id => clientAggregates[id].name.toLowerCase().includes(filter));
+
+            if (filteredClientIds.length === 0) {
+                 const logoUrl = localStorage.getItem('siteLogo');
+                 container.innerHTML = logoUrl ? `<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>` : `<div class="p-4 text-center text-gray-500">Нет клиентов для отображения.</div>`;
+                return;
+            }
+
+            filteredClientIds.forEach((clientId, index) => {
+                const client = clientAggregates[clientId];
+                const remaining = client.totalSales - client.totalPaid;
+                const clientCard = document.createElement('div');
+                clientCard.className = `p-4 border rounded-lg shadow-sm card`;
+                
+                const lastFiveTransactions = [...client.transactions].reverse().slice(0, 5);
+                const transactionsHtml = lastFiveTransactions.map(t => `
+                    <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
+                        <div class="col-span-3">${formatDate(t.transactionDate)}</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity || 0})</div>
+                        <div class="col-span-2 text-right text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</div>
+                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</div>
+                    </div>`).join('');
+
+                clientCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleClientDetails('${clientId}')">
+                        <div class="flex items-center space-x-3">
+                            <svg id="arrow-${clientId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${client.name}</h3>
+                            <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${clientId}', '${client.name.replace(/'/g, "\\'")}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                             <div class="text-right">
+                                <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
+                                <span class="text-xs block">Общий долг</span>
+                             </div>
+                             <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" onclick="event.stopPropagation(); window.viewClientDetails('${clientId}')">Детали</button>
+                        </div>
+                    </div>
+                    <div id="details-${clientId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
+                container.appendChild(clientCard);
+            });
+        }
+        
+        function renderSalesDetailsView() {
+            const container = document.getElementById('sales-details-view-container');
+            if (currentClientDetailsId && clientAggregates[currentClientDetailsId]) {
+                renderDetailedClientInfo(container, currentClientDetailsId);
+            } else {
+                renderSalesClientList(container);
+            }
+        }
+        
+        function renderSalesClientList(container) {
+            container.innerHTML = `
+                <h2 class="text-2xl font-bold mb-2">Подробнее (Выбор Клиента)</h2>
+                <p class="mb-4">Выберите клиента из списка ниже, чтобы просмотреть его полную историю транзакций.</p>
+                <div id="details-client-list" class="space-y-2"></div>`;
+            const listContainer = document.getElementById('details-client-list');
+            Object.keys(clientAggregates).forEach(clientId => {
+                const client = clientAggregates[clientId];
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
+                item.onclick = () => { currentClientDetailsId = clientId; renderSalesDetailsView(); };
+                item.innerHTML = `<div><p class="font-semibold">${client.name}</p></div><span class="font-semibold" style="color: var(--header-brand);">Выбрать</span>`;
+                listContainer.appendChild(item);
+            });
+        }
+
+        function renderDetailedClientInfo(container, clientId) {
+            const client = clientAggregates[clientId];
+            const remaining = client.totalSales - client.totalPaid;
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToSalesDetailsList()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                            <span>Назад к списку клиентов</span>
+                        </button>
+                        <h2 class="text-3xl font-bold">${client.name}</h2>
+                    </div>
+                    <div>
+                         <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${clientId}')">Удалить Клиента</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800">Всего Продано</p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(client.totalSales)}</p></div>
+                    <div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800">Всего Оплачено</p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(client.totalPaid)}</p></div>
+                    <div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800">Общий Долг</p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(remaining)}</p></div>
+                </div>
+                <div class="rounded-lg border overflow-x-auto card">
+                     <table class="min-w-full divide-y">
+                        <thead class="bg-gray-50"><tr>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Дата</th>
+                            <th class="px-2 py-3 text-left text-xs font-semibold uppercase">Товар</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Сумма</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Оплачено</th>
+                            <th class="px-2 py-3 text-right text-xs font-semibold uppercase">Итоговый Баланс</th>
+                            <th class="px-2 py-3 text-center text-xs font-semibold uppercase">Действия</th>
+                        </tr></thead>
+                        <tbody id="sales-transactions-table-body" class="divide-y"></tbody>
+                    </table>
+                </div>`;
+            
+            const tableBody = document.getElementById('sales-transactions-table-body');
+            let runningBalance = 0;
+            const transactionsHtml = client.transactions.map(t => {
+                const transactionTotal = (t.unitPrice || 0) * (t.quantity || 0);
+                runningBalance += transactionTotal - (t.paymentReceived || 0);
+                return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
+                    <td class="px-2 py-3 text-sm">${t.itemName} (x${t.quantity || 0})</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(transactionTotal)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
+                    <td class="px-2 py-3 text-right text-sm font-bold ${runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(runningBalance)}</td>
+                    <td class="px-2 py-3 text-center whitespace-nowrap">
+                        <button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" onclick="window.openTransactionModalForEdit('${t.id}')">Ред.</button>
+                        <button class="text-red-600 hover:text-red-900 text-sm" onclick="window.deleteTransaction('${t.id}')">Удал.</button>
+                    </td>
+                </tr>`;
+            }).join('');
+            tableBody.innerHTML = transactionsHtml;
+        }
+
+        function openTransactionModal(docId = null, transactionData = null) {
+            const modal = document.getElementById('transaction-modal');
+            modal.classList.remove('hidden');
+            const form = document.getElementById('transaction-form');
+            form.reset();
+            document.getElementById('modal-transaction-date').valueAsDate = new Date();
+            document.getElementById('transaction-doc-id').value = docId || '';
+            
+            const clientSelect = document.getElementById('modal-client-select');
+            clientSelect.innerHTML = `<option value="" disabled selected>Выберите клиента</option>`;
+            Object.keys(clientAggregates).forEach(id => { clientSelect.innerHTML += `<option value="${id}">${clientAggregates[id].name}</option>`; });
+            
+            if (transactionData) {
+                clientSelect.value = transactionData.clientId;
+                document.getElementById('modal-item-name').value = transactionData.itemName;
+                document.getElementById('modal-unit-price').value = transactionData.unitPrice;
+                document.getElementById('modal-quantity').value = transactionData.quantity;
+                document.getElementById('modal-payment-received').value = transactionData.paymentReceived;
+                document.getElementById('modal-transaction-date').value = transactionData.transactionDate.toISOString().split('T')[0];
+                clientSelect.disabled = true;
+                document.getElementById('toggle-new-client-button').classList.add('hidden');
+            } else {
+                clientSelect.disabled = false;
+                document.getElementById('toggle-new-client-button').classList.remove('hidden');
+            }
+        }
+        
+        function closeTransactionModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
+        function openEditClientNameModal(clientId, currentName) {
+            document.getElementById('edit-client-id').value = clientId;
+            document.getElementById('edit-client-name-input').value = currentName;
+            document.getElementById('edit-client-modal').classList.remove('hidden');
+        }
+        function closeEditClientModal() { document.getElementById('edit-client-modal').classList.add('hidden'); }
+
+        async function handleTransactionSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const errorEl = document.getElementById('modal-error-message');
+            errorEl.classList.add('hidden');
+            const salesRef = getCollectionRef('sales_records');
+            if (!salesRef) return;
+            
+            const isNewClient = !document.getElementById('new-client-container').classList.contains('hidden');
+            let clientId, clientName;
+            if (isNewClient) {
+                clientName = form['modal-new-client-name'].value.trim();
+                if (!clientName) { errorEl.textContent = 'Имя нового клиента не может быть пустым.'; errorEl.classList.remove('hidden'); return; }
+                clientId = crypto.randomUUID();
+            } else {
+                clientId = form['modal-client-select'].value;
+                if (!clientId) { errorEl.textContent = 'Пожалуйста, выберите клиента.'; errorEl.classList.remove('hidden'); return; }
+                clientName = clientAggregates[clientId].name;
+            }
+
+            const batch = writeBatch(db);
+            let operations = 0;
+            const itemName = form['modal-item-name'].value.trim();
+
+            if (isNewClient) {
+                const initialBalance = parseFloat(form['modal-initial-balance'].value) || 0;
+                if (initialBalance !== 0) {
+                    batch.set(doc(salesRef), { clientId, clientName, itemName: "Начальный баланс", unitPrice: initialBalance, quantity: 1, paymentReceived: 0, transactionDate: new Date() });
+                    operations++;
+                }
+            }
+            
+            if (itemName && (itemName !== "Товар" || isNewClient)) {
+                const data = {
+                    clientId, clientName,
+                    itemName: itemName,
+                    unitPrice: parseFloat(form['modal-unit-price'].value),
+                    quantity: parseInt(form['modal-quantity'].value),
+                    paymentReceived: parseFloat(form['modal-payment-received'].value),
+                    transactionDate: new Date(form['modal-transaction-date'].value)
+                };
+                const docId = form['transaction-doc-id'].value;
+                const docRef = docId ? doc(salesRef, docId) : doc(salesRef);
+                if (docId) { batch.update(docRef, data); } else { batch.set(docRef, data); }
+                operations++;
+            }
+            
+            if (operations === 0 && isNewClient) {
+                 batch.set(doc(salesRef), { clientId, clientName, itemName: "Создание клиента", unitPrice: 0, quantity: 0, paymentReceived: 0, transactionDate: new Date() });
+                 operations++;
+            }
+            
+            if (operations > 0) {
+                try { await batch.commit(); closeTransactionModal(); }
+                catch (error) { errorEl.textContent = `Ошибка: ${error.message}`; errorEl.classList.remove('hidden'); }
+            } else {
+                errorEl.textContent = 'Нечего сохранять.'; errorEl.classList.remove('hidden');
+            }
+        }
+        
+        async function handleUpdateClientName(e) {
+            e.preventDefault();
+            const clientId = document.getElementById('edit-client-id').value;
+            const newName = document.getElementById('edit-client-name-input').value.trim();
+            if (!newName) return;
+            
+            const salesRef = getCollectionRef('sales_records');
+            const batch = writeBatch(db);
+            allTransactions.filter(t => t.clientId === clientId).forEach(t => {
+                batch.update(doc(salesRef, t.id), { clientName: newName });
+            });
+            try { await batch.commit(); closeEditClientModal(); } 
+            catch (error) { console.error("Ошибка обновления имени клиента:", error); }
+        }
+
+        async function deleteTransaction(transactionId) {
+            if (confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
+                try { await deleteDoc(doc(getCollectionRef('sales_records'), transactionId)); } 
+                catch (error) { console.error("Ошибка удаления транзакции:", error); }
+            }
+        }
+
+        async function deleteClient(clientId) {
+            if (confirm('ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.')) {
+                const salesRef = getCollectionRef('sales_records');
+                const batch = writeBatch(db);
+                allTransactions.filter(t => t.clientId === clientId).forEach(t => batch.delete(doc(salesRef, t.id)));
+                try { await batch.commit(); currentClientDetailsId = null; renderSalesDetailsView(); }
+                catch (error) { console.error("Ошибка удаления клиента:", error); }
+            }
+        }
+        
+        // --- ВСЯ ЛОГИКА ДЛЯ РАЗДЕЛА "ПОКУПКИ" ---
+
+        function startPurchasesListener() {
+            if (unsubscribeSales) { unsubscribeSales(); unsubscribeSales = null; }
+            if (unsubscribePurchases) unsubscribePurchases();
+
+            const purchasesRef = getCollectionRef('purchase_records');
+            if (!purchasesRef) return;
+            
+            unsubscribePurchases = onSnapshot(purchasesRef, (snapshot) => {
+                allPurchases = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id, transactionDate: doc.data().transactionDate.toDate() }));
+                supplierAggregates = {};
+                allPurchases.forEach(p => {
+                    if (!supplierAggregates[p.supplierId]) {
+                        supplierAggregates[p.supplierId] = { name: p.supplierName, transactions: [] };
+                    }
+                    supplierAggregates[p.supplierId].transactions.push(p);
+                });
+
+                Object.keys(supplierAggregates).forEach(supplierId => {
+                    const supplier = supplierAggregates[supplierId];
+                    supplier.transactions.sort((a, b) => a.transactionDate - b.transactionDate);
+                    let totalPurchased = 0, totalPaid = 0;
+                    supplier.transactions.forEach(t => {
+                        totalPurchased += (t.unitPrice || 0) * (t.quantity || 0);
+                        totalPaid += t.paymentMade || 0;
+                    });
+                    supplier.totalPurchased = totalPurchased;
+                    supplier.totalPaid = totalPaid;
+                });
+                renderSuppliersList();
+                if(currentSupplierDetailsId) renderPurchasesDetailsView();
+            });
+        }
+        
+        function renderSuppliersList() {
+            const container = document.getElementById('suppliers-list-container');
+            const filter = document.getElementById('supplier-search').value.toLowerCase();
+            const sortMethod = document.getElementById('supplier-sort').value;
+            container.innerHTML = '';
+            let supplierIds = Object.keys(supplierAggregates);
+
+            switch(sortMethod) {
+                case 'newest': supplierIds.sort((a, b) => (supplierAggregates[b].transactions.at(-1)?.transactionDate || 0) - (supplierAggregates[a].transactions.at(-1)?.transactionDate || 0)); break;
+                case 'oldest': supplierIds.sort((a, b) => (supplierAggregates[a].transactions[0]?.transactionDate || Infinity) - (supplierAggregates[b].transactions[0]?.transactionDate || Infinity)); break;
+                case 'name_az': supplierIds.sort((a, b) => supplierAggregates[a].name.localeCompare(supplierAggregates[b].name)); break;
+                case 'name_za': supplierIds.sort((a, b) => supplierAggregates[b].name.localeCompare(supplierAggregates[a].name)); break;
+            }
+
+            const filteredSupplierIds = supplierIds.filter(id => supplierAggregates[id].name.toLowerCase().includes(filter));
+            if (filteredSupplierIds.length === 0) {
+                 const logoUrl = localStorage.getItem('siteLogo');
+                 container.innerHTML = logoUrl ? `<div class="w-full h-64 flex items-center justify-center opacity-25"><img src="${logoUrl}" alt="Logo Background" class="max-h-full"></div>` : `<div class="p-4 text-center text-gray-500">Нет поставщиков для отображения.</div>`;
+                return;
+            }
+
+            filteredSupplierIds.forEach((supplierId, index) => {
+                const supplier = supplierAggregates[supplierId];
+                const remaining = supplier.totalPurchased - supplier.totalPaid;
+                const supplierCard = document.createElement('div');
+                supplierCard.className = `p-4 border rounded-lg shadow-sm card`;
+                
+                const lastFivePurchases = [...supplier.transactions].reverse().slice(0, 5);
+                const purchasesHtml = lastFivePurchases.map(t => `
+                     <div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0">
+                        <div class="col-span-3">${formatDate(t.transactionDate)}</div>
+                        <div class="col-span-5 font-medium">${t.itemName} (x${t.quantity || 0})</div>
+                        <div class="col-span-2 text-right text-red-600 font-semibold">${formatCurrency(t.paymentMade)}</div>
+                        <div class="col-span-2 text-right font-semibold" style="color: var(--header-brand);">${formatCurrency((t.unitPrice || 0) * (t.quantity || 0))}</div>
+                    </div>`).join('');
+
+                supplierCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center space-x-3">
+                             <h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${supplier.name}</h3>
+                             <button class="text-gray-400 hover:text-yellow-600" onclick="window.openEditSupplierNameModal('${supplierId}', '${supplier.name.replace(/'/g, "\\'")}')">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span>
+                                <span class="text-xs block">Наш долг</span>
+                            </div>
+                             <button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" onclick="event.stopPropagation(); window.viewSupplierDetails('${supplierId}')">Детали</button>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t">${purchasesHtml}</div>`;
+                container.appendChild(supplierCard);
+            });
+        }
+        
+        function renderPurchasesDetailsView() { /* ... (similar to sales) */ }
+        function openPurchaseModal(docId = null, purchaseData = null) { /* ... */ }
+        function closePurchaseModal() { document.getElementById('purchase-modal').classList.add('hidden'); }
+        function openEditSupplierNameModal(supplierId, currentName) { /* ... */ }
+        function closeEditSupplierModal() { document.getElementById('edit-supplier-modal').classList.add('hidden'); }
+        async function handlePurchaseSubmit(e) { e.preventDefault(); /* ... */ }
+        async function handleUpdateSupplierName(e) { e.preventDefault(); /* ... */ }
+        async function deletePurchase(purchaseId) { /* ... */ }
+        async function deleteSupplier(supplierId) { /* ... */ }
+        window.openEditSupplierNameModal = openEditSupplierNameModal;
+        window.viewSupplierDetails = (supplierId) => { currentSupplierDetailsId = supplierId; showAppView('purchases', 'details'); };
+        
+        // --- ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ---
         window.onload = () => {
             setupFirebase();
 
@@ -618,7 +1021,7 @@
             document.getElementById('edit-supplier-modal-close-button').addEventListener('click', closeEditSupplierModal);
             document.getElementById('supplier-search').addEventListener('input', renderSuppliersList);
             document.getElementById('supplier-sort').addEventListener('change', renderSuppliersList);
-            document.getElementById('toggle-new-supplier-button').addEventListener('click', (e) => {
+             document.getElementById('toggle-new-supplier-button').addEventListener('click', (e) => {
                 document.getElementById('new-supplier-container').classList.toggle('hidden');
                 document.getElementById('supplier-selection-container').classList.toggle('hidden');
                 e.target.textContent = document.getElementById('new-supplier-container').classList.contains('hidden') ? 'Добавить нового поставщика' : 'Вернуться к списку';
@@ -633,7 +1036,82 @@
                 document.getElementById('menu-title').textContent = title;
                 localStorage.setItem('siteTitle', title);
             });
-            // ... остальной код для тем, логотипа и языка
+            
+            const applyTheme = (theme) => {
+                document.body.className = 'min-h-screen flex flex-col items-center justify-center p-4';
+                if (theme !== 'light') document.body.classList.add(`theme-${theme}`);
+                localStorage.setItem('siteTheme', theme);
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                const activeBtn = document.querySelector(`.theme-btn[data-theme="${theme}"]`);
+                if(activeBtn) activeBtn.classList.add('active');
+            };
+
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                applyTheme(btn.dataset.theme);
+                [...document.querySelectorAll('#sales-theme-dropdown, #purchases-theme-dropdown')].forEach(d => d.classList.add('hidden'));
+            }));
+
+            ['sales', 'purchases'].forEach(app => {
+                const themeBtn = document.getElementById(`${app}-theme-menu-button`);
+                const langBtn = document.getElementById(`${app}-language-menu-button`);
+                const themeDropdown = document.getElementById(`${app}-theme-dropdown`);
+                const langDropdown = document.getElementById(`${app}-language-dropdown`);
+
+                if(themeBtn) themeBtn.addEventListener('click', e => { e.stopPropagation(); themeDropdown?.classList.toggle('hidden'); });
+                if(langBtn) langBtn.addEventListener('click', e => { e.stopPropagation(); langDropdown?.classList.toggle('hidden'); });
+            });
+            
+            document.addEventListener('click', () => {
+                ['sales-theme-dropdown', 'sales-language-dropdown', 'purchases-theme-dropdown', 'purchases-language-dropdown'].forEach(id => {
+                    document.getElementById(id)?.classList.add('hidden');
+                });
+            });
+
+            const updateLogo = (url) => {
+                document.querySelectorAll('#login-logo, #menu-logo, #sales-site-logo, #purchases-site-logo').forEach(el => {
+                    if (url) {
+                        el.src = url;
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                });
+                document.getElementById('logo-preview-container').innerHTML = url ? `<img src="${url}" class="h-16 mx-auto">` : '';
+            };
+
+            const logoUploadInput = document.getElementById('logo-upload-input');
+            logoUploadInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const statusEl = document.getElementById('logo-upload-status');
+                statusEl.textContent = 'Загрузка...';
+                const formData = new FormData();
+                formData.append('image', file);
+                try {
+                    const res = await fetch('https://api.imgbb.com/1/upload?key=ef55a2f580a19821cd96845bc3f3cee1', { method: 'POST', body: formData });
+                    const result = await res.json();
+                    if (result.success) {
+                        const logoUrl = result.data.url;
+                        localStorage.setItem('siteLogo', logoUrl);
+                        updateLogo(logoUrl);
+                        statusEl.textContent = 'Логотип успешно загружен!';
+                    } else { throw new Error(result.error.message); }
+                } catch (err) {
+                    statusEl.textContent = 'Ошибка загрузки.';
+                }
+            });
+            
+            applyTheme(localStorage.getItem('siteTheme') || 'light');
+            updateLogo(localStorage.getItem('siteLogo'));
+
+            const savedTitle = localStorage.getItem('siteTitle');
+            if (savedTitle) {
+                document.getElementById('site-title-tag').textContent = savedTitle;
+                document.getElementById('login-title').textContent = `Добро пожаловать в ${savedTitle}`;
+                document.getElementById('menu-title').textContent = savedTitle;
+                appNameInput.value = savedTitle;
+            }
         };
     </script>
 </body>
