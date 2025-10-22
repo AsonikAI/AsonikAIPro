@@ -74,7 +74,7 @@
 
         .min-h-h-screen { min-height: calc(100vh - 32px); }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.6); z-index: 40; }
-        #transaction-modal, #edit-client-modal { z-index: 50; }
+        #transaction-modal, #edit-client-modal, #distribution-item-modal, #distribution-client-modal { z-index: 50; }
         .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
         
         .theme-btn.active { box-shadow: 0 0 0 2px var(--header-brand); }
@@ -92,10 +92,72 @@
          }
         mark { background-color: #fde047; color: black; padding: 0 2px; border-radius: 2px; }
         .sub-table td { transition: all 0.3s ease-in-out; }
+        
+        /* Стили для таблицы распределения */
+        #distribution-grid-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        #distribution-grid {
+            min-width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        #distribution-grid th, #distribution-grid td {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            white-space: nowrap;
+        }
+        #distribution-grid th {
+            background-color: var(--bg-hover);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #distribution-grid td:first-child, #distribution-grid th:first-child {
+            position: sticky;
+            left: 0;
+            background-color: var(--bg-card);
+            z-index: 11;
+        }
+         #distribution-grid th:first-child {
+            z-index: 12;
+         }
+        #distribution-grid td:nth-child(2), #distribution-grid th:nth-child(2) {
+            position: sticky;
+            left: 200px; /* Ширина первой колонки */
+            background-color: var(--bg-card);
+            z-index: 11;
+        }
+         #distribution-grid th:nth-child(2) {
+            background-color: var(--bg-hover);
+            z-index: 12;
+         }
+        #distribution-grid td:first-child { min-width: 200px; }
+        #distribution-grid td:nth-child(2) { min-width: 150px; }
+        #distribution-grid th { min-width: 150px; }
+        #distribution-grid .price-input {
+            width: 100px;
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: transparent;
+        }
+        #distribution-grid .price-input:focus {
+            border-color: var(--header-brand);
+            box-shadow: 0 0 0 1px var(--header-brand);
+            outline: none;
+        }
+        .editable-header { cursor: pointer; }
+        .editable-header:hover .edit-icon { opacity: 1; }
+        .edit-icon { opacity: 0.2; transition: opacity 0.2s; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
+    <!-- EKRAN VHODA -->
     <div id="login-screen" class="w-full max-w-md bg-white p-10 rounded-xl card flex-col items-center justify-center transition-all duration-300 hidden">
         <img id="login-logo" src="" alt="Logo" class="h-20 mb-6 hidden">
         <h1 class="text-3xl font-bold mb-2 text-center" id="login-title">Добро пожаловать</h1>
@@ -106,6 +168,8 @@
         </button>
         <p id="login-error" class="text-red-500 mt-4 text-sm"></p>
     </div>
+    
+    <!-- EKRAN ZAPRETA DOSTUPA -->
     <div id="access-denied-screen" class="hidden w-full max-w-md bg-white p-10 rounded-xl card flex flex-col items-center justify-center text-center">
         <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
         <h1 class="text-2xl font-bold mb-2">Доступ запрещен</h1>
@@ -116,30 +180,40 @@
         </button>
     </div>
 
+    <!-- EKRAN GLAVNOGO MENU -->
     <div id="main-menu-screen" class="hidden w-full max-w-4xl">
         <div class="p-8 rounded-xl card text-center">
              <img id="menu-logo" src="" alt="Logo" class="h-24 mx-auto mb-6 hidden">
              <h1 id="menu-title" class="text-4xl font-bold mb-4">Главное Меню</h1>
              <p class="text-lg text-gray-600 mb-10">Выберите раздел для работы</p>
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <button id="goto-sales-btn" class="flex flex-col items-center justify-center p-8 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
-                     <svg class="w-20 h-20 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> <!-- Izmeneno na grid-cols-3 -->
+                 <button id="goto-sales-btn" class="flex flex-col items-center justify-center p-6 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                     <svg class="w-16 h-16 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182.553-.44 1.278-.659 2.003-.659c.768 0 1.536.219 2.121.659L15 9.182" />
                      </svg>
-                     <h2 class="text-2xl font-bold">Продажи</h2>
-                     <p class="text-gray-500 mt-1">Учёт клиентов и транзакций</p>
+                     <h2 class="text-2xl font-bold" data-lang-key="sales.nav_main">Продажи</h2>
+                     <p class="text-gray-500 mt-1" data-lang-key="sales.menu_desc">Учёт клиентов и транзакций</p>
                  </button>
-                 <button id="goto-purchases-btn" class="flex flex-col items-center justify-center p-8 bg-green-50 hover:bg-green-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
-                     <svg class="w-20 h-20 text-green-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                 <button id="goto-purchases-btn" class="flex flex-col items-center justify-center p-6 bg-green-50 hover:bg-green-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                     <svg class="w-16 h-16 text-green-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c.51 0 .962-.328 1.093-.826l1.821-6.831c.13-.483-.046-.996-.433-1.293a1.846 1.846 0 0 0-1.094-.373H5.21M7.5 14.25 6.108 5.166" />
                      </svg>
-                     <h2 class="text-2xl font-bold">Покупки</h2>
-                     <p class="text-gray-500 mt-1">Учёт поставщиков и закупок</p>
+                     <h2 class="text-2xl font-bold" data-lang-key="purchases.nav_main">Покупки</h2>
+                     <p class="text-gray-500 mt-1" data-lang-key="purchases.menu_desc">Учёт поставщиков и закупок</p>
+                 </button>
+                 <!-- NOVOE: Knopka Raspredelenie -->
+                 <button id="goto-distribution-btn" class="flex flex-col items-center justify-center p-6 bg-purple-50 hover:bg-purple-100 rounded-2xl transition-all duration-300 transform hover:scale-105">
+                     <svg class="w-16 h-16 text-purple-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 8.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 8.25 20.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6A2.25 2.25 0 0 1 15.75 3.75h2.25A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8.25V6ZM13.5 15.75A2.25 2.25 0 0 1 15.75 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                     </svg>
+                     <h2 class="text-2xl font-bold" data-lang-key="distribution.nav_main">Распределение</h2>
+                     <p class="text-gray-500 mt-1" data-lang-key="distribution.menu_desc">Управление ценами по клиентам</p>
                  </button>
              </div>
         </div>
     </div>
     
+    <!-- EKRAN OSNOVNOGO PRILOZHENIYA -->
     <div id="main-app-screen" class="hidden w-full max-w-7xl mx-auto flex-col min-h-h-screen bg-white rounded-xl card transition-all duration-300 p-6 md:p-8">
         <header class="flex items-center justify-between border-b pb-4 mb-4">
             <div class="flex items-center space-x-3">
@@ -154,6 +228,7 @@
                     <img id="user-avatar" src="" class="w-10 h-10 rounded-full">
                     <span id="user-name" class="font-semibold"></span>
                 </div>
+                <!-- NAVIGATSIYA -->
                 <button data-view="clients" class="header-nav-item text-lg font-semibold border-b-2 pb-1 px-2 transition duration-150 flex items-center space-x-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     <span data-lang-key="nav_main">ОСНОВА</span>
@@ -161,6 +236,13 @@
                 <button data-view="details" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path></svg>
                     <span data-lang-key="nav_details">ПОДРОБНО</span>
+                </button>
+                 <!-- NOVOE: Knopka navigatsii Raspredelenie -->
+                <button data-view="distribution" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
+                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 8.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 8.25 20.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6A2.25 2.25 0 0 1 15.75 3.75h2.25A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25A2.25 2.25 0 0 1 13.5 8.25V6ZM13.5 15.75A2.25 2.25 0 0 1 15.75 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+                    </svg>
+                    <span data-lang-key="distribution.nav_main">РАСПРЕДЕЛЕНИЕ</span>
                 </button>
                 <button data-view="settings" class="header-nav-item text-lg font-semibold pb-1 px-2 transition duration-150 flex items-center space-x-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -197,6 +279,7 @@
             </div>
         </header>
         
+        <!-- RAZDEL PRODAZH I POKUPOK (OSNOVA) -->
         <section id="view-clients" class="view-content flex flex-col flex-grow pt-4">
             <div class="flex justify-between items-center mb-4">
                  <h2 class="text-2xl font-bold" data-lang-key="main_header">ОСНОВА</h2>
@@ -221,18 +304,81 @@
             </div>
         </section>
 
+        <!-- RAZDEL PODROBNO -->
         <section id="view-details" class="view-content hidden flex-col flex-grow pt-4"><div id="details-view-container"></div></section>
+        
+        <!-- NOVOE: RAZDEL RASPREDELENIYA -->
+        <section id="view-distribution" class="view-content hidden flex-col flex-grow pt-4">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-bold" data-lang-key="distribution.nav_main">Распределение Цен</h2>
+            </div>
+            <div class="flex gap-3 mb-4">
+                <button id="add-distribution-item-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span data-lang-key="distribution.add_item">Добавить Лекарство</span>
+                </button>
+                <button id="add-distribution-client-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center">
+                     <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+                     </svg>
+                    <span data-lang-key="distribution.add_client">Добавить Клиента</span>
+                </button>
+            </div>
+            <div id="distribution-grid-container" class="overflow-auto flex-grow rounded-lg border card">
+                <table id="distribution-grid">
+                    <thead>
+                        <tr id="distribution-grid-header"></tr>
+                    </thead>
+                    <tbody id="distribution-grid-body"></tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- RAZDEL NASTROEK -->
         <section id="view-settings" class="view-content hidden flex-col flex-grow pt-4 px-4">
             <h1 class="text-3xl font-bold mb-6" data-lang-key="settings_title">Настройки Системы</h1>
             <div class="space-y-8 max-w-2xl">
                 <div class="p-6 rounded-xl border card"><h3 class="text-xl font-semibold mb-4" data-lang-key="settings_logo_title">Логотип</h3><div id="logo-preview-container" class="mb-4 flex items-center justify-center h-20"></div><input type="file" id="logo-upload-input" accept="image/*" class="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/><p id="logo-upload-status" class="text-sm mt-2 text-center"></p></div>
+                
+                <!-- NOVOE: Nastroiki Valyuty -->
+                <div class="p-6 rounded-xl border card">
+                    <h3 class="text-xl font-semibold mb-4" data-lang-key="settings_currency_title">Настройки Валюты</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="currency-sales" class="block text-sm font-medium" data-lang-key="settings_currency_sales">Валюта для Продаж</label>
+                            <select id="currency-sales" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
+                                <option value="TRY">Турецкая Лира (₺)</option>
+                                <option value="USD">Доллар США ($)</option>
+                                <option value="EUR">Евро (€)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="currency-purchases" class="block text-sm font-medium" data-lang-key="settings_currency_purchases">Валюта для Покупок</label>
+                            <select id="currency-purchases" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
+                                <option value="TRY">Турецкая Лира (₺)</option>
+                                <option value="USD">Доллар США ($)</option>
+                                <option value="EUR">Евро (€)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="currency-distribution" class="block text-sm font-medium" data-lang-key="settings_currency_distribution">Валюта для Распределения</label>
+                            <select id="currency-distribution" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent card">
+                                <option value="TRY">Турецкая Лира (₺)</option>
+                                <option value="USD">Доллар США ($)</option>
+                                <option value="EUR">Евро (€)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="p-6 rounded-xl border card"><h3 class="text-xl font-semibold mb-4" data-lang-key="settings_app_name_title">Название Приложения</h3><label for="app-name-input" class="block text-sm font-medium" data-lang-key="settings_app_name_label">Изменить название</label><input type="text" id="app-name-input" class="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-transparent" placeholder="JAVPHARMA"/></div>
                 <div class="p-6 rounded-xl border card"><h3 class="text-xl font-semibold mb-4" data-lang-key="settings_account_title">Ваша Учётная Запись</h3><div class="space-y-4"><div><label class="block text-sm font-medium" data-lang-key="status">Статус</label><input type="text" value="Вошли через Google" disabled class="mt-1 block w-full px-3 py-2 bg-gray-50 border rounded-lg shadow-sm focus:outline-none" /></div><div><label class="block text-sm font-medium" data-lang-key="user_id">ID Пользователя</label><code id="user-id-display-settings" class="block bg-gray-100 p-2 rounded text-sm break-all">...</code></div></div></div>
-                <div id="admin-panel" class="hidden p-6 rounded-xl border card"><h3 class="text-xl font-semibold mb-4">Панель Администратора</h3><p class="text-sm text-gray-600 mb-2">Вы вошли с правами администратора.</p><div><label class="block text-sm font-medium">UID Главного Администратора</label><input type="text" value="h25tlwhyAQfo1PBgzYmekWKD5Vl1" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border rounded-lg shadow-sm" /><p class="text-xs text-gray-500 mt-1">В будущем здесь можно будет управлять доступом.</p></div></div>
+                <div id="admin-panel" class="hidden p-6 rounded-xl border card"><h3 class="text-xl font-semibold mb-4">Панель Администратора</h3><p class="text-sm text-gray-600 mb-2">Вы вошли с правами администратора.</p><div><label class="block text-sm font-medium">UID Главного Администратора</label><input type="text" value="h25tlwhyAQfo1PBgzYMekWKD5Vl1" disabled class="mt-1 block w-full px-3 py-2 bg-gray-100 border rounded-lg shadow-sm" /><p class="text-xs text-gray-500 mt-1">В будущем здесь можно будет управлять доступом.</p></div></div>
             </div>
         </section>
     </div>
 
+    <!-- MODALNOE OKNO TRANZAKTSII -->
     <div id="transaction-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-2xl p-6 rounded-xl card transform transition-all duration-300" id="transaction-modal-content">
             <h2 id="modal-title" class="text-2xl font-bold mb-4" data-lang-key="modal_add_trans_title">Добавить</h2>
@@ -245,7 +391,11 @@
                     </div>
                     <div id="new-client-container" class="hidden mt-2 space-y-2">
                         <input type="text" id="modal-new-client-name" placeholder="Введите имя..." class="w-full px-4 py-2 border rounded-lg bg-transparent" data-lang-key="new_client_placeholder">
-                        <div><label for="modal-initial-balance" class="block text-sm font-medium" data-lang-key="initial_balance">Начальный остаток (₺)</label><input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0"></div>
+                        <div>
+                            <label for="modal-initial-balance" class="block text-sm font-medium" data-lang-key="initial_balance">Начальный остаток</label>
+                            (<span data-currency-label="true">₺</span>)
+                            <input type="number" step="0.01" id="modal-initial-balance" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
+                        </div>
                     </div>
                     <button type="button" id="toggle-new-client-button" class="text-sm text-blue-600 hover:underline mt-2" data-lang-key="add_new_client_btn">Добавить нового</button>
                 </div>
@@ -262,7 +412,8 @@
 
                 <div class="grid grid-cols-2 gap-4 border-t pt-4">
                     <div>
-                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса (₺)</label>
+                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса</label>
+                        (<span data-currency-label="true">₺</span>)
                         <input type="number" step="0.01" id="modal-payment-received" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
                     </div>
                     <div>
@@ -276,12 +427,54 @@
         </div>
     </div>
     
+    <!-- MODALNOE OKNO REDAKTIROVANIYA KLIENTA -->
     <div id="edit-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden"><div class="bg-white w-full max-w-md p-6 rounded-xl card transform transition-all" id="edit-client-modal-content"><h2 class="text-2xl font-bold mb-4" data-lang-key="edit_client_title">Редактировать имя</h2><form id="edit-client-form"><input type="hidden" id="edit-client-id"><div><label for="edit-client-name-input" class="block text-sm font-medium" data-lang-key="new_name_label">Новое имя</label><input type="text" id="edit-client-name-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent"></div><div class="flex justify-between pt-6"><button type="button" id="edit-modal-close-button" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button><button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button></div></form></div></div>
+
+    <!-- NOVOE: MODALNYE OKNA DLYA RASPREDELENIYA -->
+    <div id="distribution-item-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-6 rounded-xl card" id="distribution-item-modal-content">
+            <h2 id="dist-item-modal-title" class="text-2xl font-bold mb-4">Добавить Лекарство</h2>
+            <form id="distribution-item-form">
+                <input type="hidden" id="dist-item-id">
+                <div class="space-y-4">
+                    <div>
+                        <label for="dist-item-name" class="block text-sm font-medium">Название Лекарства</label>
+                        <input type="text" id="dist-item-name" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent">
+                    </div>
+                    <div>
+                        <label for="dist-item-cost" class="block text-sm font-medium">Себестоимость (<span data-currency-label="true">₺</span>)</label>
+                        <input type="number" step="0.01" id="dist-item-cost" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent" value="0">
+                    </div>
+                </div>
+                <div class="flex justify-between pt-6">
+                    <button type="button" id="dist-item-modal-close-btn" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="distribution-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-6 rounded-xl card" id="distribution-client-modal-content">
+            <h2 id="dist-client-modal-title" class="text-2xl font-bold mb-4">Добавить Клиента</h2>
+            <form id="distribution-client-form">
+                <input type="hidden" id="dist-client-id">
+                <div>
+                    <label for="dist-client-name" class="block text-sm font-medium">Имя Клиента</label>
+                    <input type="text" id="dist-client-name" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent">
+                </div>
+                <div class="flex justify-between pt-6">
+                    <button type="button" id="dist-client-modal-close-btn" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
         const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1', 'mhPJz63xINVF6DnqITgI0bGuxgQ2'];
@@ -294,22 +487,31 @@
         let entityAggregates = {};
         let allTransactions = [];
         let currentEntityDetailsId = null;
-        let currentMode = 'sales';
+        let currentMode = 'sales'; // 'sales' ili 'purchases'
+        
+        // NOVOE: Peremennye dlya Raspredeleniya
+        let distributionItems = [];
+        let distributionClients = [];
+        let distributionPrices = {}; // { 'itemId_clientId': { docId: 'priceDocId', price: 10 } }
+        let unsubscribeDistItems = null;
+        let unsubscribeDistClients = null;
+        let unsubscribeDistPrices = null;
 
         const translations = {
             ru: {
                 russian: "Русский", turkish: "Türkçe", loading: "Загрузка системы...", 
-                nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ",
+                nav_main: "ОСНОВА", nav_details: "ПОДРОБНО", nav_settings: "НАСТРОЙКИ",
                 settings_title: "Настройки Системы", settings_theme_title: "Тема оформления", 
                 theme_light: "Светлая", theme_violet: "Фиолетовая", theme_crimson: "Багровая", theme_sunset: "Закат",
                 settings_logo_title: "Логотип", logo_uploading: "Загрузка...", logo_upload_success: "Логотип успешно загружен!", logo_upload_error: "Ошибка загрузки.",
                 settings_app_name_title: "Название Приложения", settings_app_name_label: "Изменить название",
                 settings_account_title: "Ваша Учётная Запись", status: "Статус", user_id: "ID Пользователя",
+                settings_currency_title: "Настройки Валюты", settings_currency_sales: "Валюта для Продаж", settings_currency_purchases: "Валюта для Покупок", settings_currency_distribution: "Валюта для Распределения",
                 cancel: "Отмена", save: "Сохранить", edit: "Ред.", delete: "Удал.", details_btn: "Выбрать",
                 sort_newest: "Сначала новые", sort_oldest: "Сначала старые", sort_name_az: "Имя (А-Я)", sort_name_za: "Имя (Я-А)",
                 date: "Дата", item: "Товар/Описание", amount: "Сумма", paid: "Касса", running_balance: "Итоговый Остаток", actions: "Действия",
-                item_name: "Товар / Описание", unit_price: "Цена за ед.", quantity: "Кол-во", payment_received: "Касса (₺)",
-                initial_balance: "Начальный остаток (₺)", transaction_date: "Дата Транзакции",
+                item_name: "Товар / Описание", unit_price: "Цена за ед.", quantity: "Кол-во", payment_received: "Касса",
+                initial_balance: "Начальный остаток", transaction_date: "Дата Транзакции",
                 export_to_excel: "Экспорт в Excel", reset_filters: "Сброс", search_item_placeholder: "Поиск по товару...",
                 item_list: "Список товаров", add_item_btn: "Добавить товар", remove_item_btn: "Удалить",
                 
@@ -324,6 +526,7 @@
                     details_title: "Подробная информация о клиенте", total_sales: "Всего Продано", total_paid: "Всего (Касса)", total_remaining: "Полный Остаток",
                     transaction_history: "История Транзакций", back_to_clients: "Назад к списку клиентов",
                     confirm_delete_transaction: "Вы уверены, что хотите удалить эту транзакцию?", confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить клиента и ВСЕ его транзакции? Это действие необратимо.",
+                    menu_desc: "Учёт клиентов и транзакций"
                 },
                 purchases: {
                     nav_main: "ПОКУПКИ", main_header: "ОСНОВА (Обзор Поставщиков)", edit_client: "Редактировать Поставщика", delete_client: "Удалить Поставщика", 
@@ -336,6 +539,25 @@
                     details_title: "Подробная информация о поставщике", total_sales: "Всего Закуплено", total_paid: "Всего Оплачено", total_remaining: "Полный Долг",
                     transaction_history: "История Закупок", back_to_clients: "Назад к списку поставщиков",
                     confirm_delete_transaction: "Вы уверены, что хотите удалить эту закупку?", confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить поставщика и ВСЕ его закупки? Это действие необратимо.",
+                    menu_desc: "Учёт поставщиков и закупок"
+                },
+                // NOVOE: Perevody dlya Raspredeleniya
+                distribution: {
+                    nav_main: "РАСПРЕДЕЛЕНИЕ",
+                    menu_desc: "Управление ценами по клиентам",
+                    add_item: "Добавить Лекарство",
+                    add_client: "Добавить Клиента",
+                    item_name_header: "Название Лекарства",
+                    cost_price_header: "Себестоимость",
+                    add_item_title: "Добавить Лекарство",
+                    edit_item_title: "Редактировать Лекарство",
+                    item_name_label: "Название Лекарства",
+                    cost_price_label: "Себестоимость",
+                    add_client_title: "Добавить Клиента",
+                    edit_client_title: "Редактировать Клиента",
+                    client_name_label: "Имя Клиента",
+                    confirm_delete_item: "Вы уверены, что хотите удалить это лекарство и все связанные с ним цены?",
+                    confirm_delete_client: "Вы уверены, что хотите удалить этого клиента и все связанные с ним цены?"
                 }
             },
             tr: { /* Turkish translations */ }
@@ -352,7 +574,13 @@
             
             document.querySelectorAll('[data-lang-key]').forEach(el => {
                 const key = el.dataset.langKey;
-                const text = translations[lang]?.[currentMode]?.[key] || translations[lang]?.[key];
+                let text;
+                if (key.startsWith('distribution.')) {
+                    text = translations[lang]?.distribution?.[key.substring(13)];
+                } else {
+                    text = translations[lang]?.[currentMode]?.[key] || translations[lang]?.[key];
+                }
+                
                 if (text) {
                     if (el.placeholder) el.placeholder = text;
                     else el.textContent = text;
@@ -360,17 +588,71 @@
             });
         }
         
+        // --- NOVOE: Funktsii Valyuty ---
+        function getCurrency(mode) {
+            let currencyCode = 'TRY';
+            let effectiveMode = mode;
+            if (document.getElementById('view-clients').classList.contains('hidden') && document.getElementById('view-details').classList.contains('hidden')) {
+                 // My na 'distribution' ili 'settings'
+                 if(document.getElementById('view-distribution').classList.contains('hidden')) {
+                    effectiveMode = 'sales'; // Default dlya nastroek
+                 } else {
+                    effectiveMode = 'distribution';
+                 }
+            } else {
+                effectiveMode = mode || currentMode;
+            }
+
+            if (effectiveMode === 'sales') currencyCode = localStorage.getItem('currency_sales') || 'TRY';
+            else if (effectiveMode === 'purchases') currencyCode = localStorage.getItem('currency_purchases') || 'TRY';
+            else if (effectiveMode === 'distribution') currencyCode = localStorage.getItem('currency_distribution') || 'TRY';
+            
+            if (currencyCode === 'USD') return '$';
+            if (currencyCode === 'EUR') return '€';
+            return '₺'; // Default TRY
+        }
+
+        function formatCurrency(amount, mode) {
+            let currencyCode = 'TRY';
+            let effectiveMode = mode;
+
+            if (document.getElementById('view-clients').classList.contains('hidden') && document.getElementById('view-details').classList.contains('hidden')) {
+                 if(!document.getElementById('view-distribution').classList.contains('hidden')) {
+                    effectiveMode = 'distribution';
+                 }
+            } else {
+                effectiveMode = mode || currentMode;
+            }
+
+            if (effectiveMode === 'sales') currencyCode = localStorage.getItem('currency_sales') || 'TRY';
+            else if (effectiveMode === 'purchases') currencyCode = localStorage.getItem('currency_purchases') || 'TRY';
+            else if (effectiveMode === 'distribution') currencyCode = localStorage.getItem('currency_distribution') || 'TRY';
+
+            let locale = 'tr-TR';
+            if (currencyCode === 'USD' || currencyCode === 'EUR') locale = 'en-US';
+
+            return new Intl.NumberFormat(locale, { style: 'currency', currency: currencyCode }).format(amount || 0);
+        }
+        
+        function updateCurrencySymbols(mode) {
+            const symbol = getCurrency(mode);
+            document.querySelectorAll('[data-currency-label="true"]').forEach(el => el.textContent = symbol);
+        }
+        // --- KONETS Funktsii Valyuty ---
+
         function getCollectionRef() {
             if (!db || !currentUserId) return null;
             const collectionName = currentMode === 'sales' ? 'sales_records' : 'purchase_records';
             return collection(db, 'artifacts', appId, 'users', currentUserId, collectionName);
         }
         
-        const formatDate = (dateObj) => { if (!dateObj || !(dateObj instanceof Date)) return 'N/A'; return `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${dateObj.getFullYear()}`; };
-        // --- ИЗМЕНЕНИЕ 1: Валюта изменена на Турецкую Лиру (TRY) ---
-        function formatCurrency(amount) { 
-            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(amount || 0); 
+        // NOVOE: Funktsiya dlya kollektsiy Raspredeleniya
+        function getDistributionCollectionRef(collectionName) {
+            if (!db || !currentUserId) return null;
+            return collection(db, 'artifacts', appId, 'users', currentUserId, collectionName);
         }
+        
+        const formatDate = (dateObj) => { if (!dateObj || !(dateObj instanceof Date)) return 'N/A'; return `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${dateObj.getFullYear()}`; };
         
         function showView(viewId) {
             document.querySelectorAll('.view-content').forEach(view => view.classList.add('hidden'));
@@ -383,6 +665,21 @@
                     item.style.color = 'var(--text-primary)';
                 }
             });
+
+            // NOVOE: Upravlenie podpiskami
+            if (viewId === 'clients' || viewId === 'details') {
+                if (!unsubscribeDataListener) startDataListener();
+                stopDistributionListeners();
+                updateCurrencySymbols(currentMode);
+            } else if (viewId === 'distribution') {
+                if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; }
+                if (!unsubscribeDistItems) startDistributionListeners();
+                updateCurrencySymbols('distribution');
+            } else {
+                if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; }
+                stopDistributionListeners();
+            }
+
             if (viewId === 'details') renderDetailsView();
         }
 
@@ -414,6 +711,7 @@
                     } else {
                         currentUserId = null;
                         if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; }
+                        stopDistributionListeners();
                         entityAggregates = {}; allTransactions = []; renderMainList();
                         document.getElementById('user-display').classList.add('hidden');
                         document.getElementById('login-screen').classList.remove('hidden');
@@ -485,9 +783,9 @@
                 const lastFiveTransactions = [...entity.transactions].reverse().slice(0, 5);
                 const transactionsHtml = lastFiveTransactions.map(t => {
                     const summary = (t.items && t.items.length > 1) ? `Групповая (${t.items.length} поз.)` : (t.items?.[0]?.itemName || 'Транзакция');
-                    return `<div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0"><div class="col-span-3">${formatDate(t.transactionDate)}</div><div class="col-span-5 font-medium">${summary}</div><div class="col-span-2 text-right"><span class="text-green-600 font-semibold">${formatCurrency(t.paymentReceived)}</span><span class="text-xs block" data-lang-key="paid"></span></div><div class="col-span-2 text-right"><span class="font-semibold" style="color: var(--header-brand);">${formatCurrency(t.totalAmount)}</span><span class="text-xs block" data-lang-key="amount"></span></div></div>`;
+                    return `<div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0"><div class="col-span-3">${formatDate(t.transactionDate)}</div><div class="col-span-5 font-medium">${summary}</div><div class="col-span-2 text-right"><span class="text-green-600 font-semibold">${formatCurrency(t.paymentReceived, currentMode)}</span><span class="text-xs block" data-lang-key="paid"></span></div><div class="col-span-2 text-right"><span class="font-semibold" style="color: var(--header-brand);">${formatCurrency(t.totalAmount, currentMode)}</span><span class="text-xs block" data-lang-key="amount"></span></div></div>`;
                 }).join('');
-                card.innerHTML = `<div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleEntityDetails('${entityId}')"><div class="flex items-center space-x-3"><svg id="arrow-${entityId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg><h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${entity.name}</h3><button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button></div><div class="flex items-center space-x-4"><div class="text-right"><span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining)}</span><span class="text-xs block" data-lang-key="total_remaining"></span></div><button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewEntityDetails('${entityId}')"></button></div></div><div id="details-${entityId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
+                card.innerHTML = `<div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleEntityDetails('${entityId}')"><div class="flex items-center space-x-3"><svg id="arrow-${entityId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg><h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${entity.name}</h3><button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button></div><div class="flex items-center space-x-4"><div class="text-right"><span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining, currentMode)}</span><span class="text-xs block" data-lang-key="total_remaining"></span></div><button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewEntityDetails('${entityId}')"></button></div></div><div id="details-${entityId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
                 container.appendChild(card);
             });
             setLanguage(currentLang);
@@ -510,7 +808,7 @@
                 const item = document.createElement('div');
                 item.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center hover:bg-gray-100 cursor-pointer card';
                 item.onclick = () => { currentEntityDetailsId = entityId; renderDetailsView(); };
-                item.innerHTML = `<div><p class="font-semibold">${entity.name}</p><p class="text-sm">Остаток: ${formatCurrency(entity.totalSales - entity.totalPaid)}</p></div><span class="font-semibold" style="color: var(--header-brand);" data-lang-key="details_btn"></span>`;
+                item.innerHTML = `<div><p class="font-semibold">${entity.name}</p><p class="text-sm">Остаток: ${formatCurrency(entity.totalSales - entity.totalPaid, currentMode)}</p></div><span class="font-semibold" style="color: var(--header-brand);" data-lang-key="details_btn"></span>`;
                 listContainer.appendChild(item);
             });
             setLanguage(currentLang);
@@ -534,15 +832,15 @@
                 const summary = isGroup ? `Групповая закупка (${t.items.length} поз.)` : t.items[0]?.itemName || 'Транзакция';
                 const subTableHtml = !isGroup ? '' : `
                     <tr class="sub-table-row hidden bg-gray-50" data-sub-table-for="${t.id}">
-                        <td colspan="6" class="p-0"><div class="p-3"><table class="min-w-full"><thead class="text-xs text-gray-500"><tr><th class="text-left font-medium p-2">Товар</th><th class="text-center font-medium p-2">Кол-во</th><th class="text-right font-medium p-2">Цена за ед.</th><th class="text-right font-medium p-2">Сумма</th></tr></thead><tbody>${t.items.map(item => `<tr class="border-b last:border-b-0"><td class="p-2">${item.itemName}</td><td class="text-center p-2">${item.quantity}</td><td class="text-right p-2">${formatCurrency(item.unitPrice)}</td><td class="text-right p-2 font-medium">${formatCurrency((item.unitPrice||0)*(item.quantity||0))}</td></tr>`).join('')}</tbody></table></div></td>
+                        <td colspan="6" class="p-0"><div class="p-3"><table class="min-w-full"><thead class="text-xs text-gray-500"><tr><th class="text-left font-medium p-2">Товар</th><th class="text-center font-medium p-2">Кол-во</th><th class="text-right font-medium p-2">Цена за ед.</th><th class="text-right font-medium p-2">Сумма</th></tr></thead><tbody>${t.items.map(item => `<tr class="border-b last:border-b-0"><td class="p-2">${item.itemName}</td><td class="text-center p-2">${item.quantity}</td><td class="text-right p-2">${formatCurrency(item.unitPrice, currentMode)}</td><td class="text-right p-2 font-medium">${formatCurrency((item.unitPrice||0)*(item.quantity||0), currentMode)}</td></tr>`).join('')}</tbody></table></div></td>
                     </tr>`;
                 return `
                     <tr class="hover:bg-gray-50 ${isGroup ? 'cursor-pointer' : ''}" ${isGroup ? `onclick="window.toggleSubTable('${t.id}')"` : ''}>
                         <td class="px-2 py-3 text-sm">${formatDate(t.transactionDate)}</td>
                         <td class="px-2 py-3 text-sm">${isGroup ? `<svg class="w-4 h-4 inline-block mr-2 transition-transform" id="arrow-sub-${t.id}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>` : ''}${summary}</td>
-                        <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(t.totalAmount)}</td>
-                        <td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived)}</td>
-                        <td class="px-2 py-3 text-right text-sm font-bold ${t.runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(t.runningBalance)}</td>
+                        <td class="px-2 py-3 text-right text-sm font-medium" style="color: var(--header-brand);">${formatCurrency(t.totalAmount, currentMode)}</td>
+                        <td class="px-2 py-3 text-right text-sm font-medium text-green-600">${formatCurrency(t.paymentReceived, currentMode)}</td>
+                        <td class="px-2 py-3 text-right text-sm font-bold ${t.runningBalance > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(t.runningBalance, currentMode)}</td>
                         <td class="px-2 py-3 text-center whitespace-nowrap"><button class="font-semibold hover:underline mr-2 text-sm" style="color: var(--header-brand);" data-lang-key="edit" onclick="event.stopPropagation(); window.openTransactionModalForEdit('${t.id}')"></button><button class="text-red-600 hover:text-red-900 text-sm" data-lang-key="delete" onclick="event.stopPropagation(); window.deleteTransaction('${t.id}')"></button></td>
                     </tr>
                     ${subTableHtml}`;
@@ -552,7 +850,7 @@
 
         function renderDetailedEntityInfo(container, entityId) {
             const entity = entityAggregates[entityId];
-            container.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name}</h2></div><div class="flex items-center space-x-2"><button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel"></span></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><span data-lang-key="edit_client"></span></button><button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${entityId}')"><span data-lang-key="delete_client"></span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(entity.totalSales - entity.totalPaid)}</p></div></div><div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card"><h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history"></h3><input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" data-lang-key="search_item_placeholder"><select id="details-sort-order" class="px-3 py-1.5 border rounded-lg bg-transparent card"><option value="newest" data-lang-key="sort_newest"></option><option value="oldest" data-lang-key="sort_oldest"></option></select><button id="details-filter-reset" class="px-4 py-1.5 border rounded-lg bg-transparent hover:bg-gray-100 card font-semibold" data-lang-key="reset_filters"></button></div><div class="rounded-lg border overflow-x-auto card"><table class="min-w-full divide-y"><thead class="bg-gray-50"><tr class="text-xs font-semibold uppercase"><th class="px-2 py-3 text-left" data-lang-key="date"></th><th class="px-2 py-3 text-left" data-lang-key="item"></th><th class="px-2 py-3 text-right" data-lang-key="amount"></th><th class="px-2 py-3 text-right" data-lang-key="paid"></th><th class="px-2 py-3 text-right" data-lang-key="running_balance"></th><th class="px-2 py-3 text-center" data-lang-key="actions"></th></tr></thead><tbody id="transactions-table-body" class="divide-y"></tbody></table></div>`;
+            container.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name}</h2></div><div class="flex items-center space-x-2"><button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel"></span></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><span data-lang-key="edit_client"></span></button><button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${entityId}')"><span data-lang-key="delete_client"></span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales, currentMode)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid, currentMode)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(entity.totalSales - entity.totalPaid, currentMode)}</p></div></div><div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card"><h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history"></h3><input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" data-lang-key="search_item_placeholder"><select id="details-sort-order" class="px-3 py-1.5 border rounded-lg bg-transparent card"><option value="newest" data-lang-key="sort_newest"></option><option value="oldest" data-lang-key="sort_oldest"></option></select><button id="details-filter-reset" class="px-4 py-1.5 border rounded-lg bg-transparent hover:bg-gray-100 card font-semibold" data-lang-key="reset_filters"></button></div><div class="rounded-lg border overflow-x-auto card"><table class="min-w-full divide-y"><thead class="bg-gray-50"><tr class="text-xs font-semibold uppercase"><th class="px-2 py-3 text-left" data-lang-key="date"></th><th class="px-2 py-3 text-left" data-lang-key="item"></th><th class="px-2 py-3 text-right" data-lang-key="amount"></th><th class="px-2 py-3 text-right" data-lang-key="paid"></th><th class="px-2 py-3 text-right" data-lang-key="running_balance"></th><th class="px-2 py-3 text-center" data-lang-key="actions"></th></tr></thead><tbody id="transactions-table-body" class="divide-y"></tbody></table></div>`;
             const applyFilters = () => renderTransactionsTable(entityId, document.getElementById('details-transaction-search').value, document.getElementById('details-sort-order').value);
             applyFilters(); 
             document.getElementById('details-transaction-search').addEventListener('input', applyFilters);
@@ -576,6 +874,7 @@
         }
 
         function openTransactionModal(docId = null, transactionData = null) {
+            updateCurrencySymbols(currentMode);
             const modal = document.getElementById('transaction-modal');
             modal.classList.remove('hidden');
             const form = document.getElementById('transaction-form');
@@ -664,46 +963,268 @@
         async function deleteTransaction(transactionId) { if (confirm(translations[currentLang][currentMode].confirm_delete_transaction)) { const collectionRef = getCollectionRef(); if (!collectionRef) return; try { await deleteDoc(doc(collectionRef, transactionId)); } catch (error) { console.error("Ошибка удаления транзакции:", error); } } }
         async function deleteClient(clientId) { if (confirm(translations[currentLang][currentMode].confirm_delete_client)) { const collectionRef = getCollectionRef(); if (!collectionRef) return; const batch = writeBatch(db); allTransactions.filter(t => t.clientId === clientId).forEach(t => { batch.delete(doc(collectionRef, t.id)); }); try { await batch.commit(); currentEntityDetailsId = null; renderDetailsView(); } catch (error) { console.error("Ошибка удаления:", error); } } }
         
-        // --- ИЗМЕНЕНИЕ 2: Функция экспорта в Excel полностью реализована ---
+        // --- ISPRAVLENIE: Funktsiya eksporta v Excel peredelana ---
         function exportClientToExcel(clientId) {
             const entity = entityAggregates[clientId];
             if (!entity) return;
 
             let runningBalance = 0;
+            // Opredelyaem zagolovki zaraneye
+            const headers = ['Дата', 'Описание', 'Кол-во', 'Цена за ед.', 'Сумма', 'Оплачено', 'Итоговый баланс'];
+
             const transactionsForExport = [...entity.transactions]
                 .sort((a, b) => a.transactionDate - b.transactionDate)
-                .map(t => {
+                .flatMap(t => { // flatMap dlya razvorachivaniya gruppovyh tranzaktsiy
                     runningBalance += (t.totalAmount || 0) - (t.paymentReceived || 0);
-                    const summary = (t.items && t.items.length > 1) 
-                        ? t.items.map(i => `${i.itemName} (Кол-во: ${i.quantity}, Цена: ${i.unitPrice})`).join('; ')
-                        : t.items?.[0]?.itemName || 'Транзакция';
-                    
-                    return {
-                        'Дата': formatDate(t.transactionDate),
-                        'Описание': summary,
-                        'Сумма': t.totalAmount || 0,
-                        'Оплачено': t.paymentReceived || 0,
-                        'Итоговый баланс': runningBalance
-                    };
+
+                    if (!t.items || t.items.length <= 1) {
+                        // Odinochnaya tranzaktsiya
+                        const item = t.items?.[0];
+                        return [{
+                            'Дата': formatDate(t.transactionDate),
+                            'Описание': item?.itemName || 'Транзакция',
+                            'Кол-во': item?.quantity || 1,
+                            'Цена за ед.': item?.unitPrice || t.totalAmount || 0,
+                            'Сумма': t.totalAmount || 0,
+                            'Оплачено': t.paymentReceived || 0,
+                            'Итоговый баланс': runningBalance
+                        }];
+                    } else {
+                        // Gruppovaya tranzaktsiya
+                        const rows = t.items.map((item, index) => ({
+                            'Дата': index === 0 ? formatDate(t.transactionDate) : '', // Data tol'ko na pervoy stroke
+                            'Описание': item.itemName,
+                            'Кол-во': item.quantity,
+                            'Цена за ед.': item.unitPrice,
+                            'Сумма': (item.quantity || 0) * (item.unitPrice || 0),
+                            'Оплачено': index === 0 ? t.paymentReceived || 0 : '', // Oplata tol'ko na pervoy stroke
+                            'Итоговый баланс': '' // Balans pokazyvaem tol'ko v itogovoy stroke
+                        }));
+                        
+                        // Dobavlyaem pod-itog dlya vsey tranzaktsii
+                        rows.push({
+                            'Дата': '',
+                            'Описание': 'Итого по транзакции:',
+                            'Кол-во': '',
+                            'Цена за ед.': '',
+                            'Сумма': t.totalAmount,
+                            'Оплачено': t.paymentReceived,
+                            'Итоговый баланс': runningBalance
+                        });
+                        return rows;
+                    }
                 });
-            
+
             const summaryData = [{
                 'Дата': 'ИТОГО',
                 'Описание': '',
+                'Кол-во': '',
+                'Цена за ед.': '',
                 'Сумма': entity.totalSales,
                 'Оплачено': entity.totalPaid,
                 'Итоговый баланс': entity.totalSales - entity.totalPaid
             }];
 
-            const worksheet = XLSX.utils.json_to_sheet(transactionsForExport);
-            XLSX.utils.sheet_add_json(worksheet, summaryData, { skipHeader: true, origin: -1 });
-
+            const worksheet = XLSX.utils.json_to_sheet(transactionsForExport, { header: headers });
+            XLSX.utils.sheet_add_json(worksheet, summaryData, { skipHeader: true, origin: -1, header: headers });
+            
+            // Avtomaticheskaya shirina kolonok
+            const cols = Object.keys(transactionsForExport[0] || {}).map((key, i) => ({
+                wch: Math.max(
+                    ...transactionsForExport.map(row => row[key]?.toString().length || 0), 
+                    headers[i].length,
+                    (summaryData[0][key]?.toString().length || 0)
+                ) + 2
+            }));
+            worksheet['!cols'] = cols;
+            
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Транзакции');
             
             XLSX.writeFile(workbook, `${entity.name.replace(/ /g,"_")}_export.xlsx`);
         }
         
+        // --- NOVOE: VSE FUNKTSII DLYA RASPREDELENIYA ---
+        
+        function startDistributionListeners() {
+            if (unsubscribeDistItems) unsubscribeDistItems();
+            if (unsubscribeDistClients) unsubscribeDistClients();
+            if (unsubscribeDistPrices) unsubscribeDistPrices();
+            
+            const itemsRef = getDistributionCollectionRef('distribution_items');
+            const clientsRef = getDistributionCollectionRef('distribution_clients');
+            const pricesRef = getDistributionCollectionRef('distribution_prices');
+
+            if (!itemsRef || !clientsRef || !pricesRef) return;
+            
+            unsubscribeDistItems = onSnapshot(itemsRef, (snapshot) => {
+                distributionItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                distributionItems.sort((a,b) => a.name.localeCompare(b.name));
+                renderDistributionGrid();
+            });
+            
+            unsubscribeDistClients = onSnapshot(clientsRef, (snapshot) => {
+                distributionClients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                distributionClients.sort((a,b) => a.name.localeCompare(b.name));
+                renderDistributionGrid();
+            });
+            
+            unsubscribeDistPrices = onSnapshot(pricesRef, (snapshot) => {
+                distributionPrices = {};
+                snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    distributionPrices[`${data.itemId}_${data.clientId}`] = { docId: doc.id, price: data.price };
+                });
+                renderDistributionGrid();
+            });
+        }
+        
+        function stopDistributionListeners() {
+            if (unsubscribeDistItems) { unsubscribeDistItems(); unsubscribeDistItems = null; }
+            if (unsubscribeDistClients) { unsubscribeDistClients(); unsubscribeDistClients = null; }
+            if (unsubscribeDistPrices) { unsubscribeDistPrices(); unsubscribeDistPrices = null; }
+        }
+        
+        function renderDistributionGrid() {
+            const header = document.getElementById('distribution-grid-header');
+            const body = document.getElementById('distribution-grid-body');
+            if (!header || !body) return;
+            
+            updateCurrencySymbols('distribution');
+            const currencySymbol = getCurrency('distribution');
+
+            // Render Header
+            let headerHTML = `
+                <th data-lang-key="distribution.item_name_header">Лекарство</th>
+                <th data-lang-key="distribution.cost_price_header">Себестоимость (${currencySymbol})</th>
+            `;
+            distributionClients.forEach(client => {
+                headerHTML += `<th class="editable-header" onclick="window.openDistClientModal('${client.id}', '${client.name.replace(/'/g, "\\'")}')">
+                    <div class="flex justify-between items-center">
+                        ${client.name}
+                        <span class="edit-icon">
+                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                        </span>
+                    </div>
+                </th>`;
+            });
+            header.innerHTML = `<tr>${headerHTML}</tr>`;
+            
+            // Render Body
+            let bodyHTML = '';
+            distributionItems.forEach(item => {
+                bodyHTML += `<tr>`;
+                bodyHTML += `<td class="editable-header" onclick="window.openDistItemModal('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.costPrice})">
+                     <div class="flex justify-between items-center">
+                        ${item.name}
+                        <span class="edit-icon">
+                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                        </span>
+                    </div>
+                </td>`;
+                bodyHTML += `<td>${formatCurrency(item.costPrice, 'distribution')}</td>`;
+                
+                distributionClients.forEach(client => {
+                    const priceData = distributionPrices[`${item.id}_${client.id}`];
+                    const price = priceData ? priceData.price : '';
+                    bodyHTML += `<td>
+                        <input type="number" step="0.01" class="price-input" value="${price}" 
+                               onchange="window.updateDistributionPrice('${item.id}', '${client.id}', this.value)"
+                               placeholder="${currencySymbol}">
+                    </td>`;
+                });
+                bodyHTML += `</tr>`;
+            });
+            body.innerHTML = bodyHTML;
+            setLanguage(currentLang);
+        }
+        
+        async function updateDistributionPrice(itemId, clientId, newPriceStr) {
+            const newPrice = parseFloat(newPriceStr);
+            if (isNaN(newPrice) || newPrice < 0) {
+                 // Esli vveli pustuyu stroku ili 0, udalyaem tseny
+                 const priceData = distributionPrices[`${itemId}_${clientId}`];
+                 if (priceData) {
+                    const priceRef = doc(getDistributionCollectionRef('distribution_prices'), priceData.docId);
+                    try { await deleteDoc(priceRef); } catch (e) { console.error("Error deleting price:", e); }
+                 }
+                 return;
+            }
+            
+            const priceData = distributionPrices[`${itemId}_${clientId}`];
+            if (priceData) {
+                // Update
+                const priceRef = doc(getDistributionCollectionRef('distribution_prices'), priceData.docId);
+                try { await updateDoc(priceRef, { price: newPrice }); } catch (e) { console.error("Error updating price:", e); }
+            } else {
+                // Add
+                const pricesRef = getDistributionCollectionRef('distribution_prices');
+                try { await addDoc(pricesRef, { itemId, clientId, price: newPrice }); } catch (e) { console.error("Error adding price:", e); }
+            }
+        }
+        
+        function openDistItemModal(id = null, name = '', costPrice = 0) {
+            updateCurrencySymbols('distribution');
+            document.getElementById('distribution-item-form').reset();
+            document.getElementById('dist-item-id').value = id || '';
+            document.getElementById('dist-item-name').value = name;
+            document.getElementById('dist-item-cost').value = costPrice;
+            document.getElementById('dist-item-modal-title').dataset.langKey = id ? "distribution.edit_item_title" : "distribution.add_item_title";
+            document.getElementById('distribution-item-modal').classList.remove('hidden');
+            setLanguage(currentLang);
+        }
+        function closeDistItemModal() { document.getElementById('distribution-item-modal').classList.add('hidden'); }
+        
+        async function handleDistItemSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('dist-item-id').value;
+            const name = document.getElementById('dist-item-name').value.trim();
+            const costPrice = parseFloat(document.getElementById('dist-item-cost').value) || 0;
+            if (!name) return;
+            
+            const data = { name, costPrice };
+            const itemsRef = getDistributionCollectionRef('distribution_items');
+            try {
+                if (id) {
+                    await updateDoc(doc(itemsRef, id), data);
+                } else {
+                    await addDoc(itemsRef, data);
+                }
+                closeDistItemModal();
+            } catch (error) { console.error("Error saving item:", error); }
+        }
+        
+        function openDistClientModal(id = null, name = '') {
+            document.getElementById('distribution-client-form').reset();
+            document.getElementById('dist-client-id').value = id || '';
+            document.getElementById('dist-client-name').value = name;
+            document.getElementById('dist-client-modal-title').dataset.langKey = id ? "distribution.edit_client_title" : "distribution.add_client_title";
+            document.getElementById('distribution-client-modal').classList.remove('hidden');
+            setLanguage(currentLang);
+        }
+        function closeDistClientModal() { document.getElementById('distribution-client-modal').classList.add('hidden'); }
+
+        async function handleDistClientSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('dist-client-id').value;
+            const name = document.getElementById('dist-client-name').value.trim();
+            if (!name) return;
+            
+            const data = { name };
+            const clientsRef = getDistributionCollectionRef('distribution_clients');
+            try {
+                if (id) {
+                    await updateDoc(doc(clientsRef, id), data);
+                } else {
+                    await addDoc(clientsRef, data);
+                }
+                closeDistClientModal();
+            } catch (error) { console.error("Error saving client:", error); }
+        }
+        
+        // --- KONETS Funktsii Raspredeleniya ---
+
+        // Globalnye window funktsii
         window.viewEntityDetails = (id) => { currentEntityDetailsId = id; showView('details'); };
         window.openEditClientNameModal = openEditClientNameModal;
         window.backToDetailsList = () => { currentEntityDetailsId = null; renderDetailsView(); };
@@ -713,7 +1234,13 @@
         window.exportClientToExcel = exportClientToExcel;
         window.toggleEntityDetails = (id) => { const d = document.getElementById(`details-${id}`); const a = document.getElementById(`arrow-${id}`); if (d.style.maxHeight) { d.style.maxHeight = null; a.classList.remove('rotate-180'); } else { d.style.maxHeight = d.scrollHeight + "px"; a.classList.add('rotate-180'); } };
         window.toggleSubTable = (id) => { document.querySelector(`[data-sub-table-for="${id}"]`).classList.toggle('hidden'); document.getElementById(`arrow-sub-${id}`).classList.toggle('rotate-180'); };
+        
+        // NOVOE: Globalnye funktsii dlya Raspredeleniya
+        window.openDistItemModal = openDistItemModal;
+        window.openDistClientModal = openDistClientModal;
+        window.updateDistributionPrice = updateDistributionPrice;
 
+        // ONLOAD
         window.onload = () => {
             document.getElementById('google-signin-button').addEventListener('click', signInWithGoogle);
             document.getElementById('logout-button').addEventListener('click', logOut);
@@ -737,14 +1264,28 @@
 
                 document.getElementById('main-menu-screen').classList.add('hidden');
                 document.getElementById('main-app-screen').classList.remove('hidden');
-                startDataListener();
                 setLanguage(currentLang);
                 showView('clients');
+                updateCurrencySymbols(currentMode);
             };
 
             document.getElementById('goto-sales-btn').addEventListener('click', () => showAppScreen('sales'));
             document.getElementById('goto-purchases-btn').addEventListener('click', () => showAppScreen('purchases'));
-            document.getElementById('back-to-menu-btn').addEventListener('click', () => { document.getElementById('main-app-screen').classList.add('hidden'); document.getElementById('main-menu-screen').classList.remove('hidden'); if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; } });
+            // NOVOE: Listener dlya Raspredeleniya
+            document.getElementById('goto-distribution-btn').addEventListener('click', () => {
+                 document.getElementById('main-menu-screen').classList.add('hidden');
+                 document.getElementById('main-app-screen').classList.remove('hidden');
+                 setLanguage(currentLang);
+                 showView('distribution');
+            });
+            
+            document.getElementById('back-to-menu-btn').addEventListener('click', () => { 
+                document.getElementById('main-app-screen').classList.add('hidden'); 
+                document.getElementById('main-menu-screen').classList.remove('hidden'); 
+                if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; } 
+                stopDistributionListeners();
+            });
+            
             document.getElementById('add-transaction-button').addEventListener('click', () => openTransactionModal());
             document.getElementById('add-item-to-modal-btn').addEventListener('click', () => addItemRowToModal());
             document.getElementById('modal-close-button').addEventListener('click', closeTransactionModal);
@@ -785,7 +1326,7 @@
                 if(activeBtn) activeBtn.classList.add('active');
             };
             document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); applyTheme(btn.dataset.theme); themeDropdown.classList.add('hidden'); }));
-            const updateLogo = (url) => { [ 'login-logo', 'site-logo', 'menu-logo' ].forEach(id => { const el = document.getElementById(id); if (url) { el.src = url; el.classList.remove('hidden'); } else el.classList.add('hidden'); }); document.getElementById('logo-preview-container').innerHTML = url ? `<img src="${url}" class="h-16 mx-auto">` : ''; };
+            const updateLogo = (url) => { [ 'login-logo', 'site-logo', 'menu-logo', 'logo-bg-duplicate' ].forEach(id => { const el = document.getElementById(id); if (url) { el.src = url; el.classList.remove('hidden'); } else el.classList.add('hidden'); }); document.getElementById('logo-preview-container').innerHTML = url ? `<img src="${url}" class="h-16 mx-auto">` : ''; };
             document.getElementById('logo-upload-input').addEventListener('change', async (e) => {
                 const file = e.target.files[0]; if (!file) return; const statusEl = document.getElementById('logo-upload-status'); statusEl.textContent = '...';
                 const formData = new FormData(); formData.append('image', file);
@@ -796,6 +1337,26 @@
                 } catch (err) { console.error('Logo upload error:', err); statusEl.textContent = 'Ошибка.'; }
             });
             
+            // NOVOE: Listenery dlya Nastroek Valyuty
+            const currencySelects = ['currency-sales', 'currency-purchases', 'currency-distribution'];
+            currencySelects.forEach(id => {
+                const select = document.getElementById(id);
+                select.value = localStorage.getItem(id) || 'TRY';
+                select.addEventListener('change', (e) => {
+                    localStorage.setItem(id, e.target.value);
+                    updateCurrencySymbols(null); // Obnovit' vse vidimye simvoly
+                });
+            });
+
+            // NOVOE: Listenery dlya Modalok Raspredeleniya
+            document.getElementById('add-distribution-item-btn').addEventListener('click', () => openDistItemModal());
+            document.getElementById('add-distribution-client-btn').addEventListener('click', () => openDistClientModal());
+            document.getElementById('dist-item-modal-close-btn').addEventListener('click', closeDistItemModal);
+            document.getElementById('distribution-item-form').addEventListener('submit', handleDistItemSubmit);
+            document.getElementById('dist-client-modal-close-btn').addEventListener('click', closeDistClientModal);
+            document.getElementById('distribution-client-form').addEventListener('submit', handleDistClientSubmit);
+
+            // Zagruzka sostoyaniya
             applyTheme(localStorage.getItem('siteTheme') || 'light');
             updateLogo(localStorage.getItem('siteLogo'));
             const savedTitle = localStorage.getItem('siteTitle');
