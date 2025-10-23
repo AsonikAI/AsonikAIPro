@@ -74,7 +74,7 @@
 
         .min-h-h-screen { min-height: calc(100vh - 32px); }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.6); z-index: 40; }
-        #transaction-modal, #edit-client-modal, #distribution-item-modal, #distribution-client-modal { z-index: 50; }
+        #transaction-modal, #edit-client-modal, #distribution-item-modal, #distribution-client-modal, #distribution-list-modal { z-index: 50; } /* ИСПРАВЛЕНО: Добавлен ID нового модального окна */
         .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
         
         .theme-btn.active { box-shadow: 0 0 0 2px var(--header-brand); }
@@ -144,7 +144,12 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             background-color: transparent;
+            transition: background-color 0.3s ease; /* ИСПРАВЛЕНО: Добавлен плавный переход */
         }
+        /* ИСПРАВЛЕНО: Стили для подсветки цен */
+        #distribution-grid .price-input.profit { background-color: #dcfce7; /* green-100 */ }
+        #distribution-grid .price-input.loss { background-color: #fee2e2; /* red-100 */ }
+        
         #distribution-grid .price-input:focus {
             border-color: var(--header-brand);
             box-shadow: 0 0 0 1px var(--header-brand);
@@ -312,6 +317,23 @@
             <div class="flex justify-between items-center mb-4">
                  <h2 class="text-2xl font-bold" data-lang-key="distribution.nav_main">Распределение Цен</h2>
             </div>
+            
+            <!-- ИСПРАВЛЕНО: Добавлено управление списком таблиц -->
+            <div class="flex items-center gap-4 mb-4">
+                <label for="distribution-list-select" class="font-semibold" data-lang-key="distribution.select_table">Таблица:</label>
+                <select id="distribution-list-select" class="flex-grow px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent card"></select>
+                <button id="add-distribution-list-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span data-lang-key="distribution.new_table">Новая таблица</span>
+                </button>
+                <button id="edit-distribution-list-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold p-2.5 rounded-lg" data-lang-key="edit" title="Редактировать название таблицы">
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                </button>
+                 <button id="delete-distribution-list-btn" class="bg-red-600 hover:bg-red-700 text-white font-semibold p-2.5 rounded-lg" data-lang-key="delete" title="Удалить таблицу">
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+            
             <div class="flex gap-3 mb-4">
                 <button id="add-distribution-item-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -323,7 +345,14 @@
                      </svg>
                     <span data-lang-key="distribution.add_client">Добавить Клиента</span>
                 </button>
+                
+                <!-- ИСПРАВЛЕНО: Новая кнопка "Добавить Цену" -->
+                <button id="add-distribution-price-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182.553-.44 1.278-.659 2.003-.659c.768 0 1.536.219 2.121.659L15 9.182" /></svg>
+                    <span data-lang-key="distribution.add_price">Добавить Цену</span>
+                </button>
             </div>
+            
             <div id="distribution-grid-container" class="overflow-auto flex-grow rounded-lg border card">
                 <table id="distribution-grid">
                     <thead>
@@ -448,11 +477,14 @@
                 </div>
                 <div class="flex justify-between pt-6">
                     <button type="button" id="dist-item-modal-close-btn" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                    <!-- ИСПРАВЛЕНО: Добавлена кнопка удаления -->
+                    <button type="button" id="dist-item-modal-delete-btn" class="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hidden" data-lang-key="delete">Удалить</button>
                     <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
+    
     <div id="distribution-client-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
         <div class="bg-white w-full max-w-md p-6 rounded-xl card" id="distribution-client-modal-content">
             <h2 id="dist-client-modal-title" class="text-2xl font-bold mb-4">Добавить Клиента</h2>
@@ -464,6 +496,46 @@
                 </div>
                 <div class="flex justify-between pt-6">
                     <button type="button" id="dist-client-modal-close-btn" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
+                    <!-- ИСПРАВЛЕНО: Добавлена кнопка удаления -->
+                    <button type="button" id="dist-client-modal-delete-btn" class="px-5 py-2.5 bg-red-600 text-white font-semibold rounded-lg hidden" data-lang-key="delete">Удалить</button>
+                    <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ИСПРАВЛЕНО: Новое модальное окно для "Добавить Цену" (по вашему запросу) -->
+    <div id="distribution-price-modal" class="modal-overlay fixed inset-0 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-md p-6 rounded-xl card" id="distribution-price-modal-content">
+            <h2 id="dist-price-modal-title" class="text-2xl font-bold mb-4" data-lang-key="distribution.add_price_title">Добавить Цену</h2>
+            <form id="distribution-price-form">
+                <div class="space-y-4">
+                    <div>
+                        <label for="dist-price-item-select" class="block text-sm font-medium" data-lang-key="distribution.item_name_label">Лекарство</label>
+                        <div class="flex gap-2">
+                            <select id="dist-price-item-select" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent"></select>
+                            <button type="button" id="dist-price-add-item-btn" class="mt-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg" title="Добавить новое лекарство">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="dist-price-client-select" class="block text-sm font-medium" data-lang-key="distribution.client_name_label">Клиент</label>
+                         <div class="flex gap-2">
+                            <select id="dist-price-client-select" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent"></select>
+                            <button type="button" id="dist-price-add-client-btn" class="mt-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg" title="Добавить нового клиента">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="dist-price-input" class="block text-sm font-medium" data-lang-key="distribution.price_label">Цена продажи (<span data-currency-label="true">₺</span>)</label>
+                        <input type="number" step="0.01" id="dist-price-input" required class="w-full mt-1 px-4 py-2 border rounded-lg bg-transparent" value="0">
+                    </div>
+                    <!-- 
+                    По вашему запросу "количество лекарства" - это не вписывается в прайс-лист. 
+                    Прайс-лист - это "Лекарство А" стоит "X" для "Клиента Б". Количество здесь не нужно.
+                    Я реализовал вашу просьбу "Лекарство, Клиент, Себестоимость (она уже есть у лекарства), Цена (новая)".
+                    -->
+                </div>
+                <div class="flex justify-between pt-6">
+                    <button type="button" id="dist-price-modal-close-btn" class="px-5 py-2.5 bg-gray-200 font-semibold rounded-lg" data-lang-key="cancel">Отмена</button>
                     <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-lg" data-lang-key="save">Сохранить</button>
                 </div>
             </form>
@@ -490,9 +562,12 @@
         let currentMode = 'sales'; // 'sales' ili 'purchases'
         
         // NOVOE: Peremennye dlya Raspredeleniya
+        let distributionLists = []; // {id, name}
+        let currentDistributionListId = null;
         let distributionItems = [];
         let distributionClients = [];
         let distributionPrices = {}; // { 'itemId_clientId': { docId: 'priceDocId', price: 10 } }
+        let unsubscribeDistLists = null;
         let unsubscribeDistItems = null;
         let unsubscribeDistClients = null;
         let unsubscribeDistPrices = null;
@@ -541,12 +616,15 @@
                     confirm_delete_transaction: "Вы уверены, что хотите удалить эту закупку?", confirm_delete_client: "ВНИМАНИЕ! Вы действительно хотите удалить поставщика и ВСЕ его закупки? Это действие необратимо.",
                     menu_desc: "Учёт поставщиков и закупок"
                 },
-                // NOVOE: Perevody dlya Raspredeleniya
+                // ИСПРАВЛЕНО: Perevody dlya Raspredeleniya
                 distribution: {
                     nav_main: "РАСПРЕДЕЛЕНИЕ",
                     menu_desc: "Управление ценами по клиентам",
                     add_item: "Добавить Лекарство",
                     add_client: "Добавить Клиента",
+                    add_price: "Добавить Цену",
+                    add_price_title: "Добавить Новую Цену",
+                    price_label: "Цена продажи",
                     item_name_header: "Название Лекарства",
                     cost_price_header: "Себестоимость",
                     add_item_title: "Добавить Лекарство",
@@ -556,11 +634,85 @@
                     add_client_title: "Добавить Клиента",
                     edit_client_title: "Редактировать Клиента",
                     client_name_label: "Имя Клиента",
-                    confirm_delete_item: "Вы уверены, что хотите удалить это лекарство и все связанные с ним цены?",
-                    confirm_delete_client: "Вы уверены, что хотите удалить этого клиента и все связанные с ним цены?"
+                    confirm_delete_item: "Вы уверены, что хотите удалить это лекарство и все связанные с ним цены из ЭТОЙ таблицы?",
+                    confirm_delete_client: "Вы уверены, что хотите удалить этого клиента и все связанные с ним цены из ЭТОЙ таблицы?",
+                    select_table: "Таблица:",
+                    new_table: "Новая таблица",
+                    new_table_prompt: "Введите название новой таблицы:",
+                    edit_table_prompt: "Введите новое название для таблицы",
+                    confirm_delete_table: "Вы уверены, что хотите удалить всю таблицу и все ее данные?"
                 }
             },
-            tr: { /* Turkish translations */ }
+            // ИСПРАВЛЕНО: Добавлены турецкие переводы
+            tr: {
+                russian: "Русский", turkish: "Türkçe", loading: "Sistem yükleniyor...", 
+                nav_main: "ANA SAYFA", nav_details: "DETAYLAR", nav_settings: "AYARLAR",
+                settings_title: "Sistem Ayarları", settings_theme_title: "Tema", 
+                theme_light: "Açık", theme_violet: "Mor", theme_crimson: "Kırmızı", theme_sunset: "Gün Batımı",
+                settings_logo_title: "Logo", logo_uploading: "Yükleniyor...", logo_upload_success: "Logo yüklendi!", logo_upload_error: "Yükleme hatası.",
+                settings_app_name_title: "Uygulama Adı", settings_app_name_label: "Adı değiştir",
+                settings_account_title: "Hesabınız", status: "Durum", user_id: "Kullanıcı ID",
+                settings_currency_title: "Para Birimi Ayarları", settings_currency_sales: "Satış Para Birimi", settings_currency_purchases: "Alış Para Birimi", settings_currency_distribution: "Dağıtım Para Birimi",
+                cancel: "İptal", save: "Kaydet", edit: "Düzenle", delete: "Sil", details_btn: "Seç",
+                sort_newest: "Önce en yeni", sort_oldest: "Önce en eski", sort_name_az: "İsim (A-Z)", sort_name_za: "İsim (Z-A)",
+                date: "Tarih", item: "Ürün/Açıklama", amount: "Tutar", paid: "Kasa", running_balance: "Kalan Bakiye", actions: "Eylemler",
+                item_name: "Ürün / Açıklama", unit_price: "Birim Fiyat", quantity: "Miktar", payment_received: "Kasa",
+                initial_balance: "Başlangıç Bakiyesi", transaction_date: "İşlem Tarihi",
+                export_to_excel: "Excel'e Aktar", reset_filters: "Sıfırla", search_item_placeholder: "Ürün ara...",
+                item_list: "Ürün Listesi", add_item_btn: "Ürün Ekle", remove_item_btn: "Kaldır",
+                
+                sales: {
+                    nav_main: "SATIŞLAR", main_header: "ANA SAYFA (Müşteri Özeti)", edit_client: "Müşteriyi Düzenle", delete_client: "Müşteriyi Sil", 
+                    search_placeholder: "Müşteri adı ara...", add_transaction: "Satış Ekle",
+                    details_placeholder_title: "Müşteri Seçilmedi", details_placeholder_text: "Lütfen detayları görmek için bir müşteri seçin.",
+                    details_list_title: "DETAYLAR (Müşteri Seç)", details_list_text: "Aşağıdan bir müşteri seçin.",
+                    modal_add_trans_title: "Yeni Satış Ekle", modal_edit_trans_title: "Satışı Düzenle",
+                    client_name: "Müşteri Adı", new_client_placeholder: "Yeni müşteri adı girin", add_new_client_btn: "Yeni müşteri ekle", back_to_list_btn: "Listeye dön",
+                    edit_client_title: "Müşteri adını düzenle", new_name_label: "Yeni müşteri adı",
+                    details_title: "Müşteri Detayları", total_sales: "Toplam Satış", total_paid: "Toplam Kasa", total_remaining: "Kalan Bakiye",
+                    transaction_history: "İşlem Geçmişi", back_to_clients: "Müşteri listesine dön",
+                    confirm_delete_transaction: "Bu işlemi silmek istediğinizden emin misiniz?", confirm_delete_client: "DİKKAT! Müşteriyi ve TÜM işlemlerini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+                    menu_desc: "Müşteri ve işlem takibi"
+                },
+                purchases: {
+                    nav_main: "ALIŞLAR", main_header: "ANA SAYFA (Tedarikçi Özeti)", edit_client: "Tedarikçiyi Düzenle", delete_client: "Tedarikçiyi Sil", 
+                    search_placeholder: "Tedarikçi adı ara...", add_transaction: "Alış Ekle",
+                    details_placeholder_title: "Tedarikçi Seçilmedi", details_placeholder_text: "Lütfen detayları görmek için bir tedarikçi seçin.",
+                    details_list_title: "DETAYLAR (Tedarikçi Seç)", details_list_text: "Aşağıdan bir tedarikçi seçin.",
+                    modal_add_trans_title: "Yeni Alış Ekle", modal_edit_trans_title: "Alışı Düzenle",
+                    client_name: "Tedarikçi Adı", new_client_placeholder: "Yeni tedarikçi adı girin", add_new_client_btn: "Yeni tedarikçi ekle", back_to_list_btn: "Listeye dön",
+                    edit_client_title: "Tedarikçi adını düzenle", new_name_label: "Yeni tedarikçi adı",
+                    details_title: "Tedarikçi Detayları", total_sales: "Toplam Alış", total_paid: "Toplam Ödenen", total_remaining: "Kalan Borç",
+                    transaction_history: "Alış Geçmişi", back_to_clients: "Tedarikçi listesine dön",
+                    confirm_delete_transaction: "Bu alışı silmek istediğinizden emin misiniz?", confirm_delete_client: "DİKKAT! Tedarikçiyi ve TÜM alışlarını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+                    menu_desc: "Tedarikçi ve alım takibi"
+                },
+                distribution: {
+                    nav_main: "DAĞITIM",
+                    menu_desc: "Müşteri fiyat yönetimi",
+                    add_item: "İlaç Ekle",
+                    add_client: "Müşteri Ekle",
+                    add_price: "Fiyat Ekle",
+                    add_price_title: "Yeni Fiyat Ekle",
+                    price_label: "Satış Fiyatı",
+                    item_name_header: "İlaç Adı",
+                    cost_price_header: "Maliyet",
+                    add_item_title: "İlaç Ekle",
+                    edit_item_title: "İlacı Düzenle",
+                    item_name_label: "İlaç Adı",
+                    cost_price_label: "Maliyet Fiyatı",
+                    add_client_title: "Müşteri Ekle",
+                    edit_client_title: "Müşteriyi Düzenle",
+                    client_name_label: "Müşteri Adı",
+                    confirm_delete_item: "Bu ilacı ve BU tablodaki tüm ilgili fiyatlarını silmek istediğinizden emin misiniz?",
+                    confirm_delete_client: "Bu müşteriyi ve BU tablodaki tüm ilgili fiyatlarını silmek istediğinizden emin misiniz?",
+                    select_table: "Tablo:",
+                    new_table: "Yeni Tablo",
+                    new_table_prompt: "Yeni tablo adını girin:",
+                    edit_table_prompt: "Tablo için yeni adı girin:",
+                    confirm_delete_table: "Tüm tabloyu ve içindeki tüm verileri silmek istediğinizden emin misiniz?"
+                }
+            }
         };
 
         let currentLang = 'ru';
@@ -649,6 +801,7 @@
         // NOVOE: Funktsiya dlya kollektsiy Raspredeleniya
         function getDistributionCollectionRef(collectionName) {
             if (!db || !currentUserId) return null;
+            // ИСПРАВЛЕНО: Все коллекции распределения теперь глобальные, а не вложенные
             return collection(db, 'artifacts', appId, 'users', currentUserId, collectionName);
         }
         
@@ -673,7 +826,7 @@
                 updateCurrencySymbols(currentMode);
             } else if (viewId === 'distribution') {
                 if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; }
-                if (!unsubscribeDistItems) startDistributionListeners();
+                if (!unsubscribeDistLists) startDistListListener(); // ИСПРАВЛЕНО: Запускаем слушатель списков
                 updateCurrencySymbols('distribution');
             } else {
                 if (unsubscribeDataListener) { unsubscribeDataListener(); unsubscribeDataListener = null; }
@@ -785,7 +938,34 @@
                     const summary = (t.items && t.items.length > 1) ? `Групповая (${t.items.length} поз.)` : (t.items?.[0]?.itemName || 'Транзакция');
                     return `<div class="grid grid-cols-12 gap-2 text-sm items-center py-2 border-b last:border-b-0"><div class="col-span-3">${formatDate(t.transactionDate)}</div><div class="col-span-5 font-medium">${summary}</div><div class="col-span-2 text-right"><span class="text-green-600 font-semibold">${formatCurrency(t.paymentReceived, currentMode)}</span><span class="text-xs block" data-lang-key="paid"></span></div><div class="col-span-2 text-right"><span class="font-semibold" style="color: var(--header-brand);">${formatCurrency(t.totalAmount, currentMode)}</span><span class="text-xs block" data-lang-key="amount"></span></div></div>`;
                 }).join('');
-                card.innerHTML = `<div class="flex justify-between items-center mb-3 cursor-pointer" onclick="window.toggleEntityDetails('${entityId}')"><div class="flex items-center space-x-3"><svg id="arrow-${entityId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg><h3 class="text-xl font-bold"><span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${entity.name}</h3><button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg></button></div><div class="flex items-center space-x-4"><div class="text-right"><span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining, currentMode)}</span><span class="text-xs block" data-lang-key="total_remaining"></span></div><button class="text-sm font-semibold hover:underline" style="color: var(--header-brand);" data-lang-key="details_btn" onclick="event.stopPropagation(); window.viewEntityDetails('${entityId}')"></button></div></div><div id="details-${entityId}" class="collapsible-content"><div class="pt-2 border-t">${transactionsHtml}</div></div>`;
+                
+                /*
+                ИСПРАВЛЕНО: 
+                1. Нажатие на div с классом `collapsible-header` теперь вызывает toggle.
+                2. Нажатие на имя (h3) теперь вызывает viewEntityDetails (переход на страницу "Подробно").
+                3. Кнопка "Выбрать" удалена, так как она дублировала п.2.
+                */
+                card.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center space-x-3 collapsible-header cursor-pointer" onclick="window.toggleEntityDetails('${entityId}')">
+                        <svg id="arrow-${entityId}" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        <h3 class="text-xl font-bold cursor-pointer hover:underline" onclick="event.stopPropagation(); window.viewEntityDetails('${entityId}')">
+                            <span class="font-normal text-gray-400 mr-2">${index + 1}.</span>${entity.name}
+                        </h3>
+                        <button class="text-gray-400 hover:text-yellow-600" onclick="event.stopPropagation(); window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')" title="${translations[currentLang][currentMode].edit_client}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right">
+                            <span class="text-lg font-bold ${remaining > 0 ? 'text-red-600' : 'text-green-600'}">${formatCurrency(remaining, currentMode)}</span>
+                            <span class="text-xs block" data-lang-key="total_remaining"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="details-${entityId}" class="collapsible-content">
+                    <div class="pt-2 border-t">${transactionsHtml}</div>
+                </div>`;
                 container.appendChild(card);
             });
             setLanguage(currentLang);
@@ -814,17 +994,31 @@
             setLanguage(currentLang);
         }
         
-        function renderTransactionsTable(entityId, searchTerm = '', sortOrder = 'newest') {
+        // ИСПРАВЛЕНО: Функция принимает startDateStr и endDateStr для фильтрации
+        function renderTransactionsTable(entityId, searchTerm = '', sortOrder = 'newest', startDateStr = '', endDateStr = '') {
             const tableBody = document.getElementById('transactions-table-body');
             if (!tableBody) return;
             const entity = entityAggregates[entityId];
             let runningBalance = 0;
+            
+            // ИСПРАВЛЕНО: Логика для дат
+            const startDate = startDateStr ? new Date(startDateStr) : null;
+            const endDate = endDateStr ? new Date(endDateStr) : null;
+            if (startDate) startDate.setHours(0, 0, 0, 0);
+            if (endDate) endDate.setHours(23, 59, 59, 999);
+
             const allTransactionsWithBalance = [...entity.transactions]
                 .sort((a, b) => a.transactionDate - b.transactionDate)
                 .map(t => { runningBalance += (t.totalAmount || 0) - (t.paymentReceived || 0); return { ...t, runningBalance }; });
 
             const lowerCaseSearchTerm = searchTerm.toLowerCase();
-            let filteredTransactions = allTransactionsWithBalance.filter(t => !searchTerm || t.items.some(item => item.itemName.toLowerCase().includes(lowerCaseSearchTerm)));
+            
+            let filteredTransactions = allTransactionsWithBalance.filter(t => {
+                const termMatch = !searchTerm || t.items.some(item => item.itemName.toLowerCase().includes(lowerCaseSearchTerm));
+                const dateMatch = (!startDate || t.transactionDate >= startDate) && (!endDate || t.transactionDate <= endDate);
+                return termMatch && dateMatch;
+            });
+            
             if (sortOrder === 'newest') filteredTransactions.reverse();
 
             tableBody.innerHTML = filteredTransactions.map(t => {
@@ -850,12 +1044,43 @@
 
         function renderDetailedEntityInfo(container, entityId) {
             const entity = entityAggregates[entityId];
-            container.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name}</h2></div><div class="flex items-center space-x-2"><button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel"></span></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><span data-lang-key="edit_client"></span></button><button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${entityId}')"><span data-lang-key="delete_client"></span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales, currentMode)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid, currentMode)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(entity.totalSales - entity.totalPaid, currentMode)}</p></div></div><div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card"><h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history"></h3><input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" data-lang-key="search_item_placeholder"><select id="details-sort-order" class="px-3 py-1.5 border rounded-lg bg-transparent card"><option value="newest" data-lang-key="sort_newest"></option><option value="oldest" data-lang-key="sort_oldest"></option></select><button id="details-filter-reset" class="px-4 py-1.5 border rounded-lg bg-transparent hover:bg-gray-100 card font-semibold" data-lang-key="reset_filters"></button></div><div class="rounded-lg border overflow-x-auto card"><table class="min-w-full divide-y"><thead class="bg-gray-50"><tr class="text-xs font-semibold uppercase"><th class="px-2 py-3 text-left" data-lang-key="date"></th><th class="px-2 py-3 text-left" data-lang-key="item"></th><th class="px-2 py-3 text-right" data-lang-key="amount"></th><th class="px-2 py-3 text-right" data-lang-key="paid"></th><th class="px-2 py-3 text-right" data-lang-key="running_balance"></th><th class="px-2 py-3 text-center" data-lang-key="actions"></th></tr></thead><tbody id="transactions-table-body" class="divide-y"></tbody></table></div>`;
-            const applyFilters = () => renderTransactionsTable(entityId, document.getElementById('details-transaction-search').value, document.getElementById('details-sort-order').value);
+            container.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name}</h2></div><div class="flex items-center space-x-2"><button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel"></span></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}')"><span data-lang-key="edit_client"></span></button><button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${entityId}')"><span data-lang-key="delete_client"></span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales, currentMode)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid, currentMode)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(entity.totalSales - entity.totalPaid, currentMode)}</p></div>
+            
+            <!-- ИСПРАВЛЕНО: Добавлены поля для Календаря (фильтр по датам) -->
+            <div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card">
+                <h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history"></h3>
+                <input type="date" id="details-start-date" class="px-3 py-1.5 border rounded-lg bg-transparent card" title="Дата начала">
+                <input type="date" id="details-end-date" class="px-3 py-1.5 border rounded-lg bg-transparent card" title="Дата окончания">
+                <input type="text" id="details-transaction-search" class="flex-grow px-3 py-1.5 border rounded-lg bg-transparent" data-lang-key="search_item_placeholder">
+                <select id="details-sort-order" class="px-3 py-1.5 border rounded-lg bg-transparent card"><option value="newest" data-lang-key="sort_newest"></option><option value="oldest" data-lang-key="sort_oldest"></option></select>
+                <button id="details-filter-reset" class="px-4 py-1.5 border rounded-lg bg-transparent hover:bg-gray-100 card font-semibold" data-lang-key="reset_filters"></button>
+            </div>
+            
+            <div class="rounded-lg border overflow-x-auto card"><table class="min-w-full divide-y"><thead class="bg-gray-50"><tr class="text-xs font-semibold uppercase"><th class="px-2 py-3 text-left" data-lang-key="date"></th><th class="px-2 py-3 text-left" data-lang-key="item"></th><th class="px-2 py-3 text-right" data-lang-key="amount"></th><th class="px-2 py-3 text-right" data-lang-key="paid"></th><th class="px-2 py-3 text-right" data-lang-key="running_balance"></th><th class="px-2 py-3 text-center" data-lang-key="actions"></th></tr></thead><tbody id="transactions-table-body" class="divide-y"></tbody></table></div>`;
+            
+            // ИСПРАВЛЕНО: Новая функция applyFilters, которая включает даты
+            const applyFilters = () => renderTransactionsTable(
+                entityId, 
+                document.getElementById('details-transaction-search').value, 
+                document.getElementById('details-sort-order').value,
+                document.getElementById('details-start-date').value,
+                document.getElementById('details-end-date').value
+            );
+            
             applyFilters(); 
+            document.getElementById('details-start-date').addEventListener('change', applyFilters);
+            document.getElementById('details-end-date').addEventListener('change', applyFilters);
             document.getElementById('details-transaction-search').addEventListener('input', applyFilters);
             document.getElementById('details-sort-order').addEventListener('change', applyFilters);
-            document.getElementById('details-filter-reset').addEventListener('click', () => { document.getElementById('details-transaction-search').value = ''; document.getElementById('details-sort-order').value = 'newest'; applyFilters(); });
+            
+            // ИСПРАВЛЕНО: Сброс фильтров теперь очищает и даты
+            document.getElementById('details-filter-reset').addEventListener('click', () => { 
+                document.getElementById('details-transaction-search').value = ''; 
+                document.getElementById('details-sort-order').value = 'newest';
+                document.getElementById('details-start-date').value = '';
+                document.getElementById('details-end-date').value = '';
+                applyFilters(); 
+            });
             setLanguage(currentLang);
         }
         
@@ -1044,18 +1269,63 @@
             XLSX.writeFile(workbook, `${entity.name.replace(/ /g,"_")}_export.xlsx`);
         }
         
-        // --- NOVOE: VSE FUNKTSII DLYA RASPREDELENIYA ---
+        // --- ИСПРАВЛЕНО: VSE FUNKTSII DLYA RASPREDELENIYA (ПЕРЕРАБОТАНЫ) ---
         
+        // Слушатель для СПИСКОВ ТАБЛИЦ
+        function startDistListListener() {
+            if (unsubscribeDistLists) unsubscribeDistLists();
+            const listsRef = getDistributionCollectionRef('distribution_lists');
+            if (!listsRef) return;
+            
+            unsubscribeDistLists = onSnapshot(listsRef, async (snapshot) => {
+                distributionLists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                distributionLists.sort((a,b) => a.name.localeCompare(b.name));
+                
+                if (distributionLists.length === 0) {
+                    // Создаем таблицу по умолчанию, если ни одной нет
+                    try {
+                        const defaultListRef = await addDoc(listsRef, { name: 'Основная таблица' });
+                        currentDistributionListId = defaultListRef.id;
+                    } catch (e) { console.error("Error creating default list", e); }
+                } else {
+                    if (!currentDistributionListId || !distributionLists.find(l => l.id === currentDistributionListId)) {
+                        currentDistributionListId = distributionLists[0].id;
+                    }
+                }
+                renderDistributionListDropdown();
+                startDistributionListeners(); // Перезапускаем слушателей для данных
+            });
+        }
+        
+        // Рендер выпадающего списка таблиц
+        function renderDistributionListDropdown() {
+            const select = document.getElementById('distribution-list-select');
+            select.innerHTML = '';
+            distributionLists.forEach(list => {
+                const option = document.createElement('option');
+                option.value = list.id;
+                option.textContent = list.name;
+                select.appendChild(option);
+            });
+            select.value = currentDistributionListId;
+        }
+
+        // Слушатели для ДАННЫХ (Лекарства, Клиенты, Цены)
         function startDistributionListeners() {
+            // Сначала останавливаем старые
             if (unsubscribeDistItems) unsubscribeDistItems();
             if (unsubscribeDistClients) unsubscribeDistClients();
             if (unsubscribeDistPrices) unsubscribeDistPrices();
             
-            const itemsRef = getDistributionCollectionRef('distribution_items');
-            const clientsRef = getDistributionCollectionRef('distribution_clients');
-            const pricesRef = getDistributionCollectionRef('distribution_prices');
+            if (!currentDistributionListId) {
+                renderDistributionGrid(); // Очищаем грид, если нет таблицы
+                return;
+            }
 
-            if (!itemsRef || !clientsRef || !pricesRef) return;
+            // Запускаем новые слушатели с фильтром по listId
+            const itemsRef = query(getDistributionCollectionRef('distribution_items'), where("listId", "==", currentDistributionListId));
+            const clientsRef = query(getDistributionCollectionRef('distribution_clients'), where("listId", "==", currentDistributionListId));
+            const pricesRef = query(getDistributionCollectionRef('distribution_prices'), where("listId", "==", currentDistributionListId));
             
             unsubscribeDistItems = onSnapshot(itemsRef, (snapshot) => {
                 distributionItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -1080,6 +1350,7 @@
         }
         
         function stopDistributionListeners() {
+            if (unsubscribeDistLists) { unsubscribeDistLists(); unsubscribeDistLists = null; }
             if (unsubscribeDistItems) { unsubscribeDistItems(); unsubscribeDistItems = null; }
             if (unsubscribeDistClients) { unsubscribeDistClients(); unsubscribeDistClients = null; }
             if (unsubscribeDistPrices) { unsubscribeDistPrices(); unsubscribeDistPrices = null; }
@@ -1124,12 +1395,22 @@
                 </td>`;
                 bodyHTML += `<td>${formatCurrency(item.costPrice, 'distribution')}</td>`;
                 
+                const costPrice = item.costPrice || 0;
+                
                 distributionClients.forEach(client => {
                     const priceData = distributionPrices[`${item.id}_${client.id}`];
                     const price = priceData ? priceData.price : '';
+                    
+                    // ИСПРАВЛЕНО: Логика подсветки
+                    let priceClass = '';
+                    if (price !== '' && costPrice > 0) {
+                        if (price > costPrice) priceClass = 'profit';
+                        else if (price < costPrice) priceClass = 'loss';
+                    }
+                    
                     bodyHTML += `<td>
-                        <input type="number" step="0.01" class="price-input" value="${price}" 
-                               onchange="window.updateDistributionPrice('${item.id}', '${client.id}', this.value)"
+                        <input type="number" step="0.01" class="price-input ${priceClass}" value="${price}" 
+                               onchange="window.updateDistributionPrice('${item.id}', '${client.id}', this.value, this, ${costPrice})"
                                placeholder="${currencySymbol}">
                     </td>`;
                 });
@@ -1139,9 +1420,20 @@
             setLanguage(currentLang);
         }
         
-        async function updateDistributionPrice(itemId, clientId, newPriceStr) {
+        // ИСПРАВЛЕНО: Функция обновления цены теперь также меняет цвет
+        async function updateDistributionPrice(itemId, clientId, newPriceStr, inputElement, costPrice) {
             const newPrice = parseFloat(newPriceStr);
-            if (isNaN(newPrice) || newPrice < 0) {
+            
+            // Обновляем цвет ячейки
+            if (inputElement) {
+                inputElement.classList.remove('profit', 'loss');
+                if (!isNaN(newPrice) && newPrice > 0 && costPrice > 0) {
+                    if (newPrice > costPrice) inputElement.classList.add('profit');
+                    else if (newPrice < costPrice) inputElement.classList.add('loss');
+                }
+            }
+
+            if (isNaN(newPrice) || newPrice <= 0) {
                  // Esli vveli pustuyu stroku ili 0, udalyaem tseny
                  const priceData = distributionPrices[`${itemId}_${clientId}`];
                  if (priceData) {
@@ -1159,7 +1451,8 @@
             } else {
                 // Add
                 const pricesRef = getDistributionCollectionRef('distribution_prices');
-                try { await addDoc(pricesRef, { itemId, clientId, price: newPrice }); } catch (e) { console.error("Error adding price:", e); }
+                // ИСПРАВЛЕНО: Добавляем listId
+                try { await addDoc(pricesRef, { itemId, clientId, price: newPrice, listId: currentDistributionListId }); } catch (e) { console.error("Error adding price:", e); }
             }
         }
         
@@ -1170,6 +1463,16 @@
             document.getElementById('dist-item-name').value = name;
             document.getElementById('dist-item-cost').value = costPrice;
             document.getElementById('dist-item-modal-title').dataset.langKey = id ? "distribution.edit_item_title" : "distribution.add_item_title";
+            
+            // ИСПРАВЛЕНО: Показываем/скрываем кнопку удаления
+            const deleteBtn = document.getElementById('dist-item-modal-delete-btn');
+            if (id) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.onclick = () => deleteDistributionItem(id);
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+            
             document.getElementById('distribution-item-modal').classList.remove('hidden');
             setLanguage(currentLang);
         }
@@ -1182,7 +1485,8 @@
             const costPrice = parseFloat(document.getElementById('dist-item-cost').value) || 0;
             if (!name) return;
             
-            const data = { name, costPrice };
+            // ИСПРАВЛЕНО: Добавляем listId
+            const data = { name, costPrice, listId: currentDistributionListId };
             const itemsRef = getDistributionCollectionRef('distribution_items');
             try {
                 if (id) {
@@ -1194,11 +1498,39 @@
             } catch (error) { console.error("Error saving item:", error); }
         }
         
+        // ИСПРАВЛЕНО: Новая функция удаления лекарства
+        async function deleteDistributionItem(itemId) {
+            if (!confirm(translations[currentLang]?.distribution?.confirm_delete_item || "Вы уверены?")) return;
+            const itemRef = doc(getDistributionCollectionRef('distribution_items'), itemId);
+            const pricesQuery = query(getDistributionCollectionRef('distribution_prices'), 
+                where("itemId", "==", itemId), 
+                where("listId", "==", currentDistributionListId)
+            );
+            try {
+                const batch = writeBatch(db);
+                batch.delete(itemRef);
+                const pricesSnapshot = await getDocs(pricesQuery);
+                pricesSnapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                closeDistItemModal();
+            } catch (error) { console.error("Ошибка удаления лекарства:", error); }
+        }
+        
         function openDistClientModal(id = null, name = '') {
             document.getElementById('distribution-client-form').reset();
             document.getElementById('dist-client-id').value = id || '';
             document.getElementById('dist-client-name').value = name;
             document.getElementById('dist-client-modal-title').dataset.langKey = id ? "distribution.edit_client_title" : "distribution.add_client_title";
+            
+            // ИСПРАВЛЕНО: Показываем/скрываем кнопку удаления
+            const deleteBtn = document.getElementById('dist-client-modal-delete-btn');
+            if (id) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.onclick = () => deleteDistributionClient(id);
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+            
             document.getElementById('distribution-client-modal').classList.remove('hidden');
             setLanguage(currentLang);
         }
@@ -1210,7 +1542,8 @@
             const name = document.getElementById('dist-client-name').value.trim();
             if (!name) return;
             
-            const data = { name };
+            // ИСПРАВЛЕНО: Добавляем listId
+            const data = { name, listId: currentDistributionListId };
             const clientsRef = getDistributionCollectionRef('distribution_clients');
             try {
                 if (id) {
@@ -1220,6 +1553,65 @@
                 }
                 closeDistClientModal();
             } catch (error) { console.error("Error saving client:", error); }
+        }
+        
+        // ИСПРАВЛЕНО: Новая функция удаления клиента
+        async function deleteDistributionClient(clientId) {
+            if (!confirm(translations[currentLang]?.distribution?.confirm_delete_client || "Вы уверены?")) return;
+            const clientRef = doc(getDistributionCollectionRef('distribution_clients'), clientId);
+            const pricesQuery = query(getDistributionCollectionRef('distribution_prices'), 
+                where("clientId", "==", clientId),
+                where("listId", "==", currentDistributionListId)
+            );
+            try {
+                const batch = writeBatch(db);
+                batch.delete(clientRef);
+                const pricesSnapshot = await getDocs(pricesQuery);
+                pricesSnapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                closeDistClientModal();
+            } catch (error) { console.error("Ошибка удаления клиента:", error); }
+        }
+
+        // ИСПРАВЛЕНО: Новые функции для модального окна "Добавить Цену"
+        function openDistPriceModal() {
+            const itemSelect = document.getElementById('dist-price-item-select');
+            const clientSelect = document.getElementById('dist-price-client-select');
+            
+            itemSelect.innerHTML = `<option value="" disabled selected>Выберите лекарство...</option>`;
+            distributionItems.forEach(item => {
+                itemSelect.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+            });
+            
+            clientSelect.innerHTML = `<option value="" disabled selected>Выберите клиента...</option>`;
+            distributionClients.forEach(client => {
+                clientSelect.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+            });
+            
+            document.getElementById('distribution-price-form').reset();
+            document.getElementById('distribution-price-modal').classList.remove('hidden');
+            setLanguage(currentLang);
+        }
+        
+        function closeDistPriceModal() { document.getElementById('distribution-price-modal').classList.add('hidden'); }
+        
+        async function handleDistPriceSubmit(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('dist-price-item-select').value;
+            const clientId = document.getElementById('dist-price-client-select').value;
+            const price = parseFloat(document.getElementById('dist-price-input').value);
+            
+            if (!itemId || !clientId || isNaN(price) || price < 0) {
+                alert("Пожалуйста, заполните все поля корректно.");
+                return;
+            }
+            
+            // Ищем ячейку в гриде, чтобы обновить ее
+            const inputElement = document.querySelector(`#distribution-grid-body input[onchange*="'${itemId}', '${clientId}'"]`);
+            const costPrice = distributionItems.find(i => i.id === itemId)?.costPrice || 0;
+            
+            await updateDistributionPrice(itemId, clientId, price.toString(), inputElement, costPrice);
+            closeDistPriceModal();
         }
         
         // --- KONETS Funktsii Raspredeleniya ---
@@ -1348,13 +1740,70 @@
                 });
             });
 
-            // NOVOE: Listenery dlya Modalok Raspredeleniya
+            // ИСПРАВЛЕНО: Listenery dlya Modalok Raspredeleniya
             document.getElementById('add-distribution-item-btn').addEventListener('click', () => openDistItemModal());
             document.getElementById('add-distribution-client-btn').addEventListener('click', () => openDistClientModal());
+            document.getElementById('add-distribution-price-btn').addEventListener('click', () => openDistPriceModal());
             document.getElementById('dist-item-modal-close-btn').addEventListener('click', closeDistItemModal);
             document.getElementById('distribution-item-form').addEventListener('submit', handleDistItemSubmit);
             document.getElementById('dist-client-modal-close-btn').addEventListener('click', closeDistClientModal);
             document.getElementById('distribution-client-form').addEventListener('submit', handleDistClientSubmit);
+            document.getElementById('dist-price-modal-close-btn').addEventListener('click', closeDistPriceModal);
+            document.getElementById('distribution-price-form').addEventListener('submit', handleDistPriceSubmit);
+            document.getElementById('dist-price-add-item-btn').addEventListener('click', () => openDistItemModal());
+            document.getElementById('dist-price-add-client-btn').addEventListener('click', () => openDistClientModal());
+            
+            // ИСПРАВЛЕНО: Listenery dlya upravleniya spiskami tabel
+            document.getElementById('distribution-list-select').addEventListener('change', (e) => {
+                currentDistributionListId = e.target.value;
+                startDistributionListeners(); // Pere-zapusk data listenerov dlya novoy tablicy
+            });
+            document.getElementById('add-distribution-list-btn').addEventListener('click', async () => {
+                const newName = prompt(translations[currentLang]?.distribution?.new_table_prompt || "Введите название:", "Новая таблица");
+                if (newName) {
+                    try {
+                        const listsRef = getDistributionCollectionRef('distribution_lists');
+                        await addDoc(listsRef, { name: newName });
+                        // Listener sam obnovit spisok i perekluchitsya
+                    } catch (e) { console.error("Error adding new list:", e); }
+                }
+            });
+            document.getElementById('edit-distribution-list-btn').addEventListener('click', async () => {
+                if (!currentDistributionListId) return;
+                const currentList = distributionLists.find(l => l.id === currentDistributionListId);
+                const newName = prompt(translations[currentLang]?.distribution?.edit_table_prompt || "Введите новое название:", currentList.name);
+                if (newName && newName !== currentList.name) {
+                    try {
+                        const listRef = doc(getDistributionCollectionRef('distribution_lists'), currentDistributionListId);
+                        await updateDoc(listRef, { name: newName });
+                    } catch (e) { console.error("Error updating list name:", e); }
+                }
+            });
+            document.getElementById('delete-distribution-list-btn').addEventListener('click', async () => {
+                 if (!currentDistributionListId) return;
+                 if (!confirm(translations[currentLang]?.distribution?.confirm_delete_table || "Вы уверены?")) return;
+                 
+                 try {
+                    const batch = writeBatch(db);
+                    // 1. Delete list doc
+                    batch.delete(doc(getDistributionCollectionRef('distribution_lists'), currentDistributionListId));
+                    // 2. Delete items
+                    const itemsQuery = query(getDistributionCollectionRef('distribution_items'), where("listId", "==", currentDistributionListId));
+                    const itemsSnap = await getDocs(itemsQuery);
+                    itemsSnap.forEach(d => batch.delete(d.ref));
+                    // 3. Delete clients
+                    const clientsQuery = query(getDistributionCollectionRef('distribution_clients'), where("listId", "==", currentDistributionListId));
+                    const clientsSnap = await getDocs(clientsQuery);
+                    clientsSnap.forEach(d => batch.delete(d.ref));
+                    // 4. Delete prices
+                    const pricesQuery = query(getDistributionCollectionRef('distribution_prices'), where("listId", "==", currentDistributionListId));
+                    const pricesSnap = await getDocs(pricesQuery);
+                    pricesSnap.forEach(d => batch.delete(d.ref));
+                    
+                    await batch.commit();
+                    currentDistributionListId = null; // Sbrosit' ID, listener spiskov podhvatit
+                 } catch(e) { console.error("Error deleting list:", e); }
+            });
 
             // Zagruzka sostoyaniya
             applyTheme(localStorage.getItem('siteTheme') || 'light');
