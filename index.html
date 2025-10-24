@@ -549,8 +549,9 @@
         import { getFirestore, doc, collection, addDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
-        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1', 'mhPJz63xINVF6DnqITgI0bGuxgQ2'];
-        const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c7","measurementId":"G-HT5T20YPVE"};
+        // Установите здесь все UID администраторов. Все пользователи в этом списке будут видеть ОДНИ И ТЕ ЖЕ данные.
+        const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1', 'mhPJz63xINVF6DnqITgI0bGuxgQ2']; 
+        const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c3","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
         
@@ -792,17 +793,26 @@
         }
         // --- KONETS Funktsii Valyuty ---
 
+        /**
+         * ИСПРАВЛЕНИЕ: Функция теперь возвращает ССЫЛКУ на ОБЩУЮ коллекцию (public/data)
+         * Это гарантирует, что все администраторы (те, кто получил доступ) 
+         * будут видеть и редактировать один и тот же набор данных.
+         */
         function getCollectionRef() {
             if (!db || !currentUserId) return null;
             const collectionName = currentMode === 'sales' ? 'sales_records' : 'purchase_records';
-            return collection(db, 'artifacts', appId, 'users', currentUserId, collectionName);
+            // Используем общий путь: artifacts/{appId}/public/data/{collectionName}
+            return collection(db, 'artifacts', appId, 'public', 'data', collectionName);
         }
         
-        // NOVOE: Funktsiya dlya kollektsiy Raspredeleniya
+        /**
+         * ИСПРАВЛЕНИЕ: Функция для коллекций Распределения теперь также возвращает 
+         * ССЫЛКУ на ОБЩУЮ коллекцию (public/data)
+         */
         function getDistributionCollectionRef(collectionName) {
             if (!db || !currentUserId) return null;
-            // ИСПРАВЛЕНО: Все коллекции распределения теперь глобальные, а не вложенные
-            return collection(db, 'artifacts', appId, 'users', currentUserId, collectionName);
+            // Используем общий путь: artifacts/{appId}/public/data/{collectionName}
+            return collection(db, 'artifacts', appId, 'public', 'data', collectionName);
         }
         
         const formatDate = (dateObj) => { if (!dateObj || !(dateObj instanceof Date)) return 'N/A'; return `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${dateObj.getFullYear()}`; };
