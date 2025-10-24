@@ -551,6 +551,9 @@
         // === ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ===
         // Установите здесь все UID администраторов. Все пользователи в этом списке будут видеть ОДНИ И ТЕ ЖЕ данные.
         const ADMIN_UIDS = ['h25tlwhyAQfo1PBgzYMekWKD5Vl1', 'mhPJz63xINVF6DnqITgI0bGuxgQ2']; 
+        // НОВОЕ ИСПРАВЛЕНИЕ: Используем ID первого админа как основной ID для хранения общих данных.
+        const MASTER_DATA_UID = ADMIN_UIDS[0]; 
+
         const CUSTOM_FIREBASE_CONFIG = {"apiKey":"AIzaSyB1FLSf6PBzNzb7_CWYH6Y0_--jhqO9MLQ","authDomain":"asonik-ai.firebaseapp.com","projectId":"asonik-ai","storageBucket":"asonik-ai.firebasestorage.app","messagingSenderId":"875716508614","appId":"1:875716508614:web:ad264fdd60a20eb7dd90c3","measurementId":"G-HT5T20YPVE"};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : CUSTOM_FIREBASE_CONFIG;
@@ -705,13 +708,13 @@
                     add_client_title: "Müşteri Ekle",
                     edit_client_title: "Müşteriyi Düzenle",
                     client_name_label: "Müşteri Adı",
-                    confirm_delete_item: "Bu ilacı ve BU tablodaki tüm ilgili fiyatlarını silmek istediğinizden emin misiniz?",
-                    confirm_delete_client: "Bu müşteriyi ve BU tablodaki tüm ilgili fiyatlarını silmek istediğinizden emin misiniz?",
+                    confirm_delete_item: "Bu ilacı ve BU tablodaki tüm ilgili fiyatlarını silmek istediğinizден emin misiniz?",
+                    confirm_delete_client: "Bu müşteriyi ve BU tablodaki tüm ilgili fiyatlarını silmek istediğinizден emin misiniz?",
                     select_table: "Tablo:",
                     new_table: "Yeni Tablo",
                     new_table_prompt: "Yeni tablo adını girin:",
                     edit_table_prompt: "Tablo için yeni adı girin:",
-                    confirm_delete_table: "Tüm tabloyu ve içindeki tüm verileri silmek istediğinizden emin misiniz?"
+                    confirm_delete_table: "Tüm tabloyu ve içindeki tüm verileri silmek istediğinizден emin misiniz?"
                 }
             }
         };
@@ -794,25 +797,25 @@
         // --- KONETS Funktsii Valyuty ---
 
         /**
-         * ИСПРАВЛЕНИЕ: Функция теперь возвращает ССЫЛКУ на ОБЩУЮ коллекцию (public/data)
-         * Это гарантирует, что все администраторы (те, кто получил доступ) 
-         * будут видеть и редактировать один и тот же набор данных.
+         * ИСПРАВЛЕНИЕ ОШИБКИ: Функция теперь возвращает ССЫЛКУ на коллекцию, привязанную 
+         * к MASTER_DATA_UID, чтобы все администраторы видели одни и те же данные, 
+         * а старые данные вернулись.
          */
         function getCollectionRef() {
             if (!db || !currentUserId) return null;
             const collectionName = currentMode === 'sales' ? 'sales_records' : 'purchase_records';
-            // Используем общий путь: artifacts/{appId}/public/data/{collectionName}
-            return collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+            // Используем фиксированный MASTER_DATA_UID для общего доступа.
+            return collection(db, 'artifacts', appId, 'users', MASTER_DATA_UID, collectionName);
         }
         
         /**
-         * ИСПРАВЛЕНИЕ: Функция для коллекций Распределения теперь также возвращает 
-         * ССЫЛКУ на ОБЩУЮ коллекцию (public/data)
+         * ИСПРАВЛЕНИЕ ОШИБКИ: Функция для коллекций Распределения также использует 
+         * фиксированный MASTER_DATA_UID для общего доступа.
          */
         function getDistributionCollectionRef(collectionName) {
             if (!db || !currentUserId) return null;
-            // Используем общий путь: artifacts/{appId}/public/data/{collectionName}
-            return collection(db, 'artifacts', appId, 'public', 'data', collectionName);
+            // Используем фиксированный MASTER_DATA_UID для общего доступа.
+            return collection(db, 'artifacts', appId, 'users', MASTER_DATA_UID, collectionName);
         }
         
         const formatDate = (dateObj) => { if (!dateObj || !(dateObj instanceof Date)) return 'N/A'; return `${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}.${dateObj.getFullYear()}`; };
