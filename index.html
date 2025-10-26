@@ -344,7 +344,7 @@
                             <select id="modal-new-client-base-currency" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent">
                                 <option value="TRY">TRY (₺)</option>
                                 <option value="USD">USD ($)</option>
-                                <option value="EUR">EUR (€)</option>
+                                <!-- УДАЛЕНО: <option value="EUR">EUR (€)</option> -->
                             </select>
                         </div>
                     </div>
@@ -369,14 +369,34 @@
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4 border-t pt-4">
-                    <div>
-                        <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса</label>
-                        (<span id="client-base-currency-symbol-payment">₺</span>)
-                        <input type="number" step="0.01" id="modal-payment-received" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
+                <!-- NOVOE: Razdel DLYA OBSCHEY SUMMY i KONVERTIROVANNOY OPYLATY -->
+                <div class="border-t pt-4 space-y-4">
+                     <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                        <span class="text-lg font-bold" data-lang-key="total_amount_in_base_currency">Общая Сумма:</span>
+                        <span id="modal-total-amount-display" class="text-xl font-extrabold text-blue-600">0.00 ₺</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="col-span-1">
+                            <label for="modal-payment-received" class="block text-sm font-medium" data-lang-key="payment_received">Касса (<span id="client-base-currency-symbol-payment">₺</span>)</label>
+                            <input type="number" step="0.01" id="modal-payment-received" class="w-full px-4 py-2 border rounded-lg bg-transparent" value="0">
+                        </div>
+                        <div class="col-span-3 border p-2 rounded-lg">
+                            <label class="block text-sm font-medium mb-1" data-lang-key="optional_payment_conversion">Конвертация Общей Оплаты</label>
+                             <div class="grid grid-cols-6 gap-2 items-center">
+                                <input type="number" step="0.01" id="modal-payment-original-amount" placeholder="Сумма" class="col-span-2 px-3 py-1.5 border rounded-lg bg-transparent text-sm" value="0">
+                                <select id="modal-payment-original-currency" class="col-span-1 px-1 py-1.5 border rounded-lg bg-transparent text-xs">
+                                    <option value="TRY">₺</option>
+                                    <option value="USD">$</option>
+                                    <!-- УДАЛЕНО: <option value="EUR">€</option> -->
+                                </select>
+                                <input type="number" step="0.0001" id="modal-payment-exchange-rate" placeholder="Курс" class="col-span-1 px-3 py-1.5 border rounded-lg bg-transparent text-sm" value="1">
+                                <span class="col-span-2 text-right font-semibold text-sm" id="modal-payment-converted-display">0.00 ₺</span>
+                            </div>
+                        </div>
                     </div>
                     <div>
-                        <label for="modal-transaction-date" class="block text-sm font-medium" data-lang-key="transaction_date">Дата</label>
+                         <label for="modal-transaction-date" class="block text-sm font-medium" data-lang-key="transaction_date">Дата</label>
                         <input type="date" id="modal-transaction-date" required class="w-full px-4 py-2 border rounded-lg bg-transparent">
                     </div>
                 </div>
@@ -402,7 +422,7 @@
                         <select id="edit-client-base-currency" class="w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-transparent">
                             <option value="TRY">TRY (₺)</option>
                             <option value="USD">USD ($)</option>
-                            <option value="EUR">EUR (€)</option>
+                            <!-- УДАЛЕНО: <option value="EUR">EUR (€)</option> -->
                         </select>
                     </div>
                 </div>
@@ -526,12 +546,13 @@
         let unsubscribeDistClients = null;
         let unsubscribeDistPrices = null;
         
-        // NOVOE: Valyuty
+        // NOVOE: Valyuty (Только TRY и USD)
         const CURRENCIES = {
             'TRY': { symbol: '₺', locale: 'tr-TR' },
             'USD': { symbol: '$', locale: 'en-US' },
-            'EUR': { symbol: '€', locale: 'en-US' }
+            // 'EUR': { symbol: '€', locale: 'en-US' } // УДАЛЕНО
         };
+        const CURRENCY_OPTIONS = ['TRY', 'USD']; // Доступные опции
 
         const translations = {
             ru: {
@@ -555,6 +576,8 @@
                 initial_balance_with_currency: "Начальный остаток",
                 client_base_currency: "Базовая валюта клиента",
                 client_base_currency_edit: "Базовая валюта (Общий долг)",
+                total_amount_in_base_currency: "Общая Сумма",
+                optional_payment_conversion: "Конвертировать Общую Оплату",
 
                 sales: {
                     nav_main: "ПРОДАЖИ", main_header: "ОСНОВА (Обзор Клиентов)", edit_client: "Редактировать Клиента", delete_client: "Удалить Клиента", 
@@ -629,6 +652,8 @@
                 initial_balance_with_currency: "Başlangıç Bakiyesi",
                 client_base_currency: "Müşteri Ana Para Birimi",
                 client_base_currency_edit: "Ana Para Birimi (Toplam Borç)",
+                total_amount_in_base_currency: "Toplam Tutar",
+                optional_payment_conversion: "Toplam Ödemeyi Çevir",
                 
                 sales: {
                     nav_main: "SATIŞLAR", main_header: "ANA SAYFA (Müşteri Özeti)", edit_client: "Müşteriyi Düzenle", delete_client: "Müşteriyi Sil", 
@@ -767,10 +792,48 @@
             document.getElementById('client-base-currency-symbol-header').textContent = baseSymbol;
             document.getElementById('client-base-currency-symbol-converted').textContent = baseSymbol;
             document.getElementById('client-base-currency-symbol-payment').textContent = baseSymbol;
+            document.getElementById('modal-total-amount-display').textContent = formatCurrency(calculateTotalAmount(), baseCurrencyCode);
+
 
             if (document.getElementById('new-client-base-currency-symbol')) {
                  document.getElementById('new-client-base-currency-symbol').textContent = baseSymbol;
             }
+            
+            // Obnovlenie displeya konvertirovannoy oplaty
+            updatePaymentConversionDisplay(baseCurrencyCode);
+        }
+
+        /**
+         * Schitaet obshchuyu summu tovarov v modal'nom okne
+         * @returns {number} Obshchaya summa v bazovoy valyute
+         */
+        function calculateTotalAmount() {
+            let total = 0;
+             document.querySelectorAll('#items-list-container > .modal-item-row').forEach(row => {
+                const originalPrice = parseFloat(row.querySelector('.modal-item-original-price').value) || 0;
+                const rateValue = parseFloat(row.querySelector('.modal-item-rate').value) || 1;
+                const quantity = parseInt(row.querySelector('.modal-item-quantity').value) || 0;
+                total += (originalPrice * rateValue * quantity);
+            });
+            return total;
+        }
+
+        /**
+         * Obnovlyaet pole konvertirovannoy oplaty v modal'nom okne
+         * @param {string} baseCurrencyCode - Kod bazovoy valyuty klienta
+         */
+        function updatePaymentConversionDisplay(baseCurrencyCode = getCurrentModalBaseCurrencyCode()) {
+            const originalAmount = parseFloat(document.getElementById('modal-payment-original-amount').value) || 0;
+            const originalCurrency = document.getElementById('modal-payment-original-currency').value;
+            const rate = parseFloat(document.getElementById('modal-payment-exchange-rate').value) || 1;
+            const convertedDisplay = document.getElementById('modal-payment-converted-display');
+            const paymentReceivedInput = document.getElementById('modal-payment-received');
+            
+            // UMNOSENIE: Iznachal'naya summa * Kurs
+            const convertedAmount = originalAmount * rate; 
+            
+            convertedDisplay.textContent = formatCurrency(convertedAmount, baseCurrencyCode);
+            paymentReceivedInput.value = convertedAmount.toFixed(2); // Avtomaticheski obnovlyaem pole 'Kassa'
         }
         
         /**
@@ -894,7 +957,8 @@
                             originalUnitPrice: item.originalUnitPrice || item.unitPrice || 0,
                             exchangeRate: item.exchangeRate || 1,
                             // NOVOE: Pereschityvaem unitPrice dlya ucheta staroy struktury
-                            unitPrice: (item.originalUnitPrice * item.exchangeRate) || item.unitPrice || 0
+                            // PEREVOD NA UMNOSENIE: unitPrice = originalUnitPrice * exchangeRate
+                            unitPrice: (item.originalUnitPrice * item.exchangeRate)
                         }));
                     }
                     
@@ -902,6 +966,13 @@
                     
                     // Bazovaya valyuta dolzhna byt' na urovne transaktsii (kogda menyaem, obnovlyaem vseh)
                     data.clientBaseCurrency = data.clientBaseCurrency || 'TRY';
+
+                    // NOVOE: Konvertatsiya platezha
+                    data.paymentOriginalAmount = data.paymentOriginalAmount || data.paymentReceived || 0;
+                    data.paymentOriginalCurrency = data.paymentOriginalCurrency || data.clientBaseCurrency || 'TRY';
+                    data.paymentExchangeRate = data.paymentExchangeRate || 1;
+                    // PEREVOD NA UMNOSENIE: paymentReceived = paymentOriginalAmount * paymentExchangeRate
+                    data.paymentReceived = data.paymentOriginalAmount * data.paymentExchangeRate;
 
                     return { ...data, id: doc.id, transactionDate: data.transactionDate.toDate() };
                 });
@@ -994,7 +1065,6 @@
             setLanguage(currentLang);
         }
         
-        // ... (renderDetailsView, renderDetailsEntityList, renderTransactionsTable - logic to use client's baseCurrency)
         function renderDetailsView() {
             const container = document.getElementById('details-view-container');
             if (currentEntityDetailsId && entityAggregates[currentEntityDetailsId]) {
@@ -1073,7 +1143,12 @@
             const entity = entityAggregates[entityId];
             const baseCurrencyCode = entity.baseCurrency;
 
-            container.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name} <span class="text-xl text-gray-500 font-normal">(${baseCurrencyCode})</span></h2></div><div class="flex items-center space-x-2"><button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel"></span></button><button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}', '${baseCurrencyCode}')"><span data-lang-key="edit_client"></span></button><button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg" onclick="window.deleteClient('${entityId}')"><span data-lang-key="delete_client"></span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales, baseCurrencyCode)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid, baseCurrencyCode)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(entity.totalSales - entity.totalPaid, baseCurrencyCode)}</p></div>
+            // ИСПРАВЛЕНО: Добавлены иконки и текст в кнопки
+            container.innerHTML = `<div class="flex justify-between items-center mb-4"><div class="flex items-center space-x-4"><button class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 card font-semibold" onclick="window.backToDetailsList()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg><span data-lang-key="back_to_clients"></span></button><h2 class="text-3xl font-bold">${entity.name} <span class="text-xl text-gray-500 font-normal">(${baseCurrencyCode})</span></h2></div><div class="flex items-center space-x-2">
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-2" onclick="window.exportClientToExcel('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg><span data-lang-key="export_to_excel">Экспорт</span></button>
+                <button class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-1" onclick="window.openEditClientNameModal('${entityId}', '${entity.name.replace(/'/g, "\\'")}', '${baseCurrencyCode}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"></path></svg><span data-lang-key="edit_client">Ред.</span></button>
+                <button class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center space-x-1" onclick="window.deleteClient('${entityId}')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg><span data-lang-key="delete_client">Удал.</span></button>
+            </div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><div class="p-4 rounded-lg bg-blue-50 card"><p class="text-sm text-blue-800" data-lang-key="total_sales"></p><p class="text-2xl font-bold text-blue-900 mt-1">${formatCurrency(entity.totalSales, baseCurrencyCode)}</p></div><div class="p-4 rounded-lg bg-green-50 card"><p class="text-sm text-green-800" data-lang-key="total_paid"></p><p class="text-2xl font-bold text-green-900 mt-1">${formatCurrency(entity.totalPaid, baseCurrencyCode)}</p></div><div class="p-4 rounded-lg bg-red-50 card"><p class="text-sm text-red-800" data-lang-key="total_remaining"></p><p class="text-2xl font-bold text-red-900 mt-1">${formatCurrency(entity.totalSales - entity.totalPaid, baseCurrencyCode)}</p></div>
             
             <div class="flex flex-wrap items-center gap-4 mb-3 p-3 border rounded-lg card">
                 <h3 class="text-lg font-semibold w-full sm:w-auto" data-lang-key="transaction_history"></h3>
@@ -1109,19 +1184,6 @@
             });
             setLanguage(currentLang);
         }
-        
-        // NOVOE: Funktsiya dlya opredeleniya tekushchey bazovoy valyuty v modal'nom okne
-        function getCurrentModalBaseCurrencyCode() {
-            const clientSelect = document.getElementById('modal-client-select');
-            const newClientContainer = document.getElementById('new-client-container');
-
-            if (!newClientContainer.classList.contains('hidden')) {
-                return document.getElementById('modal-new-client-base-currency').value;
-            } else if (clientSelect.value && entityAggregates[clientSelect.value]) {
-                return entityAggregates[clientSelect.value].baseCurrency;
-            }
-            return 'TRY'; // Po umolchaniyu
-        }
 
         /**
          * NOVOE: Funktsiya dlya dobavleniya stroki tovara s polyami valyutnoy konvertatsii
@@ -1133,11 +1195,13 @@
             const itemRow = document.createElement('div');
             itemRow.className = 'grid grid-cols-12 gap-2 items-center modal-item-row';
             
-            // Konvertiruemoe pole unitPrice ne ispol'zuetsya v HTML, no peredaetsya dlya obnovleniya pri redaktirovanii
             const originalPrice = item.originalUnitPrice || item.unitPrice || '';
             const currency = item.originalCurrency || 'TRY';
             const rate = item.exchangeRate || 1;
             
+            // Generiruem options s uchetom CURRENCY_OPTIONS
+            const currencyOptionsHTML = CURRENCY_OPTIONS.map(code => `<option value="${code}" ${currency === code ? 'selected' : ''}>${getCurrencySymbol(code)}</option>`).join('');
+
             itemRow.innerHTML = `
                 <div class="col-span-3">
                     <input type="text" value="${item.itemName}" placeholder="${translations[currentLang]?.item_name}" required class="modal-item-name w-full px-3 py-1.5 border rounded-lg bg-transparent text-sm">
@@ -1146,9 +1210,7 @@
                 <div class="col-span-3 flex items-center space-x-1">
                     <input type="number" value="${originalPrice}" step="0.01" placeholder="Цена" required class="modal-item-original-price w-2/3 px-3 py-1.5 border rounded-lg bg-transparent text-sm">
                     <select class="modal-item-currency w-1/3 px-1 py-1.5 border rounded-lg bg-transparent text-xs">
-                        <option value="TRY" ${currency === 'TRY' ? 'selected' : ''}>₺</option>
-                        <option value="USD" ${currency === 'USD' ? 'selected' : ''}>$</option>
-                        <option value="EUR" ${currency === 'EUR' ? 'selected' : ''}>€</option>
+                        ${currencyOptionsHTML}
                     </select>
                 </div>
 
@@ -1182,10 +1244,11 @@
                 const rateValue = parseFloat(rateInput.value) || 1;
                 const quantity = parseInt(quantityInput.value) || 0;
                 
-                const convertedUnitPrice = originalPrice * rateValue;
+                const convertedUnitPrice = originalPrice * rateValue; // PEREVOD NA UMNOSENIE
                 const convertedTotalAmount = convertedUnitPrice * quantity;
                 
                 convertedSpan.textContent = formatCurrency(convertedTotalAmount, getCurrentModalBaseCurrencyCode());
+                document.getElementById('modal-total-amount-display').textContent = formatCurrency(calculateTotalAmount(), getCurrentModalBaseCurrencyCode()); // Обновляем общую сумму
             };
 
             // Slushateli dlya perescheta pri izmenenii poley
@@ -1193,7 +1256,10 @@
                 itemRow.querySelector(selector).addEventListener('input', updateConvertedAmount);
             });
 
-            itemRow.querySelector('.remove-item-btn').addEventListener('click', () => itemRow.remove());
+            itemRow.querySelector('.remove-item-btn').addEventListener('click', () => {
+                itemRow.remove();
+                document.getElementById('modal-total-amount-display').textContent = formatCurrency(calculateTotalAmount(), getCurrentModalBaseCurrencyCode()); // Обновляем общую сумму после удаления
+            });
             updateConvertedAmount();
         }
 
@@ -1212,18 +1278,38 @@
             const toggleButton = document.getElementById('toggle-new-client-button');
             const newClientContainer = document.getElementById('new-client-container');
             const clientSelectionContainer = document.getElementById('client-selection-container');
+
+            
+            // NOVOE: Установка слушателей для общей оплаты
+            const paymentOriginalAmount = document.getElementById('modal-payment-original-amount');
+            const paymentOriginalCurrency = document.getElementById('modal-payment-original-currency');
+            const paymentExchangeRate = document.getElementById('modal-payment-exchange-rate');
+
+            const paymentConversionUpdate = () => updatePaymentConversionDisplay();
+
+            [paymentOriginalAmount, paymentOriginalCurrency, paymentExchangeRate].forEach(el => {
+                el.removeEventListener('input', paymentConversionUpdate);
+                el.addEventListener('input', paymentConversionUpdate);
+            });
             
             clientSelect.removeEventListener('change', updateModalCurrencySymbols);
-            clientSelect.addEventListener('change', () => updateModalCurrencySymbols(clientSelect.value));
+            clientSelect.addEventListener('change', () => {
+                updateModalCurrencySymbols(clientSelect.value);
+                // Обновление символов в полях оплаты при смене клиента
+                updatePaymentConversionDisplay(entityAggregates[clientSelect.value]?.baseCurrency);
+            });
 
             if (transactionData) {
                 document.getElementById('modal-title').dataset.langKey = "modal_edit_trans_title";
                 clientSelect.value = transactionData.clientId;
                 
-                // NOVOE: Zapolnyaem polya valyut konvertatsii
                 transactionData.items.forEach(item => addItemRowToModal(item));
 
-                document.getElementById('modal-payment-received').value = transactionData.paymentReceived;
+                // NOVOE: Заполнение полей конвертации оплаты
+                paymentOriginalAmount.value = transactionData.paymentOriginalAmount || transactionData.paymentReceived || 0;
+                paymentOriginalCurrency.value = transactionData.paymentOriginalCurrency || transactionData.clientBaseCurrency || 'TRY';
+                paymentExchangeRate.value = transactionData.paymentExchangeRate || 1;
+                
                 document.getElementById('modal-transaction-date').value = transactionData.transactionDate.toISOString().split('T')[0];
                 clientSelect.disabled = true;
                 toggleButton.classList.add('hidden');
@@ -1237,9 +1323,14 @@
                 clientSelectionContainer.classList.remove('hidden');
                 toggleButton.dataset.langKey = 'add_new_client_btn';
                 addItemRowToModal();
+
+                // Сброс полей конвертации оплаты
+                paymentOriginalAmount.value = 0;
+                paymentOriginalCurrency.value = 'TRY';
+                paymentExchangeRate.value = 1;
             }
             
-            // Obnovlyaem simvoly valyut v modalke
+            // Obnovlyaem simvoly valyut i расчеты
             updateModalCurrencySymbols(transactionData?.clientId); 
             setLanguage(currentLang);
         }
@@ -1288,14 +1379,15 @@
             const items = Array.from(document.querySelectorAll('#items-list-container > .modal-item-row')).map(row => {
                 const originalUnitPrice = parseFloat(row.querySelector('.modal-item-original-price').value) || 0;
                 const exchangeRate = parseFloat(row.querySelector('.modal-item-rate').value) || 1;
-                const unitPrice = originalUnitPrice * exchangeRate; // Konvertirovannaya tsena v bazovoy valyute klienta
+                // unitPrice - конвертированная цена, используется для итоговой суммы
+                const unitPrice = originalUnitPrice * exchangeRate; 
 
                 return {
                     itemName: row.querySelector('.modal-item-name').value.trim(),
                     originalUnitPrice: originalUnitPrice,
                     originalCurrency: row.querySelector('.modal-item-currency').value,
                     exchangeRate: exchangeRate,
-                    unitPrice: unitPrice,
+                    unitPrice: unitPrice, 
                     quantity: parseInt(row.querySelector('.modal-item-quantity').value) || 0,
                 };
             }).filter(item => item.itemName && item.quantity > 0);
@@ -1303,7 +1395,13 @@
             if (items.length === 0 && !isNewClient) { errorEl.textContent = 'Добавьте хотя бы один товар.'; errorEl.classList.remove('hidden'); return; }
             
             const totalAmount = items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-            const paymentReceived = parseFloat(form['modal-payment-received'].value) || 0;
+            
+            // NOVOE: Чтение данных конвертации оплаты
+            const paymentOriginalAmount = parseFloat(document.getElementById('modal-payment-original-amount').value) || 0;
+            const paymentOriginalCurrency = document.getElementById('modal-payment-original-currency').value;
+            const paymentExchangeRate = parseFloat(document.getElementById('modal-payment-exchange-rate').value) || 1;
+            const paymentReceived = paymentOriginalAmount * paymentExchangeRate; // Конвертированная сумма в базовой валюте клиента
+
             const transactionDate = new Date(form['modal-transaction-date'].value);
             
             const batch = writeBatch(db);
@@ -1318,14 +1416,21 @@
                              itemName: "Начальный остаток", unitPrice: initialBalance, quantity: 1, 
                              originalCurrency: clientBaseCurrency, originalUnitPrice: initialBalance, exchangeRate: 1
                         }], 
-                        totalAmount: initialBalance, paymentReceived: 0, transactionDate: new Date() 
+                        totalAmount: initialBalance, paymentReceived: 0, transactionDate: new Date(),
+                        // Для начального остатка конвертация платежа не нужна
+                        paymentOriginalAmount: 0, paymentOriginalCurrency: clientBaseCurrency, paymentExchangeRate: 1
                     });
                 }
             }
             
             if (items.length > 0) {
                 const mainDocRef = docId ? doc(collectionRef, docId) : doc(collectionRef);
-                const data = { clientId, clientName, items, totalAmount, paymentReceived, transactionDate, clientBaseCurrency };
+                const data = { 
+                    clientId, clientName, items, totalAmount, 
+                    paymentReceived, // Конвертированная сумма
+                    paymentOriginalAmount, paymentOriginalCurrency, paymentExchangeRate, // Исходные данные оплаты
+                    transactionDate, clientBaseCurrency 
+                };
                 if (docId) batch.update(mainDocRef, data); else batch.set(mainDocRef, data);
             } else if (isNewClient && (parseFloat(form['modal-initial-balance'].value) || 0) === 0) {
                  // Sozdaem pustuyu transaktsiyu tol'ko dlya sozdaniya klienta s ego valyutoy
@@ -1376,12 +1481,16 @@
 
             let runningBalance = 0;
             // Opredelyaem zagolovki zaraneye
-            const headers = ['Дата', 'Описание', 'Кол-во', 'Цена за ед. (Исходная)', 'Валюта', 'Курс', `Сумма (${baseCurrencyCode})`, `Оплачено (${baseCurrencyCode})`, `Итоговый баланс (${baseCurrencyCode})`];
+            const headers = ['Дата', 'Описание', 'Кол-во', 'Цена за ед. (Исходная)', 'Валюта', 'Курс', `Сумма (${baseCurrencyCode})`, `Оплачено (Исходная Валюта)`, `Курс Оплаты`, `Оплачено (${baseCurrencyCode})`, `Итоговый баланс (${baseCurrencyCode})`];
 
             const transactionsForExport = [...entity.transactions]
                 .sort((a, b) => a.transactionDate - b.transactionDate)
                 .flatMap(t => { 
                     runningBalance += (t.totalAmount || 0) - (t.paymentReceived || 0);
+                    
+                    const paymentOriginalAmount = t.paymentOriginalAmount || t.paymentReceived;
+                    const paymentOriginalCurrency = t.paymentOriginalCurrency || baseCurrencyCode;
+                    const paymentExchangeRate = t.paymentExchangeRate || 1;
 
                     if (!t.items || t.items.length <= 1) {
                         const item = t.items?.[0];
@@ -1393,6 +1502,8 @@
                             'Валюта': item?.originalCurrency || baseCurrencyCode,
                             'Курс': item?.exchangeRate || 1,
                             [`Сумма (${baseCurrencyCode})`]: t.totalAmount || 0,
+                            [`Оплачено (Исходная Валюта)`]: paymentOriginalAmount,
+                            [`Курс Оплаты`]: paymentExchangeRate,
                             [`Оплачено (${baseCurrencyCode})`]: t.paymentReceived || 0,
                             [`Итоговый баланс (${baseCurrencyCode})`]: runningBalance
                         }];
@@ -1405,6 +1516,8 @@
                             'Валюта': item.originalCurrency,
                             'Курс': item.exchangeRate,
                             [`Сумма (${baseCurrencyCode})`]: (item.quantity || 0) * (item.unitPrice || 0),
+                            [`Оплачено (Исходная Валюта)`]: index === 0 ? paymentOriginalAmount : '', 
+                            [`Курс Оплаты`]: index === 0 ? paymentExchangeRate : '',
                             [`Оплачено (${baseCurrencyCode})`]: index === 0 ? t.paymentReceived || 0 : '', 
                             [`Итоговый баланс (${baseCurrencyCode})`]: ''
                         }));
@@ -1417,6 +1530,8 @@
                             'Валюта': '',
                             'Курс': '',
                             [`Сумма (${baseCurrencyCode})`]: t.totalAmount,
+                            [`Оплачено (Исходная Валюта)`]: '',
+                            [`Курс Оплаты`]: '',
                             [`Оплачено (${baseCurrencyCode})`]: t.paymentReceived,
                             [`Итоговый баланс (${baseCurrencyCode})`]: runningBalance
                         });
@@ -1432,6 +1547,8 @@
                 'Валюта': '',
                 'Курс': '',
                 [`Сумма (${baseCurrencyCode})`]: entity.totalSales,
+                [`Оплачено (Исходная Валюта)`]: '',
+                [`Курс Оплаты`]: '',
                 [`Оплачено (${baseCurrencyCode})`]: entity.totalPaid,
                 [`Итоговый баланс (${baseCurrencyCode})`]: entity.totalSales - entity.totalPaid
             }];
