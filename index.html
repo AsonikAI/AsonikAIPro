@@ -832,7 +832,7 @@
 
             
             // UMNOSENIE: Iznachal'naya summa * Kurs
-            const convertedAmount = originalAmount * rate; 
+            const convertedAmount = originalAmount / rate; 
             
             convertedDisplay.textContent = formatCurrency(convertedAmount, baseCurrencyCode);
             // paymentReceivedInput.value = convertedAmount.toFixed(2); // УДАЛЕНО: Теперь пользователь вводит "Кассу" вручную
@@ -1273,7 +1273,7 @@
                     rateInput.value = 1; 
                 }
                 
-                const convertedUnitPrice = originalPrice * rateValue; // PEREVOD НА УМНОЖЕНИЕ
+                const convertedUnitPrice = originalPrice / rateValue; // PEREVOD НА УМНОЖЕНИЕ
                 const convertedTotalAmount = convertedUnitPrice * quantity;
                 
                 convertedSpan.textContent = formatCurrency(convertedTotalAmount, baseCurrencyCode);
