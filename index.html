@@ -369,7 +369,7 @@
                     </button>
                 </div>
 
-                <!-- NOVOE: Razdel DLYA OBSCHEY SUMMY i KONVERTIROVANNOY OPYLATY -->
+                <!-- NOVOE: Razdel DLYA OBSCHEY SUMMY и KONVERТИРОВАННОЙ ОПЛАТЫ -->
                 <div class="border-t pt-4 space-y-4">
                      <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
                         <span class="text-lg font-bold" data-lang-key="total_amount_in_base_currency">Общая Сумма:</span>
@@ -1335,7 +1335,12 @@
                 clientSelect.value = transactionData.clientId;
                 
                 // ИСПРАВЛЕНИЕ: Отображение товаров при редактировании
-                transactionData.items.forEach(item => addItemRowToModal(item));
+                // Проверяем, существует ли массив items и он не пуст
+                if (transactionData.items && transactionData.items.length > 0) {
+                     transactionData.items.forEach(item => addItemRowToModal(item));
+                } else {
+                     addItemRowToModal(); // Если товаров нет, добавляем пустую строку
+                }
 
                 // NOVOE: Заполнение полей конвертации оплаты
                 paymentOriginalAmount.value = transactionData.paymentOriginalAmount || transactionData.paymentReceived || 0;
@@ -1364,7 +1369,7 @@
                 document.getElementById('modal-payment-received').value = 0;
             }
             
-            // Obnovlyaem simvoly valyut i расчеты
+            // Obnovlyaem simvoly valyut и расчеты
             updateModalCurrencySymbols(transactionData?.clientId); 
             setLanguage(currentLang);
         }
@@ -1372,7 +1377,7 @@
         function closeTransactionModal() { document.getElementById('transaction-modal').classList.add('hidden'); }
         
         /**
-         * NOVOE: Otkrytie modal'nogo okna redaktirovaniya klienta s ego bazovoy valyutoy
+         * NOVOE: Otkrytie modal'nogo okna redaktirovaniya klienta с его базовой вал.
          * @param {string} clientId - ID klienta
          * @param {string} currentName - Tekushchee imya
          * @param {string} baseCurrencyCode - Bazovaya valyuta
